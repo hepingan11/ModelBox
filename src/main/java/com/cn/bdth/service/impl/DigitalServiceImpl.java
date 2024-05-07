@@ -1,13 +1,18 @@
 package com.cn.bdth.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.cn.bdth.dto.DigitalChatDto;
 import com.cn.bdth.dto.DigitalVideoDto;
 import com.cn.bdth.entity.Digital;
 import com.cn.bdth.mapper.DigitalMapper;
 import com.cn.bdth.service.DigitalService;
 import com.cn.bdth.utils.UserUtils;
+import com.cn.bdth.vo.DigitalChatVo;
 import com.cn.bdth.vo.DigitalVo;
 import lombok.RequiredArgsConstructor;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.HttpClients;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -52,8 +57,33 @@ public class DigitalServiceImpl implements DigitalService {
 
     }
 
+    /**
+     * 删除模型
+     * @param id
+     */
     @Override
-    public void deleteModel(long id) {
-
+    public void deleteModel(Long id) {
+        digitalMapper.deleteById(id);
     }
+
+    /**
+     * 修改模型
+     * @param dto
+     */
+    @Override
+    public void updateModel(DigitalVideoDto dto) {
+        digitalMapper.updateById(new Digital().setVideoUrl(dto.getVideoUrl()).setVideoName(dto.getVideoName()).setImgUrl(dto.getImgUrl()));
+    }
+
+    /**
+     * 模型对话
+     * @param dto
+     * @return vo
+     */
+    @Override
+    public DigitalChatVo chatModel(DigitalChatDto dto) {
+        DigitalChatVo digitalChatVo =new DigitalChatVo();
+        return new DigitalChatVo();
+    }
+
 }

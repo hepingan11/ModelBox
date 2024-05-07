@@ -1,8 +1,15 @@
 package com.cn.bdth.api;
 
+import com.cn.bdth.dto.DrawingSdTaskDto;
+import com.cn.bdth.exceptions.DrawingException;
+import com.cn.bdth.exceptions.FrequencyException;
 import com.cn.bdth.msg.Result;
+import com.cn.bdth.service.DrawService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,8 +20,24 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class DrawController {
 
-    @PostMapping("/chatv")
-    public Result chatv() {
-        return Result.data("s");
+    private final DrawService drawService;
+
+    @PostMapping(value = "/postSdDraw",name = "提交绘画请求", consumes = "multipart/form-data")
+    public Result postSdDraw(@Valid DrawingSdTaskDto dto) {
+        try {
+            return Result.data(drawService.addSdTask(dto));
+        }catch (FrequencyException | DrawingException e){
+            return Result.error(e.getMessage());
+        }
+    }
+
+    @GetMapping(value = "/getSdDrawList/public",name = "获取公共绘画请求列表", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result getSdDrawListPublic() {
+        return Result.data(drawService.getSdDrawList());
+    }
+
+    @GetMapping(value = "/getSdDrawList/private",name = "获取个人绘画请求列表", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result getSdDrawListPrivate() {
+        return Result.data(drawService.getSdDrawListPrivate());
     }
 }

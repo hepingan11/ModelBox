@@ -20,6 +20,14 @@ import com.cn.bdth.utils.BaiduTranslationUtil;
 import com.cn.bdth.utils.WeChatUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.Header;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.util.EntityUtils;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -104,13 +112,25 @@ public class DrawingTaskListener {
     public void invokeSdDrawingApi(final DrawingSdQueueStructure structure) {
         String imageUri = null;
         try {
-            final String block = webClientBuilder.build()
-                    .post()
-                    .uri(stableDiffusionCommon.getStableDiffusionStructure().getSdUrl() + (structure.getIsType() == 0 ? ServerConstant.SD_DRAWING_TEXT : ServerConstant.SD_DRAWING_IMAGE))
-                    .body(BodyInserters.fromValue(structure.getSdDrawingModel()))
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .block();
+            CloseableHttpClient aDefault = HttpClients.createDefault();
+
+            HttpPost httpPost =new HttpPost("https://sd.hepingan.top/sdapi/v1/txt2img");
+            JSONObject param = new JSONObject();
+            param.put("prompt", "girl");
+            param.put("step",10);
+            param.put("height",512);
+            param.put("width",512);
+            param.put("override_settings",new JSONObject().put("sd_model_checkpoint","majicMIX realistic_v6.safetensors"));
+
+            StringEntity stringEntity=new StringEntity(param.toString());
+            Header header=new BasicHeader("Content-Type","application/json");
+            httpPost.setHeader(header);
+            httpPost.setHeader("Authorization","Basic Og== ");
+            httpPost.setHeader("Connection","keep-alive");
+            httpPost.setEntity(stringEntity);
+            CloseableHttpResponse execute = aDefault.execute(httpPost);
+
+            final String block = EntityUtils.toString(execute.getEntity());
             //下载图片
             imageUri = aliUploadUtils.uploadBase64(Objects.requireNonNull(JSONObject.parseObject(block)).getJSONArray("images").getString(0), FileEnum.PAINTING.getDec());
             if (structure.getEnv() == ServerConstant.DRAWING_WECHAT) {
@@ -128,6 +148,7 @@ public class DrawingTaskListener {
             );
 
         } catch (Exception e) {
+            log.error("sd绘画错误:{}",e.getMessage());
             //处理错误
             anErrorOccurred(imageUri, structure);
         }

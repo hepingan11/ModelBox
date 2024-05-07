@@ -1,24 +1,38 @@
+import com.alibaba.fastjson.JSONObject;
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 import org.junit.jupiter.api.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+
 import java.util.Base64;
 
+
+
 @SpringBootTest
+@RunWith(SpringRunner.class)
 public class springtest {
 
     @Test
-    public static void main(String[] args) {
-        String endpoint = "http://sd.fc-stable-diffusion-plus.1398817069756357.cn-hangzhou.fc.devsapp.net";
+    public void test() {
+        String endpoint = "http://sd.hepingan.top";
         String username = "";
         String password = "";
 
@@ -67,5 +81,31 @@ public class springtest {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Test
+    public void processImages() throws IOException {
+
+        CloseableHttpClient aDefault = HttpClients.createDefault();
+
+        HttpPost httpPost =new HttpPost("https://sd.hepingan.top/sdapi/v1/txt2img");
+        JSONObject param = new JSONObject();
+        param.put("prompt", "girl");
+        param.put("step",10);
+        param.put("height",512);
+        param.put("width",512);
+        param.put("override_settings",new JSONObject().put("sd_model_checkpoint","majicMIX realistic_v6.safetensors"));
+
+        StringEntity stringEntity=new StringEntity(param.toString());
+        Header header=new BasicHeader("Content-Type","application/json");
+        httpPost.setHeader(header);
+        httpPost.setHeader("Authorization","Basic Og== ");
+        httpPost.setHeader("Connection","keep-alive");
+        httpPost.setEntity(stringEntity);
+        CloseableHttpResponse execute = aDefault.execute(httpPost);
+
+        String s = EntityUtils.toString(execute.getEntity());
+        System.out.println("结果为:"+s);
+
     }
 }

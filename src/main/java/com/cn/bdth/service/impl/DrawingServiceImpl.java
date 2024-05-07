@@ -134,6 +134,7 @@ public class DrawingServiceImpl implements DrawingService {
         return null;
     }
 
+
     @Async
     public void buildAsyncGptImage(final GptImageModel gptImageModel, final Long drawingId, final String openId,
                                    final String openUrl, final String openKey) {
@@ -190,10 +191,10 @@ public class DrawingServiceImpl implements DrawingService {
         int isType = 0;
         //获取登录人ID
         final Long currentLoginId = UserUtils.getCurrentLoginId();
-        if (dto.getEnv() != 0) {
-            // 微信文字识别能力 防止用户发送色情 政治信息
-            weChatUtils.filterText(dto.getPrompt(), UserUtils.getCurrentOpenId());
-        }
+//        if (dto.getEnv() != 0) {
+//            // 微信文字识别能力 防止用户发送色情 政治信息
+//            weChatUtils.filterText(dto.getPrompt(), UserUtils.getCurrentOpenId());
+//        }
 
         //发布绘图任务
         final Drawing drawing = new Drawing()
@@ -201,9 +202,9 @@ public class DrawingServiceImpl implements DrawingService {
                 .setUserId(currentLoginId)
                 .setEnv(dto.getEnv());
         final SdDrawingModel model = DrawingSdTaskDto.convertToPictureImgModel(dto);
-        if (dto.getImages() != null) {
-            final String imageUrl = aliUploadUtils.uploadFile(dto.getImages(), FileEnum.PAINTING.getDec(), null, true);
-            //检查是否为黄图
+//        if (dto.getImages() != null) {
+//            final String imageUrl = aliUploadUtils.uploadFile(dto.getImages(), FileEnum.PAINTING.getDec(), null, true);
+//            //检查是否为黄图
 //            try {
 //                weChatUtils.filterImage(imageUrl);
 //            } catch (Exception e) {
@@ -214,7 +215,7 @@ public class DrawingServiceImpl implements DrawingService {
 //            drawing.setOriginalUrl(imageUrl);
 //            model.setInit_images(List.of(imageUtils.convertImageToBase64(imageUrl)));
 //            isType = 1;
-        }
+//        }
         drawingMapper.insert(drawing);
         //提交任务到队列中
         redisTemplate.opsForList().leftPush(ServerConstant.DRAWING_SD_TASK_QUEUE,

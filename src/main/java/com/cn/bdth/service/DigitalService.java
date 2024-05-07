@@ -1,6 +1,8 @@
 package com.cn.bdth.service;
 
+import com.cn.bdth.dto.DigitalChatDto;
 import com.cn.bdth.dto.DigitalVideoDto;
+import com.cn.bdth.vo.DigitalChatVo;
 import com.cn.bdth.vo.DigitalVo;
 
 import java.util.List;
@@ -19,5 +21,9 @@ public interface DigitalService {
      */
     void addModel(DigitalVideoDto dto);
 
-    void deleteModel(long id);
+    void deleteModel(Long id);
+
+    void updateModel(DigitalVideoDto dto);
+
+    DigitalChatVo chatModel(DigitalChatDto dto);
 }
