@@ -9,7 +9,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 /**
  * 我会发着呆 然后忘记你
  *
- * @author 时间海 @github dulaiduwang003
+ * @author  @github dulaiduwang003
  */
 @SpringBootApplication
 @EnableScheduling

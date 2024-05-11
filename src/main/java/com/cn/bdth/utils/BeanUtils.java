@@ -8,7 +8,7 @@ import java.util.List;
 
 
 /**
- * @author 时间海 @github dulaiduwang003
+ * @author  @github dulaiduwang003
  * @version 1.0
  */
 public final class BeanUtils {

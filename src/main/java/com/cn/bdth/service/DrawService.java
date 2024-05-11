@@ -11,4 +11,8 @@ public interface DrawService {
     List<String> getSdDrawList();
 
     List<String> getSdDrawListPrivate();
+
+    void setPublic(String url);
+
+    void deleteDraw(String url);
 }

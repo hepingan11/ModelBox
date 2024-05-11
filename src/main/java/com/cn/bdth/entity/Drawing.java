@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 /**
  * 绘图实体类
  *
- * @author 时间海 @github dulaiduwang003
+ * @author  @github dulaiduwang003
  * @version 1.0
  */
 @Data

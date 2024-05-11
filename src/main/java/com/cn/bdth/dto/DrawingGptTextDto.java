@@ -9,7 +9,7 @@ import lombok.experimental.Accessors;
 /**
  * 添加文生图
  *
- * @author 时间海 @github dulaiduwang003
+ * @author  @github dulaiduwang003
  * @version 1.0
  */
 @Data

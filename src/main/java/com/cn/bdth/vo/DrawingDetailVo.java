@@ -6,10 +6,6 @@ import lombok.experimental.Accessors;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-/**
- * @author 时间海 @github dulaiduwang003
- * @version 1.0
- */
 @Data
 @Accessors(chain = true)
 public class DrawingDetailVo implements Serializable {

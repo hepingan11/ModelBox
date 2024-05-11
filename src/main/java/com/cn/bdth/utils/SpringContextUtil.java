@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 /**
  * 获取实例BEAN
  *
- * @author 时间海 @github dulaiduwang003
+ * @author  @github dulaiduwang003
  * @version 1.0
  */
 @Component

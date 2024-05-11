@@ -9,7 +9,7 @@ import java.io.Serializable;
 /**
  * 微信敏感词拦截模型
  *
- * @author 时间海 @github dulaiduwang003
+ * @author  @github dulaiduwang003
  * @version 1.0
  */
 @Data

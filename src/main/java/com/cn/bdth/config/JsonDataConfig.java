@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Configuration;
  * JSON数据配置
  * 当后端数据为null 转化为 空字符
  *
- * @author 时间海 @github dulaiduwang003
+ * @author  @github dulaiduwang003
  * @version 1.0
  */
 @Configuration

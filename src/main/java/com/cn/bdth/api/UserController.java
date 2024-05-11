@@ -24,7 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 /**
  * 小程序 (用户操作性接口) 非公开
  *
- * @author 时间海 @github dulaiduwang003
+ * @author  @github dulaiduwang003
  * @version 1.0
  */
 @Slf4j
@@ -115,8 +115,8 @@ public class UserController {
      * @param userName the username
      * @return the result
      */
-    @PostMapping(value = "/upload/username", name = "用户更新用户名", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result userUpdateName(@Validated @NotBlank(message = "用户昵称不能为空") @RequestParam final String userName) {
+    @PostMapping(value = "/upload/username", name = "用户更新用户名")
+    public Result userUpdateName(@NotBlank(message = "用户昵称不能为空") @RequestParam String userName) {
         userService.editUserName(userName);
         return Result.ok();
     }
@@ -140,7 +140,7 @@ public class UserController {
      * @param id the id
      * @return the result
      */
-    @PostMapping(value = "/star/delete/{id}", name = "删除指定收藏", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/stat/delete/{id}", name = "删除指定收藏", produces = MediaType.APPLICATION_JSON_VALUE)
     public Result deleteStarById(@PathVariable final Long id) {
         starService.deleteById(id);
         return Result.ok();

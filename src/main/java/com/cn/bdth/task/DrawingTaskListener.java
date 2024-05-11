@@ -44,7 +44,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * 绘图任务监听器
  *
- * @author 时间海 @github dulaiduwang003
+ * @author  @github dulaiduwang003
  * @version 1.0
  */
 @Component

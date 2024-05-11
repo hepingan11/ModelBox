@@ -5,7 +5,7 @@ import java.util.Objects;
 /**
  * 字符串处理类
  *
- * @author 时间海 @github dulaiduwang003
+ * @author  @github dulaiduwang003
  * @version 1.0
  */
 @SuppressWarnings("all")

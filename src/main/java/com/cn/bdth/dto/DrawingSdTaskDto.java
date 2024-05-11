@@ -10,7 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 /**
  * 添加图生图
  *
- * @author 时间海 @github dulaiduwang003
+ * @author  @github dulaiduwang003
  * @version 1.0
  */
 @Data
@@ -40,6 +40,9 @@ public class DrawingSdTaskDto {
 
     @NotNull(message = "环境不能为空")
     private Integer env;
+
+    @NotNull(message = "上传提示词不能为空")
+    private Long is_public;
 
     private String negative_prompt;
 

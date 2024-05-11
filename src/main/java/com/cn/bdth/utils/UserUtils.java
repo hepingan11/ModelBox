@@ -7,7 +7,7 @@ import com.cn.bdth.constants.user.AuthConstant;
 /**
  * 用户工具类
  *
- * @author 时间海 @github dulaiduwang003
+ * @author  @github dulaiduwang003
  * @version 1.0
  */
 public class UserUtils {

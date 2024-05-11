@@ -36,12 +36,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-/**
- * 雨纷纷旧故里草木深
- *
- * @author 时间海 @github dulaiduwang003
- * @version 1.0
- */
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -71,10 +66,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void editUserName(final String username) {
-        userMapper.updateById(
-                new User().setUserId(UserUtils.getCurrentLoginId())
-                        .setUserName(username)
-        );
+        userMapper.updateUserName(UserUtils.getCurrentLoginId(),username);
     }
 
 

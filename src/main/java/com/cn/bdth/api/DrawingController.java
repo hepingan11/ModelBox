@@ -6,19 +6,27 @@ import com.cn.bdth.dto.DrawingSdTaskDto;
 import com.cn.bdth.exceptions.DrawingException;
 import com.cn.bdth.exceptions.FrequencyException;
 import com.cn.bdth.exceptions.ViolationsException;
+import com.cn.bdth.model.SdDrawingModel;
 import com.cn.bdth.msg.Result;
 import com.cn.bdth.service.DrawingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+
 /**
  * 雨纷纷旧故里草木深
  *
- * @author 时间海 @github dulaiduwang003
+ * @author  @github dulaiduwang003
  * @version 1.0
  */
 @Slf4j
@@ -124,6 +132,16 @@ public class DrawingController {
     @GetMapping(value = "/sd/connectivity", name = "检查SD网络连通性以及用户次数校验(SD)", produces = MediaType.APPLICATION_JSON_VALUE)
     public Result sdConnectivity() {
         try {
+            new Thread(()->{
+                // 设置请求的URL地址
+                CloseableHttpClient aDefault = HttpClients.createDefault();
+                HttpGet httpGet =new HttpGet("https://sd.hepingan.top");
+                try {
+                    CloseableHttpResponse execute= aDefault.execute(httpGet);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
             return Result.data(true);
         } catch (FrequencyException | ViolationsException e) {
             return Result.error(e.getMessage());

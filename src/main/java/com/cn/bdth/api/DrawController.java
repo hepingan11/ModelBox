@@ -9,10 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @Slf4j
@@ -39,5 +36,17 @@ public class DrawController {
     @GetMapping(value = "/getSdDrawList/private",name = "获取个人绘画请求列表", produces = MediaType.APPLICATION_JSON_VALUE)
     public Result getSdDrawListPrivate() {
         return Result.data(drawService.getSdDrawListPrivate());
+    }
+
+    @PostMapping(value = "/setPublic/{url}",name = "设置图片为公共", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result setPublic(@PathVariable String url) {
+        drawService.setPublic(url);
+        return Result.ok();
+    }
+
+    @PostMapping(value = "/deleteDraw/{url}",name = "删除绘画请求", consumes = "application/json" )
+    public Result deleteDraw(@PathVariable String url) {
+        drawService.deleteDraw(url);
+        return Result.ok();
     }
 }

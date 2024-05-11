@@ -20,7 +20,7 @@ import java.util.Base64;
 /**
  * 微信工具类
  *
- * @author 时间海 @github dulaiduwang003
+ * @author  @github dulaiduwang003
  * @version 1.0
  * @date 2022/6/11 14:23
  */

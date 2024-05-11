@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 /**
  * 交易性接口
  *
- * @author 时间海 @github dulaiduwang003
+ * @author  @github dulaiduwang003
  * @version 1.0
  */
 @Slf4j

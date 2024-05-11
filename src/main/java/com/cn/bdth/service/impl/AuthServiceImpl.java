@@ -32,7 +32,6 @@ import java.util.UUID;
 /**
  * 登录授权业务处理类
  *
- * @author 时间海 @github dulaiduwang003
  * @version 1.0
  */
 @Service
