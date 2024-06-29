@@ -36,6 +36,9 @@ public class ServerConfigDto {
     @NotBlank(message = "必应Cookie不能为空")
     private String newBingCookie;
 
+    @NotBlank(message = "顶图链接不能为空")
+    private String linkTopImg;
+
     @NotNull(message = "第一次登录奖励次数不能为空")
     private Long incentiveFrequency;
 

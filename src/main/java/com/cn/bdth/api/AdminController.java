@@ -4,10 +4,7 @@ import com.cn.bdth.dto.*;
 import com.cn.bdth.dto.admin.AnnouncementDto;
 import com.cn.bdth.dto.admin.UserPutDto;
 import com.cn.bdth.msg.Result;
-import com.cn.bdth.service.DrawingService;
-import com.cn.bdth.service.PayService;
-import com.cn.bdth.service.ServerService;
-import com.cn.bdth.service.UserService;
+import com.cn.bdth.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -34,6 +31,7 @@ public class AdminController {
 
     private final PayService payService;
 
+    private final LinkService linkService;
 
     /**
      * 分页获取用户信息
@@ -275,6 +273,33 @@ public class AdminController {
     @PostMapping(value = "/put/announcement", name = "更新公告", produces = MediaType.APPLICATION_JSON_VALUE)
     public Result putAnnouncement(@RequestBody @Validated final AnnouncementDto dto) {
         serverService.putAnnouncement(dto);
+        return Result.ok();
+    }
+
+    @PostMapping(value = "/link/add", name = "通过链接")
+    public Result allowLink(@RequestParam final Long LinkId) {
+        linkService.allowLink(LinkId);
+        return Result.ok();
+    }
+
+    @PostMapping(value = "/link/delete", name = "删除链接", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result deleteLink(@RequestBody @Validated final Long id) {
+        linkService.deleteLink(id);
+        return Result.ok();
+    }
+
+
+
+    @GetMapping(value = "/link/getPersonalList", name = "获取个人链接", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result getLink() {
+        return Result.data(linkService.getPersonalLinkList());
+    }
+
+
+
+    @PostMapping(value = "/link/setTopImg", name = "修改链接顶图")
+    public Result setTopImg(@RequestBody @Validated final String imgUrl) {
+        linkService.setTopImg(imgUrl);
         return Result.ok();
     }
 }

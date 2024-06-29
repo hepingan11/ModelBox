@@ -128,7 +128,7 @@ public class UserController {
      * @param pageNum the page num
      * @return the result
      */
-    @GetMapping(value = "/star/page", name = "分页获取收藏", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/stat/page", name = "分页获取收藏", produces = MediaType.APPLICATION_JSON_VALUE)
     public Result getStarPage(@RequestParam(defaultValue = "1") final int pageNum) {
         return Result.data(starService.getUserStarVoPage(pageNum));
     }
@@ -188,8 +188,13 @@ public class UserController {
      *
      * @return the result
      */
-    @GetMapping(value = "/star/get/web", name = "获取我的收藏", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/stat/get/web", name = "获取我的收藏", produces = MediaType.APPLICATION_JSON_VALUE)
     public Result getUserStarWeb() {
         return Result.data(starService.getUserStarWeb());
+    }
+
+    @PostMapping(value = "/sign", name = "签到", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result sign() {
+        return Result.data(userService.sign());
     }
 }

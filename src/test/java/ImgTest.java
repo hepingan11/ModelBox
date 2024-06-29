@@ -1,6 +1,8 @@
 import com.alibaba.fastjson.JSONObject;
+import com.cn.bdth.constants.ServerConstant;
 import com.cn.bdth.enums.FileEnum;
 import com.cn.bdth.utils.AliUploadUtils;
+import com.cn.bdth.utils.RedisUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.Header;
@@ -17,16 +19,24 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 
 public class ImgTest {
+    public static void main(String[] args)  {
+        final RedisUtils redisUtils = null;
+        final String value = redisUtils.getValue(ServerConstant.SD_CONFIG).toString();
+        System.out.println(value);
+        System.out.println(value.toString());
+        List<String> list = List.of(value.toString(),"/sdapi/v1");
+        final String join = String.join("", list);
+        System.out.println(join);
 
-    public static void main(String[] args) throws IOException {
-        LocalDateTime localDateTime = LocalDateTime.now();
-        System.out.println(localDateTime);
-        String name =  LocalDateTime.now().toString().replace(":","-").replace(".","-");
-        System.out.println(name);
+//        LocalDateTime localDateTime = LocalDateTime.now();
+//        System.out.println(localDateTime);
+//        String name =  LocalDateTime.now().toString().replace(":","-").replace(".","-");
+//        System.out.println(name);
 //        CloseableHttpClient aDefault = HttpClients.createDefault();
 //
 //        HttpPost httpPost =new HttpPost("https://sd.hepingan.top/sdapi/v1/txt2img");

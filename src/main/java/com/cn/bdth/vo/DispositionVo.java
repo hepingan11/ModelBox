@@ -35,6 +35,8 @@ public class DispositionVo implements Serializable {
 
     private String newBingCookie;
 
+    private String linkTopImg;
+
     private Long sdImageFrequency;
 
     private String sdUrl;

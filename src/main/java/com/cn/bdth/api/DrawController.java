@@ -44,7 +44,7 @@ public class DrawController {
         return Result.ok();
     }
 
-    @PostMapping(value = "/deleteDraw/{url}",name = "删除绘画请求", consumes = "application/json" )
+    @PostMapping(value = "/deleteDraw/{url}",name = "删除绘画请求" ,produces = MediaType.APPLICATION_JSON_VALUE)
     public Result deleteDraw(@PathVariable String url) {
         drawService.deleteDraw(url);
         return Result.ok();

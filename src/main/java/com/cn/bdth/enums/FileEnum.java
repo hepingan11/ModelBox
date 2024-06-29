@@ -22,7 +22,9 @@ public enum FileEnum {
     //绘图
     PAINTING("painting"),
     //视频
-    AUDIO("audio");
+    AUDIO("audio"),
+    //链接
+    LINK("link");
     String dec;
 
 }

@@ -58,4 +58,6 @@ public interface StarService {
      * @return the user star web
      */
     List<UserStarVo> getUserStarWeb();
+
+
 }

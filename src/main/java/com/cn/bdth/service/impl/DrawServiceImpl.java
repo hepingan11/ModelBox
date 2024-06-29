@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.cn.bdth.common.StableDiffusionCommon;
+import com.cn.bdth.constants.ServerConstant;
 import com.cn.bdth.dto.DrawingSdTaskDto;
 import com.cn.bdth.entity.Drawing;
 import com.cn.bdth.entity.User;
@@ -14,6 +15,7 @@ import com.cn.bdth.mapper.UserMapper;
 import com.cn.bdth.model.SdDrawingModel;
 import com.cn.bdth.service.DrawService;
 import com.cn.bdth.utils.AliUploadUtils;
+import com.cn.bdth.utils.RedisUtils;
 import com.cn.bdth.utils.UserUtils;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -57,6 +59,8 @@ public class DrawServiceImpl implements DrawService {
 
     private final AliUploadUtils aliUploadUtils;
 
+    private final RedisUtils redisUtils;
+
 
     /**
      * 发送绘画请求
@@ -72,7 +76,7 @@ public class DrawServiceImpl implements DrawService {
         }
 
 
-        final SdDrawingModel model = DrawingSdTaskDto.convertToPictureImgModel(dto);
+//        final SdDrawingModel model = DrawingSdTaskDto.convertToPictureImgModel(dto);
         // 设置请求的URL地址
         CloseableHttpClient aDefault = HttpClients.createDefault();
 
@@ -123,7 +127,6 @@ public class DrawServiceImpl implements DrawService {
             userMapper.updateFrequencyById(currentLoginId);
             drawingMapper.insert(drawing);
             return url;
-//            return url;
 //            List<String> list =JSONObject.parseArray(images,String.class);
 //            String image = list.get(0);
 //            String name =  LocalDateTime.now().toString().replace(":","-").replace(".","-");
@@ -204,6 +207,5 @@ public class DrawServiceImpl implements DrawService {
     public void deleteDraw(String url) {
         drawingMapper.deleteDraw(url);
     }
-
 
 }

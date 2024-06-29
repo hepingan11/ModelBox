@@ -24,6 +24,8 @@ public interface ServerConstant {
     String GPT_DIALOGUE = "/chat/completions";
     String GPT_DRAWING = "/images/generations";
 
+    String LINK_TOP_IMG = "LINK_TOP_IMG";
+
     int DRAWING_IMAGE_TYPE = 1;
     int DRAWING_TEXT_TYPE = 0;
     int IS_PUBLIC = 1;

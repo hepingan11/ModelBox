@@ -60,6 +60,8 @@ public class ServerServiceImpl implements ServerService {
         );
         //Bing
         redisUtils.setValue(ServerConstant.NEW_BING_CONFIG, dto.getNewBingCookie());
+        //Link Top Img
+        redisUtils.setValue(ServerConstant.LINK_TOP_IMG, dto.getLinkTopImg());
         // CHAT GPT
         redisUtils.setValue(ServerConstant.CHAT_GPT_CONFIG,
                 new ChatGptCommon.ChatGptStructure()
@@ -99,6 +101,7 @@ public class ServerServiceImpl implements ServerService {
         final String newBingCookie = String.valueOf(redisUtils.getValue(ServerConstant.NEW_BING_CONFIG));
         final UserInspiritCommon.InspiritStructure inspiritStructure = (UserInspiritCommon.InspiritStructure) redisUtils.getValue(ServerConstant.INSPIRIT_CONFIG);
         final DispositionVo dispositionVo = new DispositionVo();
+        final String linkTopImg = String.valueOf(redisUtils.getValue(ServerConstant.LINK_TOP_IMG));
 
         dispositionVo.setConversationUuid(claudeModel != null ? claudeModel.getConversation_uuid() : null);
         dispositionVo.setOrganizationUuid(claudeModel != null ? claudeModel.getOrganization_uuid() : null);
@@ -113,6 +116,7 @@ public class ServerServiceImpl implements ServerService {
         dispositionVo.setOpenPlusKey(chatGptStructure != null ? chatGptStructure.getOpenPlusKey() : null);
         dispositionVo.setGptTextImageFrequency(chatGptStructure != null ? chatGptStructure.getGptTextImageFrequency() : null);
         dispositionVo.setNewBingCookie(StringUtils.isNotBlank(newBingCookie) ? newBingCookie : "");
+        dispositionVo.setLinkTopImg(StringUtils.isNotBlank(linkTopImg) ? linkTopImg : "");
         dispositionVo.setSignInFrequency(inspiritStructure != null ? inspiritStructure.getSignInFrequency() : null);
         dispositionVo.setVideoFrequency(inspiritStructure != null ? inspiritStructure.getVideoFrequency() : null);
         dispositionVo.setIncentiveFrequency(inspiritStructure != null ? inspiritStructure.getIncentiveFrequency() : null);

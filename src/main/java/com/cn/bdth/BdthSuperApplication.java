@@ -8,7 +8,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * 我会发着呆 然后忘记你
- *
  * @author  @github dulaiduwang003
  */
 @SpringBootApplication
@@ -20,6 +19,5 @@ public class BdthSuperApplication {
     public static void main(String[] args) {
         SpringApplication.run(BdthSuperApplication.class, args);
     }
-
 
 }

@@ -67,4 +67,5 @@ public interface UserService {
      */
     Long getTotalUsers();
 
+    Integer sign();
 }
