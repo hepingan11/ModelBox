@@ -84,7 +84,6 @@ public class DataController {
         CloseableHttpClient aDefault = HttpClients.createDefault();
 
         HttpGet httpGet = new HttpGet("http://localhost:5000/sortNumList");
-        JSONObject param = new JSONObject();
         Header header = new BasicHeader("Content-Type", "application/json");
         CloseableHttpResponse execute;
         try {
@@ -104,31 +103,30 @@ public class DataController {
         }
     }
 
-    @Data
-    @Accessors(chain = true)
-    static
-    class ShopVo {
-        private List<String> numList;
-        private List<String> numListValue;
-        private List<String> commentsList;
-        private List<String> commentsListValue;
-    }
+
     @GetMapping(value = "/shopInfo", name =  "获取店铺信息")
     public Result shopInfo() {
         CloseableHttpClient aDefault = HttpClients.createDefault();
 
         HttpGet httpGet = new HttpGet("http://localhost:5000/shop");
-        JSONObject param = new JSONObject();
-        Header header = new BasicHeader("Content-Type", "application/json");
         CloseableHttpResponse execute;
         try {
             execute = aDefault.execute(httpGet);
             String responseContent = EntityUtils.toString(execute.getEntity(), "UTF-8");
-            ShopVo shopVo = new ShopVo()
-                    .setNumListValue((List<String>) JSONObject.parseObject(responseContent).get("numListValue"));
-            return Result.data(shopVo);
+            DataNormalVo dataNormalVo = new DataNormalVo()
+                    .setImg(JSONObject.parseObject(responseContent).getString("img"))
+                    .setTop1(JSONObject.parseObject(responseContent).getString("top1"))
+                    .setTop2(JSONObject.parseObject(responseContent).getString("top2"))
+                    .setTop3(JSONObject.parseObject(responseContent).getString("top3"))
+                    .setValue1(JSONObject.parseObject(responseContent).getString("value1"))
+                    .setValue2(JSONObject.parseObject(responseContent).getString("value2"))
+                    .setValue3(JSONObject.parseObject(responseContent).getString("value3"));
+            return Result.data(dataNormalVo);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
+
+
+
 }
