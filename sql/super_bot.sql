@@ -178,3 +178,75 @@ create index idx_update_time
 create index user_email_password_index
     on super_bot.user (email, password);
 
+create table work
+(
+    work_id      bigint auto_increment comment 'id'
+        primary key,
+    name         varchar(100) not null comment '名字',
+    url          varchar(200) not null comment 'url',
+    sort         varchar(100) null comment '类型',
+    created_time datetime     not null,
+    updated_time datetime     not null
+);
+
+create table photo
+(
+    photo_id     bigint auto_increment
+        primary key,
+    url          varchar(200) not null comment 'url',
+    name         varchar(100) null comment 'name',
+    user_id      bigint       not null comment '用户id',
+    created_time datetime     not null
+);
+
+create index photo_user_id
+    on photo (user_id);
+
+create table link
+(
+    link_id     bigint auto_increment comment 'id'
+        primary key,
+    user_id     bigint                             not null comment '申请人用户id',
+    link_name   varchar(50)                        not null comment '链接名称',
+    link_url    varchar(100)                       not null comment '链接地址',
+    link_intro  varchar(200)                       not null comment '链接简介',
+    link_sort   varchar(20)                        not null comment '链接分类',
+    link_img    varchar(200)                       not null comment '链接封面',
+    is_public   tinyint  default 0                 not null comment '是否申请成功',
+    is_hot      tinyint  default 0                 not null comment '是否为热门',
+    create_time datetime default CURRENT_TIMESTAMP not null comment '创建时间',
+    update_time datetime default CURRENT_TIMESTAMP not null comment '更新时间'
+)
+    comment '链接';
+
+create index idx_created_time
+    on link (create_time);
+
+create index idx_is_hot
+    on link (is_hot);
+
+create index idx_is_public
+    on link (is_public);
+
+create index idx_update_time
+    on link (update_time);
+
+create index link_user_id
+    on link (user_id);
+
+create table link_stat
+(
+    link_stat_id bigint auto_increment comment 'id'
+        primary key,
+    user_id      bigint not null comment '用户id',
+    stat_id      bigint not null
+)
+    comment '用户收藏链接';
+
+create index stat_link_stat_id
+    on link_stat (stat_id);
+
+create index stat_link_user_id
+    on link_stat (user_id);
+
+
