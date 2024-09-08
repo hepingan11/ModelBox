@@ -44,9 +44,15 @@ public class DrawController {
         return Result.ok();
     }
 
-    @PostMapping(value = "/deleteDraw/{url}",name = "删除绘画请求" ,produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result deleteDraw(@PathVariable String url) {
-        drawService.deleteDraw(url);
+    @PostMapping(value = "/deleteDraw/{id}",name = "删除绘画请求" ,produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result deleteDraw(@PathVariable Long id) {
+        drawService.deleteDraw(id);
         return Result.ok();
+    }
+
+    @GetMapping(value = "sd/connectivity",name = "检查SD网络连通性以及用户次数校验(SD)", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result sdConnectivity() {
+        return Result.data(drawService.checkSdConnectivity());
+
     }
 }

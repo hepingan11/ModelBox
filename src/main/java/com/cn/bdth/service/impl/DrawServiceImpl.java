@@ -17,6 +17,7 @@ import com.cn.bdth.service.DrawService;
 import com.cn.bdth.utils.AliUploadUtils;
 import com.cn.bdth.utils.RedisUtils;
 import com.cn.bdth.utils.UserUtils;
+import com.cn.bdth.vo.admin.DrawingVo;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,6 +46,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -80,7 +82,10 @@ public class DrawServiceImpl implements DrawService {
         // 设置请求的URL地址
         CloseableHttpClient aDefault = HttpClients.createDefault();
 
-        HttpPost httpPost =new HttpPost("https://sd.hepingan.top/sdapi/v1/txt2img");
+        final StableDiffusionCommon.StableDiffusionStructure sdStructure = (StableDiffusionCommon.StableDiffusionStructure) redisUtils.getValue(ServerConstant.SD_CONFIG);
+
+        String sdUrl = sdStructure.getSdUrl();
+        HttpPost httpPost =new HttpPost(sdUrl+"/sdapi/v1/txt2img");
         JSONObject param = new JSONObject();
         param.put("prompt", dto.getPrompt());
         param.put("step",dto.getSteps());
@@ -96,7 +101,7 @@ public class DrawServiceImpl implements DrawService {
         if (dto.getImages()!=null){
             String url= dto.getImages().toString();
             param.put("init_images",url);
-            httpPost.setURI(URI.create("https://sd.hepingan.top/sdapi/v1/img2img"));
+            httpPost.setURI(URI.create(sdUrl+"/sdapi/v1/img2img"));
         }
 
         StringEntity stringEntity= null;
@@ -105,6 +110,7 @@ public class DrawServiceImpl implements DrawService {
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
+        //TODO 设置请求头
         Header header=new BasicHeader("Content-Type","application/json");
         httpPost.setHeader(header);
         httpPost.setHeader("Authorization","Basic Og== ");
@@ -137,41 +143,6 @@ public class DrawServiceImpl implements DrawService {
     }
 
     /**
-     * Base64字符串转图片
-     * @param base64String
-     * @param imageFileName
-     */
-    public static void convertBase64StrToImage(String base64String, String imageFileName) {
-        ByteArrayInputStream bais = null;
-        try {
-            //获取图片类型
-            String suffix = imageFileName.substring(imageFileName.lastIndexOf(".") + 1);
-            //获取JDK8里的解码器Base64.Decoder,将base64字符串转为字节数组
-            byte[] bytes = Base64.getDecoder().decode(base64String);
-            //构建字节数组输入流
-            bais = new ByteArrayInputStream(bytes);
-            //通过ImageIO把字节数组输入流转为BufferedImage
-            BufferedImage bufferedImage = ImageIO.read(bais);
-            //构建文件
-            File imageFile = new File(imageFileName);
-            //写入生成文件
-            ImageIO.write(bufferedImage, suffix, imageFile);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (bais != null) {
-                    bais.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-
-
-    /**
      *  获取当前登录用户的待审核的图纸列表
      * @return
      */
@@ -189,12 +160,17 @@ public class DrawServiceImpl implements DrawService {
      * @return
      */
     @Override
-    public List<String> getSdDrawListPrivate() {
-        List<String> list =  drawingMapper.selectList(new QueryWrapper<Drawing>()
+    public List<DrawingVo> getSdDrawListPrivate() {
+        List<DrawingVo> list =  drawingMapper.selectList(new QueryWrapper<Drawing>()
                 .lambda()
                 .eq(Drawing::getUserId, UserUtils.getCurrentLoginId())
-                .select(Drawing::getGenerateUrl)
-        ).stream().map(Drawing::getGenerateUrl).toList();
+                .select(Drawing::getGenerateUrl,Drawing::getDrawingId)
+        ).stream().map(drawing -> {
+            DrawingVo drawingVo = new DrawingVo()
+                    .setDrawingId(drawing.getDrawingId())
+                    .setGenerateUrl(drawing.getGenerateUrl());
+            return drawingVo;
+        }).collect(Collectors.toList());;
         return list;
     }
 
@@ -204,8 +180,15 @@ public class DrawServiceImpl implements DrawService {
     }
 
     @Override
-    public void deleteDraw(String url) {
-        drawingMapper.deleteDraw(url);
+    public void deleteDraw(Long id) {
+        String filePath = drawingMapper.selectById(id).getGenerateUrl();
+        aliUploadUtils.deleteFile(filePath);
+        drawingMapper.deleteById(id);
+    }
+
+    @Override
+    public String checkSdConnectivity() {
+        return redisUtils.getValue(ServerConstant.SD_BUTTON).toString();
     }
 
 }

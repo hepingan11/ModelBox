@@ -27,15 +27,9 @@ public class DispositionVo implements Serializable {
 
     private Long gptPlusFrequency;
 
-    private String organizationUuid;
-
-    private String conversationUuid;
-
-    private String sessionKey;
-
-    private String newBingCookie;
-
     private String linkTopImg;
+
+    private String sdButton;
 
     private Long sdImageFrequency;
 

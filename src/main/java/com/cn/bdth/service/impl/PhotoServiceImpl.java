@@ -26,43 +26,37 @@ public class PhotoServiceImpl implements PhotoService {
     private final AliUploadUtils aliUploadUtils;
 
     @Override
-    public void upload(List<MultipartFile> file) {
+    public String upload(List<MultipartFile> file) {
+        Long photoNum = photoMapper.selectCount(new QueryWrapper<Photo>().eq("user_id", UserUtils.getCurrentLoginId()));
+        if (photoNum == 20L){
+            return "为防止被刷最多存储20张";
+        }
         for (MultipartFile item : file) {
             final Long currentLoginId = UserUtils.getCurrentLoginId();
             final String fileName = UUID.randomUUID() + ".jpg";
             String url=aliUploadUtils.uploadFile(item, FileEnum.LINK.getDec(),fileName,true);
             LocalDateTime time = LocalDateTime.now();
-            Long year = (long) time.getYear();
-            Long month = (long) time.getMonthValue();
-            Long day = (long) time.getDayOfMonth();
             Photo photo = new Photo().setName(fileName)
                     .setUrl(url)
                     .setUserId(currentLoginId)
-                    .setYear(year)
-                    .setMonth(month)
-                    .setDay(day)
                     .setCreatedTime(time);
             photoMapper.insert(photo);
         }
+        return "上传成功";
 
     }
 
     @Override
-    public IPage<Photo> getPhoto(Long num) {
-        return photoMapper.selectPage(new Page<>(num, 30), new QueryWrapper<Photo>()
-                .lambda()
-                .select(Photo::getUrl, Photo::getUserId,Photo::getName, Photo::getCreatedTime,Photo::getPhotoId)
-        ).convert(u -> {
-            final Photo photo = new Photo()
-                            .setUrl(u.getUrl())
-                            .setPhotoId(u.getPhotoId())
-                            .setName(u.getName())
-                    .setUserId(u.getUserId())
-                            .setCreatedTime(u.getCreatedTime());
-            return photo;
-        });
+    public List<Photo> getPhoto() {
+        return photoMapper.selectList(new QueryWrapper<Photo>().eq("user_id", UserUtils.getCurrentLoginId()).orderBy(true,false,"created_time"));
     }
 
+    @Override
+    public void deletePhoto(Long id) {
+        String filePath = photoMapper.selectById(id).getUrl();
+        aliUploadUtils.deleteFile(filePath);
+        photoMapper.deleteById(id);
+    }
 
 
     //...{

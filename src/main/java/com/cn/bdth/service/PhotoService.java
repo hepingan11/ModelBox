@@ -7,7 +7,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface PhotoService {
-    void upload(List<MultipartFile> file);
+    String upload(List<MultipartFile> file);
 
-    IPage<Photo> getPhoto(Long num);
+    List<Photo> getPhoto();
+
+    void deletePhoto(Long id);
 }

@@ -21,6 +21,9 @@ public class ServerConfigDto {
     @NotBlank(message = "OPEN_AI_URL不能为空")
     private String openAiUrl;
 
+    @NotBlank(message = "是否开启SD绘画不能为空")
+    private String sdButton;
+
     @NotBlank(message = "OPEN_AI_PLUS_URL不能为空")
     private String openAiPlusUrl;
 
@@ -32,9 +35,6 @@ public class ServerConfigDto {
 
     @NotNull(message = "GPT_PLUS消耗次数不能为空")
     private Long gptPlusFrequency;
-
-    @NotBlank(message = "必应Cookie不能为空")
-    private String newBingCookie;
 
     @NotBlank(message = "顶图链接不能为空")
     private String linkTopImg;
@@ -57,13 +57,4 @@ public class ServerConfigDto {
     @NotNull(message = "标准文生图消耗次数不能为空")
     private Long gptTextImageFrequency;
 
-
-    @NotBlank(message = "克劳德organizationUuid不能为空")
-    private String organizationUuid;
-
-    @NotBlank(message = "克劳德conversationUuid不能为空")
-    private String conversationUuid;
-
-    @NotBlank(message = "克劳德SessionKey不能为空")
-    private String sessionKey;
 }

@@ -1,7 +1,9 @@
 package com.cn.bdth.service;
 
 import com.cn.bdth.dto.DrawingSdTaskDto;
+import com.cn.bdth.entity.Drawing;
 import com.cn.bdth.vo.DrawingTaskVo;
+import com.cn.bdth.vo.admin.DrawingVo;
 
 import java.util.List;
 
@@ -10,9 +12,11 @@ public interface DrawService {
 
     List<String> getSdDrawList();
 
-    List<String> getSdDrawListPrivate();
+    List<DrawingVo> getSdDrawListPrivate();
 
     void setPublic(String url);
 
-    void deleteDraw(String url);
+    void deleteDraw(Long id);
+
+    String checkSdConnectivity();
 }

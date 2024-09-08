@@ -19,19 +19,29 @@ public class PhotoController {
     private final PhotoService photoService;
 
     @PostMapping(value = "/upload",name = "上传",produces= MediaType.APPLICATION_JSON_VALUE)
-    public Result upload(@RequestBody List<MultipartFile> file){
+    public Result upload(@RequestParam("files") List<MultipartFile> file){
         try{
-            photoService.upload(file);
-            return Result.ok();
+            String msg = photoService.upload(file);
+            return Result.data(msg);
         }catch (Exception e){
             return Result.error(e.getMessage());
         }
     }
 
-    @GetMapping(value = "/get",name = "获取图片",produces= MediaType.APPLICATION_JSON_VALUE)
-    public Result getPhoto(@RequestParam Long num){
+    @GetMapping(value = "/getUserList",name = "获取用户图片",produces= MediaType.APPLICATION_JSON_VALUE)
+    public Result getPhoto(){
         try{
-            return Result.data(photoService.getPhoto(num));
+            return Result.data(photoService.getPhoto());
+        }catch (Exception e){
+            return Result.error(e.getMessage());
+        }
+    }
+
+    @PostMapping(value = "/delete/{id}",name = "删除图片",produces= MediaType.APPLICATION_JSON_VALUE)
+    public Result deletePhoto(@PathVariable Long id){
+        try{
+            photoService.deletePhoto(id);
+            return Result.ok();
         }catch (Exception e){
             return Result.error(e.getMessage());
         }

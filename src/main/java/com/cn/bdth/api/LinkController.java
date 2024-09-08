@@ -22,11 +22,6 @@ public class LinkController {
         return Result.data(linkService.getTopImg());
     }
 
-    @GetMapping(value = "/page", name = "分页查询链接列表", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result tippingOrdersPages(@RequestParam(defaultValue = "1") final int pageNum,final String prompt) {
-        return Result.data(linkService.getLinkList(pageNum,prompt));
-    }
-
     @GetMapping(value = "/getList", name = "获取全部链接",produces = MediaType.APPLICATION_JSON_VALUE)
     public Result getLinkList(){
         return Result.data(linkService.getAllLinkList());
