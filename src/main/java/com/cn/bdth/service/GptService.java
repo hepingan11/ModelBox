@@ -2,10 +2,12 @@ package com.cn.bdth.service;
 
 import com.cn.bdth.common.ChatGptCommon;
 import com.cn.bdth.dto.PersonalityDto;
+import com.cn.bdth.entity.Dialogue;
 import com.cn.bdth.model.GptModel;
 import com.cn.bdth.structure.PersonalityConfigStructure;
 import reactor.core.publisher.Flux;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -63,4 +65,12 @@ public interface GptService {
      *  Claude
      */
     Flux<String> concatenationClaude(final String messages);
+
+
+    /**
+     * 添加对话
+     * @param dialogue
+     * @throws IOException
+     */
+    void putDialogue(Dialogue dialogue) throws IOException;
 }

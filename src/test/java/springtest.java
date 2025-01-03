@@ -7,6 +7,12 @@ import com.google.gson.JsonParser;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.apache.commons.collections4.Bag;
+import org.apache.commons.collections4.bag.HashBag;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -33,13 +39,20 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import java.io.InputStreamReader;
-import java.util.Base64;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static com.cn.bdth.service.impl.DataServiceImpl.findTopFrequentWords;
 
 
 @SpringBootTest
 @RunWith(SpringRunner.class)
 public class springtest {
+
+    @Test
+    public void test1() throws IOException {
+        System.out.println("hello");
+    }
 
     @Test
     public void test() {
@@ -122,6 +135,25 @@ public class springtest {
 
     @Test
     public void processImages2() throws IOException {
+        Configuration conf = new Configuration();
+        conf.set("fs.defaultFS", "hdfs://node1:8020");
+        // 如果需要的话，设置用户
+        System.setProperty("HADOOP_USER_NAME", "hadoop");
+        FileSystem fs = FileSystem.get(conf);
+        // 接下来进行文件操作
+        Path path = new Path("D:/Photo/4/1.png");
+        Path dst = new Path("/test.txt");
+        fs.copyFromLocalFile(path,dst);
+        fs.close();
 
+    }
+
+    @Test
+    public void test2(){
+        String text = "你的文本数据。这里是一些示例词，示例词，还有一些其他的词。";
+        // 提取频率最高的几个词
+        Map<String, Integer> topFrequentWords = findTopFrequentWords(text, 5);
+        // 打印结果
+        topFrequentWords.forEach((word, frequency) -> System.out.println(word + ": " + frequency));
     }
 }

@@ -46,4 +46,6 @@ public class DigitalController {
     public Result chatModel(@RequestBody @Validated DigitalChatDto dto){
         return Result.data(digitalService.chatModel(dto));
     }
+
+    
 }

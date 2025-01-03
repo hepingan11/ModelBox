@@ -3,6 +3,7 @@ package com.cn.bdth.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.cn.bdth.dto.DigitalChatDto;
 import com.cn.bdth.dto.DigitalVideoDto;
+import com.cn.bdth.entity.Dialogue;
 import com.cn.bdth.entity.Digital;
 import com.cn.bdth.mapper.DigitalMapper;
 import com.cn.bdth.service.DigitalService;
@@ -85,5 +86,6 @@ public class DigitalServiceImpl implements DigitalService {
         DigitalChatVo digitalChatVo =new DigitalChatVo();
         return new DigitalChatVo();
     }
+
 
 }

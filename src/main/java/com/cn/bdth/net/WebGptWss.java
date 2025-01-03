@@ -8,6 +8,7 @@ import com.cn.bdth.common.ChatGptCommon;
 import com.cn.bdth.common.ControlCommon;
 import com.cn.bdth.constants.AiTypeConstant;
 import com.cn.bdth.dto.GptWebDto;
+import com.cn.bdth.entity.Dialogue;
 import com.cn.bdth.exceptions.CloseException;
 import com.cn.bdth.exceptions.DrawingException;
 import com.cn.bdth.exceptions.ExceptionMessages;
@@ -41,6 +42,7 @@ public class WebGptWss {
     private static GptService gptService;
     private static ChatGptCommon chatGptCommon;
     private static ControlCommon controlCommon;
+    private static StringBuilder allMessages = new StringBuilder();
 
     @OnOpen
     public void onOpen(final Session session, @PathParam("token") String token) {
@@ -67,13 +69,9 @@ public class WebGptWss {
     public void onMessage(final String message, final @PathParam("token") String token, final @PathParam("model") String model) {
         try {
             final GptWebDto gptWebDto = JSONObject.parseObject(message, GptWebDto.class);
-
             final Long userId = UserUtils.getLoginIdByToken(token);
-
             chatUtils.lastOperationTime(userId);
-
             final ChatGptCommon.ChatGptStructure chatGptStructure = chatGptCommon.getChatGptStructure();
-
             final String s = chatUtils.drawingCueWord(gptWebDto.getMessages());
 
             if (s == null) {
@@ -95,6 +93,7 @@ public class WebGptWss {
                                         // 可能会抛出关闭异常
                                         try {
                                             this.session.getBasicRemote().sendText(delta.getString("content"));
+                                            this.allMessages.append(delta.getString("content"));
                                         } catch (Exception e) {
                                             //用户可能手动端口连接
                                             throw new CloseException();
@@ -106,6 +105,18 @@ public class WebGptWss {
                             //为 Close异常时 过滤
                             if (!(throwable instanceof CloseException)) {
                                 chatUtils.compensate(frequency, userId);
+                                String result = this.allMessages.toString().replaceAll("\n", "");
+                                log.info(result);
+                                Dialogue dialogue =new Dialogue()
+                                        .setMessage(gptWebDto.getMessages().get(gptWebDto.getMessages().size()-1).getContent().replaceAll("\n",""))
+                                        .setUserId(userId)
+                                        .setContent(result);
+                                try {
+                                    gptService.putDialogue(dialogue);
+                                } catch (Exception e) {
+                                    log.warn("写入数据库异常", e);
+                                    throw new RuntimeException(e);
+                                }
                                 log.error("调用GPT时出现异常 异常信息:{} ", throwable.getMessage());
                                 appointSendingSystem(ExceptionMessages.GPT_TIMEOUT);
                             }

@@ -10,6 +10,7 @@ import com.cn.bdth.constants.AiModelConstant;
 import com.cn.bdth.constants.ServerConstant;
 import com.cn.bdth.constants.user.PersonalityConstant;
 import com.cn.bdth.dto.PersonalityDto;
+import com.cn.bdth.entity.Dialogue;
 import com.cn.bdth.entity.Personality;
 import com.cn.bdth.enums.FileEnum;
 import com.cn.bdth.exceptions.BingException;
@@ -18,6 +19,7 @@ import com.cn.bdth.exceptions.ExceptionMessages;
 import com.cn.bdth.exceptions.PersonalityConfigNullException;
 import com.cn.bdth.handler.Chat;
 import com.cn.bdth.interfaces.Callback;
+import com.cn.bdth.mapper.DialogueMapper;
 import com.cn.bdth.mapper.PersonalityMapper;
 import com.cn.bdth.model.ClaudeModel;
 import com.cn.bdth.model.GptImageModel;
@@ -31,6 +33,9 @@ import com.cn.bdth.utils.RedisUtils;
 import com.cn.bdth.utils.UserUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.*;
+import org.apache.hadoop.io.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
@@ -41,8 +46,15 @@ import reactor.core.publisher.Flux;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.transport.ProxyProvider;
 
+import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -66,8 +78,16 @@ public class GptServiceImpl implements GptService {
 
     private final AliUploadUtils aliUploadUtils;
 
+    private final DialogueMapper dialogueMapper;
+
     @Value("${ali-oss.domain}")
     private String domain;
+
+    @Value("${hdfs.url}")
+    private String hdfsUrl;
+
+    @Value("${hdfs.username}")
+    private String userName;
 
     @Override
     public PersonalityConfigStructure getPersonalityConfig(Long currentLoginId) {
@@ -248,6 +268,39 @@ public class GptServiceImpl implements GptService {
                 .body(BodyInserters.fromValue(claudeModel))
                 .retrieve()
                 .bodyToFlux(String.class);
+    }
+
+    @Override
+    public void putDialogue(Dialogue dialogue) throws IOException {
+//        dialogueMapper.insert(dialogue.setCreatedTime(LocalDateTime.now()));
+
+        Configuration conf = new Configuration();
+        conf.set("fs.defaultFS",hdfsUrl);
+        // 如果需要的话，设置用户
+        System.setProperty("HADOOP_USER_NAME", userName);
+        FileSystem fs = FileSystem.get(conf);
+        // 创建一个路径对象，指向HDFS上的目标文件
+        String url = "/data/"+dialogue.getUserId()+".txt";
+        Path hdfspath = new Path(url);
+        // 检查文件是否存在
+        // 如果文件不存在，则创建文件
+        if (!fs.exists(hdfspath)) {
+            fs.createNewFile(hdfspath);
+        }
+        // 使用append方法打开输出流，以追加模式写入文件
+        FSDataOutputStream out = fs.append(hdfspath);
+        // 使用OutputStreamWriter和BufferedWriter包装FSDataOutputStream，并指定UTF-8编码
+        OutputStreamWriter osw = new OutputStreamWriter(out, StandardCharsets.UTF_8);
+        BufferedWriter writer = new BufferedWriter(osw);
+        // 要追加的内容
+        String contentToAppend = dialogue.getMessage()+"|"+dialogue.getContent()+"|"+LocalDateTime.now()+"\n";
+        // 写入内容
+        writer.write(contentToAppend);
+        // 关闭流
+        writer.close();
+        osw.close();
+        out.close(); // 关闭输出流
+        fs.close();
     }
 
 }

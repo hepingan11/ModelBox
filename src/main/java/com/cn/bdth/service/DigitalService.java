@@ -2,6 +2,8 @@ package com.cn.bdth.service;
 
 import com.cn.bdth.dto.DigitalChatDto;
 import com.cn.bdth.dto.DigitalVideoDto;
+import com.cn.bdth.entity.Dialogue;
+import com.cn.bdth.entity.Digital;
 import com.cn.bdth.vo.DigitalChatVo;
 import com.cn.bdth.vo.DigitalVo;
 
