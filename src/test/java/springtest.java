@@ -1,16 +1,7 @@
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import org.apache.commons.collections4.Bag;
-import org.apache.commons.collections4.bag.HashBag;
+
+
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.http.Header;
@@ -18,7 +9,6 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
@@ -29,20 +19,14 @@ import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
-import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import java.io.InputStreamReader;
 import java.util.*;
-import java.util.stream.Collectors;
 
-import static com.cn.bdth.service.impl.DataServiceImpl.findTopFrequentWords;
 
 
 @SpringBootTest
@@ -148,12 +132,5 @@ public class springtest {
 
     }
 
-    @Test
-    public void test2(){
-        String text = "你的文本数据。这里是一些示例词，示例词，还有一些其他的词。";
-        // 提取频率最高的几个词
-        Map<String, Integer> topFrequentWords = findTopFrequentWords(text, 5);
-        // 打印结果
-        topFrequentWords.forEach((word, frequency) -> System.out.println(word + ": " + frequency));
-    }
+
 }

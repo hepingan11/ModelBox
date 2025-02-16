@@ -1,6 +1,7 @@
 package com.cn.bdth.service;
 
 import com.cn.bdth.dto.EmailCodeDto;
+import com.cn.bdth.dto.EmailContentDto;
 import com.cn.bdth.dto.EmailLoginDto;
 import com.cn.bdth.vo.WechatCodeVo;
 
@@ -76,4 +77,6 @@ public interface AuthService {
      * 注销
      */
     void logout();
+
+    void submitEmailContent(EmailContentDto emailContentDto);
 }

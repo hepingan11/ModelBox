@@ -47,4 +47,23 @@ public class PhotoController {
         }
     }
 
+    @PostMapping(value = "/setPhotoPublic/{id}",name = "设置为公共")
+    public Result setPhotoPublic(@PathVariable Long id){
+        try{
+            photoService.setPhotoPublic(id);
+            return Result.data(1);
+        }catch (Exception e){
+            return Result.error(e.getMessage());
+        }
+    }
+
+    @GetMapping(value = "/getAllImgList",name = "获取公共图片")
+    public Result getAllPhoto(){
+        try{
+            return Result.data(photoService.getPublicPhoto());
+        }catch (Exception e){
+            return Result.error(e.getMessage());
+        }
+    }
+
 }

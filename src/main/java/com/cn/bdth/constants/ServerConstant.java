@@ -12,6 +12,7 @@ public interface ServerConstant {
 
     String INSPIRIT_CONFIG ="INSPIRIT_CONFIG";
     String SD_CONFIG ="SD_CONFIG";
+    String IS_HADOOP= "IS_HADOOP";
     String NEW_BING_CONFIG ="NEW_BING_CONFIG";
     String CHAT_GPT_CONFIG ="CHAT_GPT_CONFIG";
     String CLAUDE_CONFIG ="CLAUDE_CONFIG";

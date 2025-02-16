@@ -56,6 +56,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 
@@ -272,35 +273,40 @@ public class GptServiceImpl implements GptService {
 
     @Override
     public void putDialogue(Dialogue dialogue) throws IOException {
-//        dialogueMapper.insert(dialogue.setCreatedTime(LocalDateTime.now()));
-
-        Configuration conf = new Configuration();
-        conf.set("fs.defaultFS",hdfsUrl);
-        // 如果需要的话，设置用户
-        System.setProperty("HADOOP_USER_NAME", userName);
-        FileSystem fs = FileSystem.get(conf);
-        // 创建一个路径对象，指向HDFS上的目标文件
-        String url = "/data/"+dialogue.getUserId()+".txt";
-        Path hdfspath = new Path(url);
-        // 检查文件是否存在
-        // 如果文件不存在，则创建文件
-        if (!fs.exists(hdfspath)) {
-            fs.createNewFile(hdfspath);
+        String isHadoop = String.valueOf(redisUtils.getValue(ServerConstant.IS_HADOOP));
+        if (Objects.equals(isHadoop, "mysql")){
+            dialogueMapper.insert(dialogue.setCreatedTime(LocalDateTime.now()));
+        }else {
+            Configuration conf = new Configuration();
+            conf.set("fs.defaultFS",hdfsUrl);
+            // 如果需要的话，设置用户
+            System.setProperty("HADOOP_USER_NAME", userName);
+            FileSystem fs = FileSystem.get(conf);
+            // 创建一个路径对象，指向HDFS上的目标文件
+            String url = "/data/"+dialogue.getUserId()+".txt";
+            Path hdfspath = new Path(url);
+            // 检查文件是否存在
+            // 如果文件不存在，则创建文件
+            if (!fs.exists(hdfspath)) {
+                fs.createNewFile(hdfspath);
+            }
+            // 使用append方法打开输出流，以追加模式写入文件
+            FSDataOutputStream out = fs.append(hdfspath);
+            // 使用OutputStreamWriter和BufferedWriter包装FSDataOutputStream，并指定UTF-8编码
+            OutputStreamWriter osw = new OutputStreamWriter(out, StandardCharsets.UTF_8);
+            BufferedWriter writer = new BufferedWriter(osw);
+            // 要追加的内容
+            String contentToAppend = dialogue.getMessage()+"|"+dialogue.getContent()+"|"+LocalDateTime.now()+"\n";
+            // 写入内容
+            writer.write(contentToAppend);
+            // 关闭流
+            writer.close();
+            osw.close();
+            out.close(); // 关闭输出流
+            fs.close();
         }
-        // 使用append方法打开输出流，以追加模式写入文件
-        FSDataOutputStream out = fs.append(hdfspath);
-        // 使用OutputStreamWriter和BufferedWriter包装FSDataOutputStream，并指定UTF-8编码
-        OutputStreamWriter osw = new OutputStreamWriter(out, StandardCharsets.UTF_8);
-        BufferedWriter writer = new BufferedWriter(osw);
-        // 要追加的内容
-        String contentToAppend = dialogue.getMessage()+"|"+dialogue.getContent()+"|"+LocalDateTime.now()+"\n";
-        // 写入内容
-        writer.write(contentToAppend);
-        // 关闭流
-        writer.close();
-        osw.close();
-        out.close(); // 关闭输出流
-        fs.close();
+
+
     }
 
 }

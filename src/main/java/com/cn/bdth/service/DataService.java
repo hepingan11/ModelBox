@@ -14,5 +14,5 @@ public interface DataService {
 
     List<Dialogue> timeFrequency();
 
-    ArrayList<Map<String, Object>> getWordFrequency(int v);
+    List<Map<String, Object>> getWordFrequency(int v);
 }

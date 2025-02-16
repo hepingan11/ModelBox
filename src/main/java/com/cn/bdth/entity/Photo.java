@@ -20,6 +20,8 @@ public class Photo {
 
     private Long userId;
 
+    private Integer isPublic;
+
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdTime;
 }

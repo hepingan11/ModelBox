@@ -2,14 +2,10 @@ package com.cn.bdth.api;
 
 import com.alibaba.fastjson.JSONObject;
 import com.cn.bdth.entity.Dialogue;
-import com.cn.bdth.enums.FileEnum;
 import com.cn.bdth.msg.Result;
 import com.cn.bdth.service.DataService;
-import com.cn.bdth.service.DigitalService;
 import com.cn.bdth.vo.DataNormalVo;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -23,14 +19,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.List;
-import java.util.Objects;
 
 @RequestMapping("/data")
 @RestController

@@ -39,6 +39,9 @@ public class ServerConfigDto {
     @NotBlank(message = "顶图链接不能为空")
     private String linkTopImg;
 
+    @NotNull(message = "是否开启hadoop存储")
+    private String isHadoop;
+
     @NotNull(message = "第一次登录奖励次数不能为空")
     private Long incentiveFrequency;
 

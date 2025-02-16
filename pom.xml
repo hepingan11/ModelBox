@@ -200,7 +200,12 @@
             <artifactId>hanlp</artifactId>
             <version>portable-1.7.8</version>
         </dependency>
-
+        <!-- Hutool工具 -->
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>5.5.7</version>
+        </dependency>
 
     </dependencies>
 

@@ -58,6 +58,20 @@ public class PhotoServiceImpl implements PhotoService {
         photoMapper.deleteById(id);
     }
 
+    @Override
+    public void setPhotoPublic(Long id) {
+        Photo photoId = photoMapper.selectOne(new QueryWrapper<Photo>().eq("photo_id", id));
+        if (photoId.getIsPublic() == 1){
+            photoMapper.update(new Photo().setIsPublic(0), new QueryWrapper<Photo>().lambda().eq(Photo::getPhotoId, id));
+        }else {
+            photoMapper.update(new Photo().setIsPublic(1), new QueryWrapper<Photo>().lambda().eq(Photo::getPhotoId, id));
+        }
+    }
 
-    //...{
+    @Override
+    public List<Photo> getPublicPhoto() {
+        return photoMapper.selectList(new QueryWrapper<Photo>().eq("is_public", 1).orderBy(true,false,"created_time"));
+    }
+
+
 }

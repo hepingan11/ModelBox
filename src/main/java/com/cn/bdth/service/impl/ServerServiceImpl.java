@@ -61,6 +61,7 @@ public class ServerServiceImpl implements ServerService {
         redisUtils.setValue(ServerConstant.SD_BUTTON, dto.getSdButton());
         //Link Top Img
         redisUtils.setValue(ServerConstant.LINK_TOP_IMG, dto.getLinkTopImg());
+        redisUtils.setValue(ServerConstant.IS_HADOOP, dto.getIsHadoop());
         // CHAT GPT
         redisUtils.setValue(ServerConstant.CHAT_GPT_CONFIG,
                 new ChatGptCommon.ChatGptStructure()
@@ -91,7 +92,9 @@ public class ServerServiceImpl implements ServerService {
         final ChatGptCommon.ChatGptStructure chatGptStructure = (ChatGptCommon.ChatGptStructure) redisUtils.getValue(ServerConstant.CHAT_GPT_CONFIG);
         final UserInspiritCommon.InspiritStructure inspiritStructure = (UserInspiritCommon.InspiritStructure) redisUtils.getValue(ServerConstant.INSPIRIT_CONFIG);
         final DispositionVo dispositionVo = new DispositionVo();
+
         final String linkTopImg = String.valueOf(redisUtils.getValue(ServerConstant.LINK_TOP_IMG));
+        final String isHadoop = String.valueOf(redisUtils.getValue(ServerConstant.IS_HADOOP));
         final String sdButton = String.valueOf(redisUtils.getValue(ServerConstant.SD_BUTTON));
 
         dispositionVo.setOpenAiPlusUrl(chatGptStructure != null ? chatGptStructure.getOpenAiPlusUrl() : null);
@@ -104,6 +107,7 @@ public class ServerServiceImpl implements ServerService {
         dispositionVo.setOpenPlusKey(chatGptStructure != null ? chatGptStructure.getOpenPlusKey() : null);
         dispositionVo.setGptTextImageFrequency(chatGptStructure != null ? chatGptStructure.getGptTextImageFrequency() : null);
         dispositionVo.setLinkTopImg(StringUtils.isNotBlank(linkTopImg) ? linkTopImg : "");
+        dispositionVo.setIsHadoop(StringUtils.isNotBlank(isHadoop) ? isHadoop : "");
         dispositionVo.setSdButton(StringUtils.isNotBlank(sdButton) ? sdButton : "");
         dispositionVo.setSignInFrequency(inspiritStructure != null ? inspiritStructure.getSignInFrequency() : null);
         dispositionVo.setVideoFrequency(inspiritStructure != null ? inspiritStructure.getVideoFrequency() : null);

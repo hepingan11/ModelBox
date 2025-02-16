@@ -1,9 +1,11 @@
 package com.cn.bdth.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.cn.bdth.constants.ServerConstant;
 import com.cn.bdth.entity.Dialogue;
 import com.cn.bdth.mapper.DialogueMapper;
 import com.cn.bdth.service.DataService;
+import com.cn.bdth.utils.RedisUtils;
 import com.cn.bdth.utils.UserUtils;
 import com.hankcs.hanlp.HanLP;
 import com.hankcs.hanlp.seg.common.Term;
@@ -29,6 +31,7 @@ import java.util.*;
 public class DataServiceImpl implements DataService {
 
     private final DialogueMapper dialogueMapper;
+    private final RedisUtils redisUtils;
 
     @Value("${hdfs.url}")
     private String hdfsUrl;
@@ -43,46 +46,52 @@ public class DataServiceImpl implements DataService {
 
     @Override
     public List<Dialogue> getDialogueDataPage(Integer no, Integer size) {
-        List<Dialogue> dialogueList = new ArrayList<>();
-        Configuration conf = new Configuration();
-        // 配置HDFS的URI，根据你的Hadoop集群配置进行修改
-        conf.set("fs.defaultFS", hdfsUrl);
-        System.setProperty("HADOOP_USER_NAME", userName);
-        FileSystem fs = null;
-        InputStream in = null;
-        BufferedReader reader = null;
-        List<String> lines = new ArrayList<>();
-        try {
-            fs = FileSystem.get(conf);
-            String hdfsFilePath = "/data/" + UserUtils.getCurrentLoginId() + ".txt";
-            Path path = new Path(hdfsFilePath);
-            in = fs.open(path);
-            reader = new BufferedReader(new InputStreamReader(in));
-            String line;
-
-            while ((line = reader.readLine()) != null) {
-                lines.add(line);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            // 关闭资源
-            IOUtils.closeStream(reader);
-            IOUtils.closeStream(in);
+        String isHadoop = String.valueOf(redisUtils.getValue(ServerConstant.IS_HADOOP));
+        if (isHadoop.equals("mysql")){
+            return dialogueMapper.selectList(new QueryWrapper<Dialogue>().lambda().eq(Dialogue::getUserId, UserUtils.getCurrentLoginId()).orderByDesc(Dialogue::getCreatedTime));
+        }else {
+            List<Dialogue> dialogueList = new ArrayList<>();
+            Configuration conf = new Configuration();
+            // 配置HDFS的URI，根据你的Hadoop集群配置进行修改
+            conf.set("fs.defaultFS", hdfsUrl);
+            System.setProperty("HADOOP_USER_NAME", userName);
+            FileSystem fs = null;
+            InputStream in = null;
+            BufferedReader reader = null;
+            List<String> lines = new ArrayList<>();
             try {
-                if (fs != null) {
-                    fs.close();
+                fs = FileSystem.get(conf);
+                String hdfsFilePath = "/data/" + UserUtils.getCurrentLoginId() + ".txt";
+                Path path = new Path(hdfsFilePath);
+                in = fs.open(path);
+                reader = new BufferedReader(new InputStreamReader(in));
+                String line;
+
+                while ((line = reader.readLine()) != null) {
+                    lines.add(line);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+            } finally {
+                // 关闭资源
+                IOUtils.closeStream(reader);
+                IOUtils.closeStream(in);
+                try {
+                    if (fs != null) {
+                        fs.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
+
+            for (String line : lines){
+                String[] split = line.split("\\|");
+                dialogueList.add(new Dialogue().setContent(split[0]).setMessage(split[1]).setCreatedTime(LocalDateTime.parse(split[2])));
+            }
+            return dialogueList;
         }
 
-        for (String line : lines){
-            String[] split = line.split("\\|");
-            dialogueList.add(new Dialogue().setContent(split[0]).setMessage(split[1]).setCreatedTime(LocalDateTime.parse(split[2])));
-        }
-        return dialogueList;
     }
 
     @Override
@@ -91,24 +100,44 @@ public class DataServiceImpl implements DataService {
     }
 
     @Override
-    public ArrayList<Map<String, Object>> getWordFrequency(int v) {
-        List<Dialogue> dataPage = getDialogueDataPage(1, 1);
+    public List<Map<String, Object>> getWordFrequency(int v) {
         String text = "";
-        if (v == 1){
-            for (Dialogue dialogue : dataPage){
-                StringBuilder sb = new StringBuilder(text);
-                sb.append(dialogue.getContent());
-                text = sb.toString();
+        //mysql
+        String value = String.valueOf(redisUtils.getValue(ServerConstant.IS_HADOOP));
+        if (value.equals("mysql")){
+            List<Dialogue> dialogueList = dialogueMapper.selectList(new QueryWrapper<Dialogue>().lambda().eq(Dialogue::getUserId, UserUtils.getCurrentLoginId()));
+            if (v==1){
+                for (Dialogue dialogue : dialogueList){
+                    StringBuilder sb = new StringBuilder(text);
+                    sb.append(dialogue.getContent());
+                    text = sb.toString();
+                }
             }
-        }
-        if (v == 2) {
-            for (Dialogue dialogue : dataPage) {
-                StringBuilder sb = new StringBuilder(text);
-                sb.append(dialogue.getMessage());
-                text = sb.toString();
+            if (v == 2){
+                for (Dialogue dialogue : dialogueList){
+                    StringBuilder sb = new StringBuilder(text);
+                    sb.append(dialogue.getMessage());
+                    text = sb.toString();
+                }
             }
-        }
 
+        }else {
+            List<Dialogue> dataPage = getDialogueDataPage(1, 1);
+            if (v == 1){
+                for (Dialogue dialogue : dataPage){
+                    StringBuilder sb = new StringBuilder(text);
+                    sb.append(dialogue.getContent());
+                    text = sb.toString();
+                }
+            }
+            if (v == 2) {
+                for (Dialogue dialogue : dataPage) {
+                    StringBuilder sb = new StringBuilder(text);
+                    sb.append(dialogue.getMessage());
+                    text = sb.toString();
+                }
+            }
+        }
         // 提取频率最高的几个词
         List<Map.Entry<String, Integer>> list =  findTopFrequentWords(text, 10);
         ArrayList<Map<String, Object>> dataList = new ArrayList<>();

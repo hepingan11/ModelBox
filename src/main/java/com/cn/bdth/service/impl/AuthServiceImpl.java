@@ -4,9 +4,11 @@ import cn.dev33.satoken.secure.SaSecureUtil;
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.cn.bdth.common.UserInspiritCommon;
+import org.springframework.mail.SimpleMailMessage;
 import com.cn.bdth.constants.WeChatConstant;
 import com.cn.bdth.constants.user.AuthConstant;
 import com.cn.bdth.dto.EmailCodeDto;
+import com.cn.bdth.dto.EmailContentDto;
 import com.cn.bdth.dto.EmailLoginDto;
 import com.cn.bdth.entity.User;
 import com.cn.bdth.exceptions.*;
@@ -27,6 +29,7 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import java.util.Date;
+import java.util.Properties;
 import java.util.UUID;
 
 /**
@@ -108,7 +111,12 @@ public class AuthServiceImpl implements AuthService {
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         try {
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
-            helper.setSubject("TIME SEA PLUS GPT验证码");
+//            Properties props = System.getProperties();
+//            props.put("mail.smtp.auth", "true");
+//            props.put("mail.smtp.starttls.enable", "true");
+//            props.put("mail.smtp.host", "smtp.qq.com");
+//            props.put("mail.smtp.port", "587");
+            helper.setSubject("IT乌托邦-验证码");
             helper.setFrom(username);
             helper.setTo(email);
             helper.setSentDate(new Date());
@@ -203,6 +211,23 @@ public class AuthServiceImpl implements AuthService {
     public void logout() {
         if (StpUtil.isLogin()) {
             StpUtil.logout();
+        }
+    }
+
+    @Override
+    public void submitEmailContent(EmailContentDto emailContentDto) {
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = null; // true 表示支持 HTML
+        try {
+            helper = new MimeMessageHelper(message, true);
+            helper.setFrom(username); // 发件人邮箱
+            helper.setTo("1973016127@qq.com"); // 收件人邮箱
+            helper.setSubject("IT乌托邦-网站来信"); // 邮件主题
+            String Content = "<h1>称呼："+emailContentDto.getName()+"</h1><p>"+emailContentDto.getContent()+"<br/> <strong>联系方式："+emailContentDto.getEmail()+"</strong> </p>";
+            helper.setText(Content,true); // 邮件内容
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            throw new RegistrationException(ExceptionMessages.VERIFICATION_CODE_ERR, 500);
         }
     }
 

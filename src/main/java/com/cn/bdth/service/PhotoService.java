@@ -12,4 +12,8 @@ public interface PhotoService {
     List<Photo> getPhoto();
 
     void deletePhoto(Long id);
+
+    void setPhotoPublic(Long id);
+
+    List<Photo> getPublicPhoto();
 }

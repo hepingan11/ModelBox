@@ -41,5 +41,5 @@ public class DispositionVo implements Serializable {
 
     private Long videoFrequency;
 
-
+    private String isHadoop;
 }

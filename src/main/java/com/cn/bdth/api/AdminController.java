@@ -3,6 +3,7 @@ package com.cn.bdth.api;
 import com.cn.bdth.dto.*;
 import com.cn.bdth.dto.admin.AnnouncementDto;
 import com.cn.bdth.dto.admin.UserPutDto;
+import com.cn.bdth.exceptions.RegistrationException;
 import com.cn.bdth.msg.Result;
 import com.cn.bdth.service.*;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,8 @@ public class AdminController {
     private final PayService payService;
 
     private final LinkService linkService;
+
+    private final AuthService authService;
 
     /**
      * 分页获取用户信息
@@ -301,5 +304,15 @@ public class AdminController {
     public Result setTopImg(@RequestBody @Validated final String imgUrl) {
         linkService.setTopImg(imgUrl);
         return Result.ok();
+    }
+
+    @PostMapping(value = "/submitEmail", name = "发送邮箱")
+    public Result submitEmail(@RequestBody @Validated final EmailContentDto emailContentDto) {
+        try {
+            authService.submitEmailContent(emailContentDto);
+            return Result.ok();
+        } catch (RegistrationException e) {
+            return Result.error(e.getMessage());
+        }
     }
 }
