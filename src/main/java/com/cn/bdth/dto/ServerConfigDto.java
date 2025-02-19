@@ -24,6 +24,9 @@ public class ServerConfigDto {
     @NotBlank(message = "是否开启SD绘画不能为空")
     private String sdButton;
 
+    @NotBlank(message = "是否开启SD绘画不能为空")
+    private String dialogueStorage;
+
     @NotBlank(message = "OPEN_AI_PLUS_URL不能为空")
     private String openAiPlusUrl;
 

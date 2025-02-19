@@ -31,6 +31,8 @@ public class DispositionVo implements Serializable {
 
     private String sdButton;
 
+    private String dialogueStorage;
+
     private Long sdImageFrequency;
 
     private String sdUrl;

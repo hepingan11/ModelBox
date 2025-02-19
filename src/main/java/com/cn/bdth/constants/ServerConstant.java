@@ -28,6 +28,7 @@ public interface ServerConstant {
     String LINK_TOP_IMG = "LINK_TOP_IMG";
 
     String SD_BUTTON = "SD_BUTTON";
+    String Dialogue_Storage = "Dialogue_Storage";
     int DRAWING_IMAGE_TYPE = 1;
     int DRAWING_TEXT_TYPE = 0;
     int IS_PUBLIC = 1;

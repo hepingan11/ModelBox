@@ -273,6 +273,10 @@ public class GptServiceImpl implements GptService {
 
     @Override
     public void putDialogue(Dialogue dialogue) throws IOException {
+        Object value = redisUtils.getValue(ServerConstant.Dialogue_Storage);
+        if (value.toString().equals("0")){
+            return;
+        }
         String isHadoop = String.valueOf(redisUtils.getValue(ServerConstant.IS_HADOOP));
         if (Objects.equals(isHadoop, "mysql")){
             dialogueMapper.insert(dialogue.setCreatedTime(LocalDateTime.now()));

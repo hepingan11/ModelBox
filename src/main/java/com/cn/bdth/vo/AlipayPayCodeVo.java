@@ -21,6 +21,8 @@ public class AlipayPayCodeVo implements Serializable {
 
     private String qrCode;
 
+    private String payUrl;
+
 
 
 }

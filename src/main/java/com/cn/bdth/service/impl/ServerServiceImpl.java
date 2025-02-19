@@ -59,6 +59,7 @@ public class ServerServiceImpl implements ServerService {
                         .setSdImageFrequency(dto.getSdImageFrequency())
         );
         redisUtils.setValue(ServerConstant.SD_BUTTON, dto.getSdButton());
+        redisUtils.setValue(ServerConstant.Dialogue_Storage, dto.getDialogueStorage());
         //Link Top Img
         redisUtils.setValue(ServerConstant.LINK_TOP_IMG, dto.getLinkTopImg());
         redisUtils.setValue(ServerConstant.IS_HADOOP, dto.getIsHadoop());
@@ -96,6 +97,7 @@ public class ServerServiceImpl implements ServerService {
         final String linkTopImg = String.valueOf(redisUtils.getValue(ServerConstant.LINK_TOP_IMG));
         final String isHadoop = String.valueOf(redisUtils.getValue(ServerConstant.IS_HADOOP));
         final String sdButton = String.valueOf(redisUtils.getValue(ServerConstant.SD_BUTTON));
+        final String dialogueStorage = String.valueOf(redisUtils.getValue(ServerConstant.Dialogue_Storage));
 
         dispositionVo.setOpenAiPlusUrl(chatGptStructure != null ? chatGptStructure.getOpenAiPlusUrl() : null);
         dispositionVo.setSdUrl(sdStructure != null ? sdStructure.getSdUrl() : null);
@@ -109,6 +111,7 @@ public class ServerServiceImpl implements ServerService {
         dispositionVo.setLinkTopImg(StringUtils.isNotBlank(linkTopImg) ? linkTopImg : "");
         dispositionVo.setIsHadoop(StringUtils.isNotBlank(isHadoop) ? isHadoop : "");
         dispositionVo.setSdButton(StringUtils.isNotBlank(sdButton) ? sdButton : "");
+        dispositionVo.setDialogueStorage(StringUtils.isNotBlank(dialogueStorage) ? dialogueStorage : "");
         dispositionVo.setSignInFrequency(inspiritStructure != null ? inspiritStructure.getSignInFrequency() : null);
         dispositionVo.setVideoFrequency(inspiritStructure != null ? inspiritStructure.getVideoFrequency() : null);
         dispositionVo.setIncentiveFrequency(inspiritStructure != null ? inspiritStructure.getIncentiveFrequency() : null);

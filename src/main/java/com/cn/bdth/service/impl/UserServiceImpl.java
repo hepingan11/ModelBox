@@ -196,7 +196,7 @@ public class UserServiceImpl implements UserService {
                 .lambda()
                 .like(StringUtils.notEmpty(prompt), User::getUserName, prompt)
                 .or().like(StringUtils.notEmpty(prompt), User::getOpenId, prompt)
-                .select(User::getFrequency, User::getUserName, User::getCreatedTime, User::getUserId, User::getEmail)
+                .select(User::getFrequency, User::getUserName, User::getCreatedTime, User::getUserId, User::getEmail,User::getAvatar)
                 .orderByDesc(User::getFrequency)
         ).convert(u -> {
             //设置用户最后功能操作时间
@@ -206,6 +206,7 @@ public class UserServiceImpl implements UserService {
                     .setUserId(u.getUserId())
                     .setUserName(u.getUserName())
                     .setFrequency(u.getFrequency())
+                    .setAvatar(u.getAvatar())
                     .setCreatedTime(u.getCreatedTime());
             if (value != null) {
                 try {
