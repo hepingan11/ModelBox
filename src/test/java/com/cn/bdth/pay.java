@@ -26,9 +26,9 @@ public class pay {
     @Test
     public void pay(){
         // appid
-        String appid = "201906170433";
+        String appid = "";
         // appsecret
-        String appsecret = "71738517e27973c1ef7e4cec811ee693";
+        String appsecret = "";
         // 请求路径
         String url = "https://api.xunhupay.com/payment/do.html";
         // 设置 传递参数的集合，方便 传递数据。
@@ -118,9 +118,9 @@ public class pay {
     @Test
     public void test(){
         // appid
-        String appid = "201906170433";
+        String appid = "";
         // appsecret
-        String appsecret = "71738517e27973c1ef7e4cec811ee693";
+        String appsecret = "";
         // 请求路径
         String url = "https://api.xunhupay.com/payment/query.html";
         // 设置 传递参数的集合，方便 传递数据。
