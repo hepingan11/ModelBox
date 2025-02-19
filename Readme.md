@@ -4,6 +4,7 @@
 
 演示地址：https://hepingan.top
 
+前端地址：https://gitee.com/hepingan11/gptweb
 注意：
 
 - 先在application-dev.yml配置你的相关信息，默认管理员账号：admin/123456
