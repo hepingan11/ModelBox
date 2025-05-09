@@ -23,8 +23,8 @@ public class LinkController {
     }
 
     @GetMapping(value = "/getList", name = "获取全部链接",produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result getLinkList(){
-        return Result.data(linkService.getAllLinkList());
+    public Result getLinkList(@RequestParam String linkName){
+        return Result.data(linkService.getAllLinkList(linkName));
     }
 
     @GetMapping(value = "/userList", name = "查询用户链接",produces = MediaType.APPLICATION_JSON_VALUE)
@@ -41,7 +41,6 @@ public class LinkController {
     @PostMapping(value = "/allowLink/{id}", name = "同意链接")
     public Result allowLink(@PathVariable Long id){
         try {
-            log.info("同意链接{}",id);
             linkService.allowLink(id);
             return Result.ok();
         }catch (Exception e){
@@ -98,7 +97,6 @@ public class LinkController {
     @PostMapping(value = "/addStatLink/{id}",name = "用户添加收藏")
     public Result addStatLink(@PathVariable Long id){
         try {
-            log.info("用户添加收藏链接{}",id);
             linkService.addStatLink(id);
             return Result.ok();
         }catch (Exception e){

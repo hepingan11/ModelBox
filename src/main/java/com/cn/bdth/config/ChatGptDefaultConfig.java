@@ -18,14 +18,14 @@ public class ChatGptDefaultConfig {
     @Value("${config.openAiUrl}")
     private String openAiUrl;
 
-    @Value("${config.openAiPlusUrl}")
-    private String openAiPlusUrl;
-
     @Value("${config.openKey}")
     private String openKey;
 
-    @Value("${config.openPlusKey}")
-    private String openPlusKey;
+    @Value("${config.deepseekKey}")
+    private String deepseekKey;
+
+    @Value("${config.glmKey}")
+    private String glmKey;
 
     @Value("${config.gptTextImageFrequency}")
     private Long gptTextImageFrequency;

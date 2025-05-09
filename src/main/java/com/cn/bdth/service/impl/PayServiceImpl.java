@@ -548,7 +548,6 @@ public class PayServiceImpl implements PayService {
         JSONObject dataObject = jsonObject.getJSONObject("data");
         // 获取status值
         String status = dataObject.getString("status");
-        System.out.println(status);
         if (Objects.equals(status, "OD")){
             ordersMapper.update(null,new UpdateWrapper<Orders>()
                     .lambda()

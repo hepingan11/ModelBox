@@ -9,6 +9,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
@@ -21,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -129,6 +131,31 @@ public class springtest {
         Path dst = new Path("/test.txt");
         fs.copyFromLocalFile(path,dst);
         fs.close();
+
+    }
+
+    @Test
+    public void processImages1() throws IOException {
+        System.out.println(1);
+    }
+
+    @Test
+    public void processImages3() {
+        String vmid = "443081814";
+        String apiUrl = "https://api.bilibili.com/x/relation/stat?vmid=" + vmid;
+
+        CloseableHttpClient aDefault = HttpClients.createDefault();
+
+        HttpGet httpGet = new HttpGet(apiUrl);
+        CloseableHttpResponse execute;
+        try {
+            execute = aDefault.execute(httpGet);
+            System.out.println(execute);
+//            String responseContent = EntityUtils.toString(execute.getEntity(), "UTF-8");
+//            System.out.println(responseContent);
+        }catch (IOException e){
+            throw new RuntimeException(e);
+        }
 
     }
 

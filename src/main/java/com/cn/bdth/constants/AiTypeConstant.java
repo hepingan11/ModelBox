@@ -11,7 +11,11 @@ public interface AiTypeConstant {
 
     String BASIC = "BASIC";
 
-    String ADVANCED = "ADVANCED";
+    String ADVANCED = "glm-4v";
+
+    String DEEPSEEK = "DEEPSEEK";
+
+    String GLM = "GLM";
 
 }
 

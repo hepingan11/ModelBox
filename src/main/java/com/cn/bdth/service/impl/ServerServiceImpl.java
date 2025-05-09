@@ -68,10 +68,10 @@ public class ServerServiceImpl implements ServerService {
                 new ChatGptCommon.ChatGptStructure()
                         .setGptFrequency(dto.getGptFrequency())
                         .setGptPlusFrequency(dto.getGptPlusFrequency())
-                        .setOpenAiPlusUrl(dto.getOpenAiPlusUrl())
                         .setOpenKey(dto.getOpenKey())
-                        .setOpenPlusKey(dto.getOpenPlusKey())
                         .setOpenAiUrl(dto.getOpenAiUrl())
+                        .setDeepseekKey(dto.getDeepseekKey())
+                        .setGlmKey(dto.getGlmKey())
                         .setGptTextImageFrequency(dto.getGptTextImageFrequency())
         );
     }
@@ -99,14 +99,14 @@ public class ServerServiceImpl implements ServerService {
         final String sdButton = String.valueOf(redisUtils.getValue(ServerConstant.SD_BUTTON));
         final String dialogueStorage = String.valueOf(redisUtils.getValue(ServerConstant.Dialogue_Storage));
 
-        dispositionVo.setOpenAiPlusUrl(chatGptStructure != null ? chatGptStructure.getOpenAiPlusUrl() : null);
+        dispositionVo.setGlmKey(chatGptStructure != null ? chatGptStructure.getGlmKey() : null);
         dispositionVo.setSdUrl(sdStructure != null ? sdStructure.getSdUrl() : null);
         dispositionVo.setSdImageFrequency(sdStructure != null ? sdStructure.getSdImageFrequency() : null);
         dispositionVo.setGptFrequency(chatGptStructure != null ? chatGptStructure.getGptFrequency() : null);
         dispositionVo.setGptPlusFrequency(chatGptStructure != null ? chatGptStructure.getGptPlusFrequency() : null);
         dispositionVo.setOpenAiUrl(chatGptStructure != null ? chatGptStructure.getOpenAiUrl() : null);
         dispositionVo.setOpenKey(chatGptStructure != null ? chatGptStructure.getOpenKey() : null);
-        dispositionVo.setOpenPlusKey(chatGptStructure != null ? chatGptStructure.getOpenPlusKey() : null);
+        dispositionVo.setDeepseekKey(chatGptStructure != null ? chatGptStructure.getDeepseekKey() : null);
         dispositionVo.setGptTextImageFrequency(chatGptStructure != null ? chatGptStructure.getGptTextImageFrequency() : null);
         dispositionVo.setLinkTopImg(StringUtils.isNotBlank(linkTopImg) ? linkTopImg : "");
         dispositionVo.setIsHadoop(StringUtils.isNotBlank(isHadoop) ? isHadoop : "");

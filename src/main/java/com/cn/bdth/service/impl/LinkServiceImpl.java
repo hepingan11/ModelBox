@@ -1,5 +1,6 @@
 package com.cn.bdth.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -141,7 +142,6 @@ public class LinkServiceImpl implements LinkService {
     @Override
     public void applyLink(LinkDto linkDto) {
         final Long currentLoginId = UserUtils.getCurrentLoginId();
-        log.info("申请链接，当前登录用户id：{}", currentLoginId);
         final String fileName = UUID.randomUUID() + ".jpg";
         String url=aliUploadUtils.uploadFile(linkDto.getImages(), FileEnum.LINK.getDec(),fileName,true);
         Link link =new Link()
@@ -157,9 +157,14 @@ public class LinkServiceImpl implements LinkService {
     }
 
     @Override
-    public List<LinkVo> getAllLinkList() {
-        List<LinkVo> list =linkMapper.selectList(new QueryWrapper<Link>().lambda()
-                .select(Link::getLinkId,Link::getLinkName,Link::getIsPublic,Link::getLinkIntro,Link::getLinkUrl,Link::getLinkImg,Link::getLinkSort,Link::getIsHot)
+    public List<LinkVo> getAllLinkList(String linkName) {
+        LambdaQueryWrapper<Link> linkLambdaQueryWrapper = new QueryWrapper<Link>().lambda()
+                .select(Link::getLinkId, Link::getLinkName, Link::getIsPublic, Link::getLinkIntro, Link::getLinkUrl, Link::getLinkImg, Link::getLinkSort, Link::getIsHot)
+                .orderByDesc(Link::getCreatedTime);
+        if (linkName != null&& !linkName.isEmpty()){
+            linkLambdaQueryWrapper.like(Link::getLinkName,linkName);
+        }
+        List<LinkVo> list =linkMapper.selectList(linkLambdaQueryWrapper
         ).stream().map(link ->{
             LinkVo linkvo =new LinkVo()
                     .setLinkName(link.getLinkName())

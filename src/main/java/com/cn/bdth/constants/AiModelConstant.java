@@ -10,7 +10,11 @@ public interface AiModelConstant {
 
     String BASIC = "gpt-3.5-turbo-16k-0613";
 
-    String ADVANCED = "gpt-4-0613";
+    String DEEPSEEK = "deepseek-chat";
+
+    String GLM = "glm-4v-plus-0111";
+
+    String DEEPSEEK_R = "deepseek-reasoner";
 
 }
 

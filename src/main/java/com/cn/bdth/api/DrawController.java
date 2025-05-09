@@ -1,6 +1,7 @@
 package com.cn.bdth.api;
 
 import com.cn.bdth.dto.DrawingSdTaskDto;
+import com.cn.bdth.dto.ZhipuDrawDto;
 import com.cn.bdth.exceptions.DrawingException;
 import com.cn.bdth.exceptions.FrequencyException;
 import com.cn.bdth.msg.Result;
@@ -50,9 +51,14 @@ public class DrawController {
         return Result.ok();
     }
 
-    @GetMapping(value = "sd/connectivity",name = "检查SD网络连通性以及用户次数校验(SD)", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/sd/connectivity",name = "检查SD网络连通性以及用户次数校验(SD)", produces = MediaType.APPLICATION_JSON_VALUE)
     public Result sdConnectivity() {
         return Result.data(drawService.checkSdConnectivity());
 
+    }
+
+    @PostMapping(value = "/zhipu/image",name = "微信小程序绘画接口")
+    public Result addZhipuDrawingTask(@RequestBody ZhipuDrawDto dto) {
+        return Result.data(drawService.addZhipuDrawingTask(dto));
     }
 }

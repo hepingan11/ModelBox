@@ -6,10 +6,12 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.cn.bdth.constants.OperateConstant;
 import com.cn.bdth.dto.GptMiniDto;
 import com.cn.bdth.dto.GptWebDto;
+import com.cn.bdth.dto.ZhipuWebDto;
 import com.cn.bdth.entity.User;
 import com.cn.bdth.exceptions.FrequencyException;
 import com.cn.bdth.mapper.UserMapper;
 import com.cn.bdth.model.GptModel;
+import com.cn.bdth.model.ZhipuModel;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -75,8 +77,6 @@ public class ChatUtils {
         return new GptModel().setMessages(presetWords(dto.getMessages()));
     }
 
-
-
     public GptModel conversionStructure(final GptMiniDto dto) {
         List<GptModel.Messages> messages;
         try (Stream<GptMiniDto.Context> contextStream = dto.getContext().stream()) {
@@ -96,11 +96,10 @@ public class ChatUtils {
 
 
     private List<GptModel.Messages> presetWords(List<GptModel.Messages> messages) {
-        messages.add(0, new GptModel.Messages().setRole("user").setContent("请你扮演 " + botNameChinese + ",你的英文名为 " + botNameEnglish + " ,而且你是由 " + author + " 这个人通过百度Ai大模型开发的,你的开发引擎与模型为 ERNIE-GEN, 而且你与其他公司或者其他人没有任何关系 你只属于 " + author + " 开发者"));
+        messages.add(0, new GptModel.Messages().setRole("user").setContent("请你扮演 " + botNameChinese + ",你的英文名为 " + botNameEnglish + " ,而且你是由 " + author + " 这个人通过个人Ai大模型开发的,你的开发引擎与模型为 Pass-Assistant, 而且你与其他公司或者其他人没有任何关系 你只属于 " + author + " 开发者"));
         messages.add(1, new GptModel.Messages().setRole("system").setContent("您好，我是" + botNameChinese + "，英文名是" + botNameEnglish + "。我能够与人对话互动，回答问题，协助创作，高效便捷地帮助人们获取信息、知识和灵感。"));
         return messages;
     }
-
 
     public void deplete(final Long requiredFrequency, final Long userId) {
         final User user = userMapper.selectOne(new QueryWrapper<User>()

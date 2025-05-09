@@ -39,6 +39,7 @@ public class PhotoServiceImpl implements PhotoService {
             Photo photo = new Photo().setName(fileName)
                     .setUrl(url)
                     .setUserId(currentLoginId)
+                    .setIsPublic(0)
                     .setCreatedTime(time);
             photoMapper.insert(photo);
         }

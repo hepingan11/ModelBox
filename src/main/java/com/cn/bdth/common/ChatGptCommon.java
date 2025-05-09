@@ -42,12 +42,12 @@ public class ChatGptCommon {
         log.warn("请前往控制台配置ChatGPT参数配置");
         return new ChatGptStructure()
                 .setOpenAiUrl(chatGptDefaultConfig.getOpenAiUrl())
-                .setOpenAiPlusUrl(chatGptDefaultConfig.getOpenAiPlusUrl())
                 .setGptFrequency(chatGptDefaultConfig.getGptFrequency())
                 .setGptTextImageFrequency(chatGptDefaultConfig.getGptTextImageFrequency())
                 .setGptPlusFrequency(chatGptDefaultConfig.getGptPlusFrequency())
-                .setOpenKey(chatGptDefaultConfig.getOpenKey())
-                .setOpenPlusKey(chatGptDefaultConfig.getOpenPlusKey());
+                .setGlmKey(chatGptDefaultConfig.getGlmKey())
+                .setDeepseekKey(chatGptDefaultConfig.getDeepseekKey())
+                .setOpenKey(chatGptDefaultConfig.getOpenKey());
     }
 
     @Data
@@ -56,11 +56,15 @@ public class ChatGptCommon {
 
         private String openAiUrl;
 
-        private String openAiPlusUrl;
-
         private String openKey;
 
+        private String openAiPlusUrl;
+
         private String openPlusKey;
+
+        private String deepseekKey;
+
+        private String glmKey;
 
         private Long gptFrequency;
 

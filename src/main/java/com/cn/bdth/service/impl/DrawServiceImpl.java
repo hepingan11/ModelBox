@@ -1,11 +1,13 @@
 package com.cn.bdth.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.cn.bdth.common.StableDiffusionCommon;
 import com.cn.bdth.constants.ServerConstant;
 import com.cn.bdth.dto.DrawingSdTaskDto;
+import com.cn.bdth.dto.ZhipuDrawDto;
 import com.cn.bdth.entity.Drawing;
 import com.cn.bdth.entity.User;
 import com.cn.bdth.enums.FileEnum;
@@ -13,6 +15,7 @@ import com.cn.bdth.exceptions.FrequencyException;
 import com.cn.bdth.mapper.DrawingMapper;
 import com.cn.bdth.mapper.UserMapper;
 import com.cn.bdth.model.SdDrawingModel;
+import com.cn.bdth.msg.Result;
 import com.cn.bdth.service.DrawService;
 import com.cn.bdth.utils.AliUploadUtils;
 import com.cn.bdth.utils.RedisUtils;
@@ -24,12 +27,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.http.Header;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -189,6 +194,35 @@ public class DrawServiceImpl implements DrawService {
     @Override
     public String checkSdConnectivity() {
         return redisUtils.getValue(ServerConstant.SD_BUTTON).toString();
+    }
+
+    @Value("${config.glmKey}")
+    private String glmKey;
+
+    @Override
+    public String addZhipuDrawingTask(ZhipuDrawDto dto) {
+        // 设置请求的URL地址
+        CloseableHttpClient aDefault = HttpClients.createDefault();
+
+        HttpPost httpPost = new HttpPost("https://open.bigmodel.cn/api/paas/v4/images/generations");
+        httpPost.setHeader("Authorization", "Bearer " +glmKey);
+        httpPost.setEntity(new StringEntity(JSON.toJSONString(dto), ContentType.APPLICATION_JSON));
+        CloseableHttpResponse execute;
+        try {
+            execute = aDefault.execute(httpPost);
+            String str = EntityUtils.toString(execute.getEntity());
+            // 解析 JSON 字符串
+            JSONObject jsonObject = JSONObject.parseObject(str);
+            String content = jsonObject.getJSONArray("data")
+                    .getJSONObject(0)
+                    .getString("url");
+
+            return content;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "请求出错";
+        }
+
     }
 
 }

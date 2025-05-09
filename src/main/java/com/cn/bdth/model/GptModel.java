@@ -5,6 +5,7 @@ import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 雨纷纷旧故里草木深
@@ -25,7 +26,7 @@ public class GptModel implements Serializable {
 
     private boolean stream = true;
 
-    private int max_tokens = 2048;
+    private int max_tokens = 4096;
 
     private int temperature = 1;
 
@@ -37,5 +38,10 @@ public class GptModel implements Serializable {
 
         private String content;
     }
+
+
+
+
+
 
 }

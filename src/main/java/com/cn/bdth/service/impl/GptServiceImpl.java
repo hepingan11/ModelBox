@@ -7,6 +7,7 @@ import com.cn.bdth.common.ClaudeCommon;
 import com.cn.bdth.common.ControlCommon;
 import com.cn.bdth.common.NewBingCommon;
 import com.cn.bdth.constants.AiModelConstant;
+import com.cn.bdth.constants.AiTypeConstant;
 import com.cn.bdth.constants.ServerConstant;
 import com.cn.bdth.constants.user.PersonalityConstant;
 import com.cn.bdth.dto.PersonalityDto;
@@ -24,6 +25,7 @@ import com.cn.bdth.mapper.PersonalityMapper;
 import com.cn.bdth.model.ClaudeModel;
 import com.cn.bdth.model.GptImageModel;
 import com.cn.bdth.model.GptModel;
+import com.cn.bdth.model.ZhipuModel;
 import com.cn.bdth.service.GptService;
 import com.cn.bdth.structure.ControlStructure;
 import com.cn.bdth.structure.PersonalityConfigStructure;
@@ -152,17 +154,50 @@ public class GptServiceImpl implements GptService {
     }
 
     @Override
-    public Flux<String> concatenationGpt(final GptModel model, final boolean isAdvanced, final ChatGptCommon.ChatGptStructure chatGptStructure) {
-        //设置请求模型
-        model.setModel(isAdvanced ? AiModelConstant.ADVANCED : AiModelConstant.BASIC);
+    public Flux<String> concatenationGpt(final GptModel model, String modelName, final ChatGptCommon.ChatGptStructure chatGptStructure) {
+        String baseUrl;
+        String apiKey;
 
-        return webClient.baseUrl(isAdvanced ? chatGptStructure.getOpenAiPlusUrl() : chatGptStructure.getOpenAiUrl())
-                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + (isAdvanced ? chatGptStructure.getOpenPlusKey() : chatGptStructure.getOpenKey())).build()
+        switch (modelName) {
+            case "BASIC":
+                model.setModel(AiModelConstant.BASIC);
+                baseUrl = chatGptStructure.getOpenAiUrl();
+                apiKey = chatGptStructure.getOpenKey();
+                break;
+            case "DEEPSEEK":
+                model.setModel(AiModelConstant.DEEPSEEK);
+                baseUrl = "https://api.deepseek.com";
+                apiKey = chatGptStructure.getDeepseekKey();
+                break;
+            case "DEEPSEEK_R":
+                model.setModel(AiModelConstant.DEEPSEEK_R);
+                baseUrl = "https://api.deepseek.com";
+                apiKey = chatGptStructure.getDeepseekKey();
+                break;
+            case "GLM":
+                model.setModel(AiModelConstant.GLM);
+                baseUrl = "https://open.bigmodel.cn/api/paas/v4";
+                apiKey = chatGptStructure.getGlmKey();
+                break;
+            default:
+                throw new RuntimeException("模型名称错误");
+        }
+
+        Flux<String> stringFlux = webClient.baseUrl(baseUrl)
+                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
+                .build()
                 .post()
                 .uri(ServerConstant.GPT_DIALOGUE)
                 .body(BodyInserters.fromValue(model))
                 .retrieve()
                 .bodyToFlux(String.class);
+        return stringFlux;
+
+    }
+
+    @Override
+    public Flux<String> concatenationGLM(ZhipuModel model, String modelName, ChatGptCommon.ChatGptStructure chatGptStructure) {
+        return null;
     }
 
     @Override

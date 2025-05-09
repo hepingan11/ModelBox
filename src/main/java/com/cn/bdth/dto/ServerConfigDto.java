@@ -15,10 +15,8 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class ServerConfigDto {
 
-    @NotBlank(message = "SD_URL不能为空")
     private String sdUrl;
 
-    @NotBlank(message = "OPEN_AI_URL不能为空")
     private String openAiUrl;
 
     @NotBlank(message = "是否开启SD绘画不能为空")
@@ -27,19 +25,15 @@ public class ServerConfigDto {
     @NotBlank(message = "是否开启SD绘画不能为空")
     private String dialogueStorage;
 
-    @NotBlank(message = "OPEN_AI_PLUS_URL不能为空")
-    private String openAiPlusUrl;
-
-    @NotBlank(message = "OPEN_KEY不能为空")
     private String openKey;
 
-    @NotBlank(message = "OPEN_PLUS_KEY不能为空")
-    private String openPlusKey;
+    private String deepseekKey;
+
+    private String glmKey;
 
     @NotNull(message = "GPT_PLUS消耗次数不能为空")
     private Long gptPlusFrequency;
 
-    @NotBlank(message = "顶图链接不能为空")
     private String linkTopImg;
 
     @NotNull(message = "是否开启hadoop存储")

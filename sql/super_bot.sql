@@ -1,26 +1,42 @@
 create table code
 (
-    code_id      bigint auto_increment comment 'id'
+    code_id      bigint auto_increment
         primary key,
-    code_name    varchar(200)  not null comment '项目名称',
-    code_price   int           null comment '源码价格',
-    user_id      bigint        not null comment '出售用户id',
-    images       varchar(500)  null comment '图片列表',
-    introduce    varchar(1000) null comment '介绍',
-    created_time datetime      not null comment '创建时间'
+    code_name    varchar(120)  not null comment '项目名称',
+    user_id      bigint        null,
+    look         int           null comment '点击人数',
+    introduce    varchar(3000) null comment '介绍',
+    is_public    int           not null comment '是否审核通过(1/0)',
+    price        double        not null comment '价格',
+    download_url varchar(250)  null comment '下载地址',
+    language     varchar(50)   null comment '语言',
+    created_time datetime      not null,
+    update_time  datetime      not null
 )
-    comment '源码';
+    comment '代码项目';
 
-create table dialogue
+create table code_exchange
 (
-    dialogue_id  bigint auto_increment comment 'id'
+    code_exchange_id bigint auto_increment
         primary key,
-    user_id      bigint        not null comment '用户id',
-    content      varchar(2000) not null comment '输入内容',
-    message      varchar(2000) null comment '输出内容',
-    created_time datetime      not null comment '对话时间'
+    order_no         varchar(100) null,
+    sell_user_id     bigint       not null comment '售卖人id',
+    buy_user_id      bigint       not null comment '购买人id',
+    code_id          bigint       not null comment '交易代码id',
+    price            double       not null comment '交易金额',
+    status           varchar(50)  null comment '状态',
+    created_time     datetime     null
 )
-    comment '对话信息';
+    comment '代码交易';
+
+create table code_image
+(
+    code_image_id bigint auto_increment
+        primary key,
+    code_id       bigint       not null,
+    image_url     varchar(200) not null comment '图'
+)
+    comment '代码项目图片';
 
 create table drawing
 (
@@ -179,7 +195,7 @@ create table photo
     name         varchar(100) null comment 'name',
     user_id      bigint       not null comment '用户id',
     created_time datetime     not null,
-    is_public    int          null comment '0为私有1为公'
+    is_public    int          not null
 );
 
 create index photo_user_id
@@ -237,7 +253,7 @@ create table user
     user_id      bigint auto_increment comment '主键'
         primary key,
     open_id      varchar(180)                                     null comment '微信用户标识',
-    avatar       varchar(100)                                     null comment '用户头像',
+    avatar       varchar(200)                                     null comment '用户头像',
     user_name    varchar(100)                                     null comment '用户微信昵称',
     email        varchar(200)                                     null,
     password     varchar(255)                                     null,

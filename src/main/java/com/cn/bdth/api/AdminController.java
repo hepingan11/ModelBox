@@ -4,6 +4,7 @@ import com.cn.bdth.dto.*;
 import com.cn.bdth.dto.admin.AnnouncementDto;
 import com.cn.bdth.dto.admin.UserPutDto;
 import com.cn.bdth.exceptions.RegistrationException;
+import com.cn.bdth.mapper.CodeExchangeMapper;
 import com.cn.bdth.msg.Result;
 import com.cn.bdth.service.*;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,8 @@ public class AdminController {
     private final PayService payService;
 
     private final LinkService linkService;
+
+    private final CodeService codeService;
 
     private final AuthService authService;
 
@@ -314,5 +317,29 @@ public class AdminController {
         } catch (RegistrationException e) {
             return Result.error(e.getMessage());
         }
+    }
+
+    @GetMapping(value = "/code/list", name = "获取源码列表")
+    public Result getCodeList() {
+        return Result.data(codeService.allCode());
+    }
+
+    @PostMapping(value = "/code/pass/{id}", name = "源码通过审核")
+    public Result passCode(@PathVariable Long id) {
+        codeService.passCode(id);
+        return Result.ok();
+    }
+
+    @PostMapping(value = "/code/reject/{id}", name = "源码撤销审核")
+    public Result rejectCode(@PathVariable Long id) {
+        codeService.rejectCode(id);
+        return Result.ok();
+    }
+
+    private final CodeExchangeMapper codeExchangeMapper;
+
+    @GetMapping(value = "/code/exchange", name = "获取交易列表")
+    public Result getExchangeList() {
+        return Result.data(codeExchangeMapper.selectList(null));
     }
 }

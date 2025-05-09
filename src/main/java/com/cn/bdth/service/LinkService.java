@@ -25,7 +25,7 @@ public interface LinkService {
 
     void applyLink(LinkDto linkDto);
 
-    List<LinkVo> getAllLinkList();
+    List<LinkVo> getAllLinkList(String linkName);
 
     void refuseLink(Long id);
 

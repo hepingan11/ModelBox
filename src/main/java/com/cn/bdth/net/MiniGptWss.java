@@ -97,15 +97,13 @@ public class MiniGptWss {
 
                 final ControlStructure control = controlCommon.getControl();
 
-                final boolean isAdvancedModel = AiTypeConstant.ADVANCED.equals(model);
-
-                final Long frequency = control.getEnableGptPlus() ? (isAdvancedModel ? chatGptStructure.getGptPlusFrequency() : chatGptStructure.getGptFrequency()) : chatGptStructure.getGptFrequency();
+                final Long frequency = control.getEnableGptPlus() ? (false ? chatGptStructure.getGptPlusFrequency() : chatGptStructure.getGptFrequency()) : chatGptStructure.getGptFrequency();
 
                 chatUtils.deplete(frequency, userId);
 
                 final StringBuilder builder = new StringBuilder(500);
 
-                gptService.concatenationGpt(gptModel, isAdvancedModel, chatGptStructure)
+                gptService.concatenationGpt(gptModel, model, chatGptStructure)
                         .doFinally(signal -> handleWebSocketCompletion())
                         .subscribe(data -> {
                             if (JSON.isValid(data)) {

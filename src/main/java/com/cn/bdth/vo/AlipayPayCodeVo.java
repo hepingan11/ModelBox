@@ -23,6 +23,4 @@ public class AlipayPayCodeVo implements Serializable {
 
     private String payUrl;
 
-
-
 }
