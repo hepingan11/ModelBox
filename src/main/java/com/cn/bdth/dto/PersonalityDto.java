@@ -30,9 +30,6 @@ public class PersonalityDto {
     @NotBlank(message = "openKey不能为空")
     private String openKey;
 
-    @NotBlank(message = "openAiUrl不能为空")
-    private String openAiUrl;
-
     @NotBlank(message = "questions不能为空")
     private String questions;
 

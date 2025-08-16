@@ -17,6 +17,8 @@ public class PersonalityConfigStructure implements Serializable {
 
     private String model;
 
+    private String openAiUrl;
+
     private Integer top_p;
 
     private Integer max_tokens;
@@ -24,8 +26,6 @@ public class PersonalityConfigStructure implements Serializable {
     private Integer temperature;
 
     private String openKey;
-
-    private String openAiUrl;
 
     private String questions;
 

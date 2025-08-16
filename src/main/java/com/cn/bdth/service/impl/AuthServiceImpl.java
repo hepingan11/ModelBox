@@ -4,8 +4,6 @@ import cn.dev33.satoken.secure.SaSecureUtil;
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.cn.bdth.common.UserInspiritCommon;
-import org.springframework.mail.SimpleMailMessage;
-import com.cn.bdth.constants.WeChatConstant;
 import com.cn.bdth.constants.user.AuthConstant;
 import com.cn.bdth.dto.EmailCodeDto;
 import com.cn.bdth.dto.EmailContentDto;
@@ -15,8 +13,6 @@ import com.cn.bdth.exceptions.*;
 import com.cn.bdth.mapper.UserMapper;
 import com.cn.bdth.service.AuthService;
 import com.cn.bdth.utils.RedisUtils;
-import com.cn.bdth.utils.WeChatUtils;
-import com.cn.bdth.vo.WechatCodeVo;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -29,8 +25,6 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import java.util.Date;
-import java.util.Properties;
-import java.util.UUID;
 
 /**
  * 登录授权业务处理类
@@ -43,8 +37,6 @@ import java.util.UUID;
 public class AuthServiceImpl implements AuthService {
 
     private final UserMapper userMapper;
-
-    private final WeChatUtils weChatUtils;
 
     private final UserInspiritCommon userInspiritCommon;
 
@@ -147,65 +139,6 @@ public class AuthServiceImpl implements AuthService {
         return StpUtil.getTokenValue();
     }
 
-    /**
-     * 微信授权登录
-     *
-     * @param code the code
-     * @return the string
-     */
-    @Override
-    public String wechatAuthorizedLogin(final String code) {
-        //获取微信用户ID
-        final String openId = weChatUtils.getOpenId(code);
-        //是否存在
-        User user = userMapper.selectOne(new QueryWrapper<User>()
-                .lambda()
-                .eq(User::getOpenId, openId)
-                .select(User::getUserId, User::getOpenId, User::getType)
-        );
-        //不存在则写入DB
-        if (user == null) {
-            //初始化用户登录次数
-            user = new User()
-                    .setFrequency(userInspiritCommon.getInspiritStructure().getIncentiveFrequency())
-                    .setOpenId(openId);
-            userMapper.insert(user);
-        }
-        StpUtil.login(user.getUserId());
-        //设置具体TOKEN Session权限
-        StpUtil.getSession()
-                .set(AuthConstant.ROLE, user.getType())
-                .set(AuthConstant.OPEN_ID, user.getOpenId());
-        // 返回TOKEN
-        return StpUtil.getTokenValue();
-    }
-
-    @Override
-    public WechatCodeVo getWechatQrCode() {
-        final String verifyCode = UUID.randomUUID().toString().substring(0, 13);
-        redisUtils.setValueTimeout(WeChatConstant.QC_CODE_SCENE + verifyCode, "", 120);
-        return new WechatCodeVo().setQrCode(weChatUtils.getQrCode(verifyCode)).setVerifyCode(verifyCode);
-    }
-
-    @Override
-    public void wechatAuthorizedLogin(final String verifyCode, final String code) {
-        if (!redisUtils.doesItExist(WeChatConstant.QC_CODE_SCENE + verifyCode)) {
-            throw new WechatException(ExceptionMessages.WECHAT_CODE_ERR);
-        }
-        final String token = this.wechatAuthorizedLogin(code);
-        redisUtils.setValueTimeout(WeChatConstant.QC_CODE_SCENE + verifyCode, token, 120);
-
-    }
-
-    @Override
-    public String isQrcodeLoginSucceed(final String verifyCode) {
-        final String s = WeChatConstant.QC_CODE_SCENE + verifyCode;
-        final Boolean aBoolean = redisUtils.doesItExist(s);
-        if (!aBoolean) {
-            throw new WechatException(ExceptionMessages.WECHAT_CODE_ERR);
-        }
-        return (String) redisUtils.getValue(s);
-    }
 
     @Override
     public void logout() {

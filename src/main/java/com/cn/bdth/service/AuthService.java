@@ -3,7 +3,6 @@ package com.cn.bdth.service;
 import com.cn.bdth.dto.EmailCodeDto;
 import com.cn.bdth.dto.EmailContentDto;
 import com.cn.bdth.dto.EmailLoginDto;
-import com.cn.bdth.vo.WechatCodeVo;
 
 /**
  * 登录接口
@@ -35,42 +34,6 @@ public interface AuthService {
      * 邮箱登录
      */
     String emailLogin(final EmailLoginDto dto);
-
-
-
-    /**
-     * 微信授权登录
-     *
-     * @param code the code
-     * @return the string
-     */
-    String wechatAuthorizedLogin(final String code);
-
-
-    /**
-     * 获取微信登录二维码
-     *
-     * @return the WeChat qr code
-     */
-    WechatCodeVo getWechatQrCode();
-
-
-    /**
-     * 扫码登录
-     *
-     * @param verifyCode the verify code
-     * @param code       the code
-     */
-    void wechatAuthorizedLogin(final String verifyCode, final String code);
-
-
-    /**
-     * 是否授权登录
-     *
-     * @param verifyCode the verify code
-     * @return the string
-     */
-    String isQrcodeLoginSucceed(final String verifyCode);
 
 
     /**

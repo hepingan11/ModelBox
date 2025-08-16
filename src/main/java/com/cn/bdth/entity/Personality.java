@@ -27,7 +27,6 @@ public class Personality {
 
     private String openKey;
 
-    private String openAiUrl;
 
     private String questions;
 

@@ -34,40 +34,6 @@ import java.io.IOException;
 public class PublicController {
 
 
-    private final ServerService serverService;
-
-    private final PayService payService;
-
-    /**
-     * 获取公告
-     *
-     * @return the announcement
-     */
-    @GetMapping(value = "/get/announcement", name = "获取公告", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result getAnnouncement() {
-        return Result.data(serverService.getAnnouncement());
-    }
-
-    /**
-     * 支付宝授权
-     *
-     * @param request the request
-     * @return the string
-     */
-    @PostMapping(value = "/callback/order", name = "支付宝授权回调地址", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String alipayPullback(HttpServletRequest request) {
-        return payService.alipayPullback(request);
-    }
-
-    /**
-     * 获取小程序状态
-     */
-    @GetMapping(value = "/get/wechat/status", name = "获取小程序状态", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result getWechatAppStatus() {
-        return Result.data(serverService.wechatStatus());
-    }
-
-
     @GetMapping(value = "/bilibili/fan",name = "获取b站粉丝")
     public Result getBilibiliFan(){
         String vmid = "443081814";

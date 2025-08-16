@@ -39,7 +39,7 @@ public class BingUtils {
 
 
     /**
-     * Random string string.
+     * 获取随机字符串
      *
      * @param length the length
      * @return the string

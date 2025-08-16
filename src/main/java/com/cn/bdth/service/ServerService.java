@@ -88,10 +88,4 @@ public interface ServerService {
     AnnouncementStructure getAnnouncement();
 
 
-    /**
-     * 获取小程序状态
-     *
-     * @return 开启?关闭
-     */
-    boolean wechatStatus();
 }

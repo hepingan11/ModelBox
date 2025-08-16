@@ -15,6 +15,10 @@ import java.time.LocalDateTime;
  */
 @Data
 @TableName(value = "orders")
+/**
+ * 使用 Lombok 的 @Accessors(chain = true) 注解可以实现链式调用（方法返回当前对象），
+ * 例如：orders.setOrdersId("123").setUserId(1L);
+ */
 @Accessors(chain = true)
 public class Orders {
 

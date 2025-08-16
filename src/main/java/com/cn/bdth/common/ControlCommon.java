@@ -50,9 +50,7 @@ public class ControlCommon {
                 .setProxyPort(controlDefaultConfig.getProxyPort())
                 .setEnableProxy(controlDefaultConfig.getEnableProxy())
                 .setSensitiveWords(controlDefaultConfig.getSensitiveWords())
-                .setEnableSensitive(controlDefaultConfig.getEnableSensitive())
-                .setWechatAppEnv(controlDefaultConfig.getWechatAppEnv())
-                .setEnableWechatAppMain(controlDefaultConfig.getEnableWechatAppMain());
+                .setEnableSensitive(controlDefaultConfig.getEnableSensitive());
 
     }
 

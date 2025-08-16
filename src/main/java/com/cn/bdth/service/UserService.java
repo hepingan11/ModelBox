@@ -39,13 +39,6 @@ public interface UserService {
      */
     UserInfoVo getCurrentUserInfo();
 
-
-    /**
-     * 绑定邮箱
-     */
-    void wechatBindEmail(final String email, final String password);
-
-
     /**
      * 获取用户数据分页 （可搜索）
      *

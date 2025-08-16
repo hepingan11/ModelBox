@@ -4,8 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cn.bdth.common.ChatGptCommon;
-import com.cn.bdth.common.ControlCommon;
-import com.cn.bdth.common.StableDiffusionCommon;
 import com.cn.bdth.common.UserInspiritCommon;
 import com.cn.bdth.constants.ServerConstant;
 import com.cn.bdth.dto.PutExchangeDto;
@@ -14,7 +12,6 @@ import com.cn.bdth.dto.TerminalConfigDto;
 import com.cn.bdth.dto.admin.AnnouncementDto;
 import com.cn.bdth.entity.Exchange;
 import com.cn.bdth.mapper.ExchangeMapper;
-import com.cn.bdth.model.ClaudeModel;
 import com.cn.bdth.service.ServerService;
 import com.cn.bdth.structure.AnnouncementStructure;
 import com.cn.bdth.structure.ControlStructure;
@@ -41,7 +38,6 @@ public class ServerServiceImpl implements ServerService {
 
     private final ExchangeMapper exchangeMapper;
 
-    private final ControlCommon controlCommon;
 
     @Override
     public void heavyLoadDisposition(final ServerConfigDto dto) {
@@ -50,27 +46,18 @@ public class ServerServiceImpl implements ServerService {
                 new UserInspiritCommon.InspiritStructure()
                         .setIncentiveFrequency(dto.getIncentiveFrequency())
                         .setSignInFrequency(dto.getSignInFrequency())
-                        .setVideoFrequency(dto.getVideoFrequency())
         );
-        //SD
-        redisUtils.setValue(ServerConstant.SD_CONFIG,
-                new StableDiffusionCommon.StableDiffusionStructure()
-                        .setSdUrl(dto.getSdUrl())
-                        .setSdImageFrequency(dto.getSdImageFrequency())
-        );
-        redisUtils.setValue(ServerConstant.SD_BUTTON, dto.getSdButton());
-        redisUtils.setValue(ServerConstant.Dialogue_Storage, dto.getDialogueStorage());
+
         //Link Top Img
         redisUtils.setValue(ServerConstant.LINK_TOP_IMG, dto.getLinkTopImg());
-        redisUtils.setValue(ServerConstant.IS_HADOOP, dto.getIsHadoop());
         // CHAT GPT
         redisUtils.setValue(ServerConstant.CHAT_GPT_CONFIG,
                 new ChatGptCommon.ChatGptStructure()
                         .setGptFrequency(dto.getGptFrequency())
-                        .setGptPlusFrequency(dto.getGptPlusFrequency())
                         .setOpenKey(dto.getOpenKey())
-                        .setOpenAiUrl(dto.getOpenAiUrl())
                         .setDeepseekKey(dto.getDeepseekKey())
+                        .setTongyiKey(dto.getTongyiKey())
+                        .setClaudeKey(dto.getClaudeKey())
                         .setGlmKey(dto.getGlmKey())
                         .setGptTextImageFrequency(dto.getGptTextImageFrequency())
         );
@@ -89,31 +76,21 @@ public class ServerServiceImpl implements ServerService {
 
     @Override
     public DispositionVo getDisposition() {
-        final StableDiffusionCommon.StableDiffusionStructure sdStructure = (StableDiffusionCommon.StableDiffusionStructure) redisUtils.getValue(ServerConstant.SD_CONFIG);
         final ChatGptCommon.ChatGptStructure chatGptStructure = (ChatGptCommon.ChatGptStructure) redisUtils.getValue(ServerConstant.CHAT_GPT_CONFIG);
         final UserInspiritCommon.InspiritStructure inspiritStructure = (UserInspiritCommon.InspiritStructure) redisUtils.getValue(ServerConstant.INSPIRIT_CONFIG);
         final DispositionVo dispositionVo = new DispositionVo();
 
         final String linkTopImg = String.valueOf(redisUtils.getValue(ServerConstant.LINK_TOP_IMG));
-        final String isHadoop = String.valueOf(redisUtils.getValue(ServerConstant.IS_HADOOP));
-        final String sdButton = String.valueOf(redisUtils.getValue(ServerConstant.SD_BUTTON));
-        final String dialogueStorage = String.valueOf(redisUtils.getValue(ServerConstant.Dialogue_Storage));
 
         dispositionVo.setGlmKey(chatGptStructure != null ? chatGptStructure.getGlmKey() : null);
-        dispositionVo.setSdUrl(sdStructure != null ? sdStructure.getSdUrl() : null);
-        dispositionVo.setSdImageFrequency(sdStructure != null ? sdStructure.getSdImageFrequency() : null);
         dispositionVo.setGptFrequency(chatGptStructure != null ? chatGptStructure.getGptFrequency() : null);
-        dispositionVo.setGptPlusFrequency(chatGptStructure != null ? chatGptStructure.getGptPlusFrequency() : null);
-        dispositionVo.setOpenAiUrl(chatGptStructure != null ? chatGptStructure.getOpenAiUrl() : null);
         dispositionVo.setOpenKey(chatGptStructure != null ? chatGptStructure.getOpenKey() : null);
         dispositionVo.setDeepseekKey(chatGptStructure != null ? chatGptStructure.getDeepseekKey() : null);
+        dispositionVo.setTongyiKey(chatGptStructure !=null ? chatGptStructure.getTongyiKey() : null);
+        dispositionVo.setClaudeKey(chatGptStructure !=null ? chatGptStructure.getClaudeKey() : null);
         dispositionVo.setGptTextImageFrequency(chatGptStructure != null ? chatGptStructure.getGptTextImageFrequency() : null);
         dispositionVo.setLinkTopImg(StringUtils.isNotBlank(linkTopImg) ? linkTopImg : "");
-        dispositionVo.setIsHadoop(StringUtils.isNotBlank(isHadoop) ? isHadoop : "");
-        dispositionVo.setSdButton(StringUtils.isNotBlank(sdButton) ? sdButton : "");
-        dispositionVo.setDialogueStorage(StringUtils.isNotBlank(dialogueStorage) ? dialogueStorage : "");
         dispositionVo.setSignInFrequency(inspiritStructure != null ? inspiritStructure.getSignInFrequency() : null);
-        dispositionVo.setVideoFrequency(inspiritStructure != null ? inspiritStructure.getVideoFrequency() : null);
         dispositionVo.setIncentiveFrequency(inspiritStructure != null ? inspiritStructure.getIncentiveFrequency() : null);
 
         return dispositionVo;
@@ -171,8 +148,5 @@ public class ServerServiceImpl implements ServerService {
         return null;
     }
 
-    @Override
-    public boolean wechatStatus() {
-        return controlCommon.getControl().getEnableWechatAppMain();
-    }
+
 }

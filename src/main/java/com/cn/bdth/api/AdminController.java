@@ -29,8 +29,6 @@ public class AdminController {
 
     private final UserService userService;
 
-    private final DrawingService drawingService;
-
     private final PayService payService;
 
     private final LinkService linkService;
@@ -38,43 +36,6 @@ public class AdminController {
     private final CodeService codeService;
 
     private final AuthService authService;
-
-    /**
-     * 分页获取用户信息
-     *
-     * @param pageNum the page num
-     * @param prompt  the prompt
-     * @return the bot configuration
-     */
-    @GetMapping(value = "/sd/page/model", name = "分页获取SD模型", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result getSdModelPages(@RequestParam(defaultValue = "1") final int pageNum, final String prompt) {
-        return Result.data(
-                drawingService.getDrawingModelPage(pageNum, prompt)
-        );
-    }
-
-    /**
-     * 添加SD模型
-     *
-     * @param dto the dto
-     * @return the bot configuration
-     */
-    @PostMapping(value = "/sd/put/data", name = "添加SD模型", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result putSdModel(@RequestBody @Validated final DrawingSdDto dto) {
-        drawingService.addSdModel(dto);
-        return Result.ok();
-    }
-
-    /**
-     * 添加SD模型
-     *
-     * @return the bot configuration
-     */
-    @PostMapping(value = "/sd/delete/{id}", name = "删除指定模型", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result deleteDrawingById(@PathVariable Long id) {
-        drawingService.deletedSdModel(id);
-        return Result.ok();
-    }
 
 
     /**
@@ -246,28 +207,6 @@ public class AdminController {
     @PostMapping(value = "/exchange/delete/{id}", name = "删除兑换码", produces = MediaType.APPLICATION_JSON_VALUE)
     public Result deleteExchangeById(@PathVariable final Long id) {
         serverService.deleteRedemptionCodeBasedOnTheId(id);
-        return Result.ok();
-    }
-
-    /**
-     * 获取绘图列表分页
-     *
-     * @param pageNum the pageNum
-     * @return the result
-     */
-    @GetMapping(value = "/drawing/page", name = "获取绘图分页", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result getDrawingPage(@RequestParam(defaultValue = "1") final int pageNum) {
-        return Result.data(drawingService.getDrawingPage(pageNum));
-    }
-
-    /**
-     * 设置公共状态
-     *
-     * @return the result
-     */
-    @PostMapping(value = "/drawing/status/{id}", name = "设置绘图状态", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result putDrawingStatus(@PathVariable final Long id) {
-        drawingService.putPublicDrawingOps(id);
         return Result.ok();
     }
 

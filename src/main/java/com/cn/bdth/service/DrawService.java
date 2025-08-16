@@ -9,17 +9,7 @@ import com.cn.bdth.vo.admin.DrawingVo;
 import java.util.List;
 
 public interface DrawService {
-    String addSdTask(DrawingSdTaskDto dto);
 
-    List<String> getSdDrawList();
-
-    List<DrawingVo> getSdDrawListPrivate();
-
-    void setPublic(String url);
-
-    void deleteDraw(Long id);
-
-    String checkSdConnectivity();
 
     String addZhipuDrawingTask(ZhipuDrawDto dto);
 

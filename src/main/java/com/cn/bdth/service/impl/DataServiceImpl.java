@@ -11,10 +11,10 @@ import com.hankcs.hanlp.HanLP;
 import com.hankcs.hanlp.seg.common.Term;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IOUtils;
+//import org.apache.hadoop.conf.Configuration;
+//import org.apache.hadoop.fs.FileSystem;
+//import org.apache.hadoop.fs.Path;
+//import org.apache.hadoop.io.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -33,11 +33,6 @@ public class DataServiceImpl implements DataService {
     private final DialogueMapper dialogueMapper;
     private final RedisUtils redisUtils;
 
-    @Value("${hdfs.url}")
-    private String hdfsUrl;
-
-    @Value("${hdfs.username}")
-    private String userName;
 
     @Override
     public List<Dialogue> getDialogueData() {
@@ -46,52 +41,8 @@ public class DataServiceImpl implements DataService {
 
     @Override
     public List<Dialogue> getDialogueDataPage(Integer no, Integer size) {
-        String isHadoop = String.valueOf(redisUtils.getValue(ServerConstant.IS_HADOOP));
-        if (isHadoop.equals("mysql")){
-            return dialogueMapper.selectList(new QueryWrapper<Dialogue>().lambda().eq(Dialogue::getUserId, UserUtils.getCurrentLoginId()).orderByDesc(Dialogue::getCreatedTime));
-        }else {
-            List<Dialogue> dialogueList = new ArrayList<>();
-            Configuration conf = new Configuration();
-            // 配置HDFS的URI，根据你的Hadoop集群配置进行修改
-            conf.set("fs.defaultFS", hdfsUrl);
-            System.setProperty("HADOOP_USER_NAME", userName);
-            FileSystem fs = null;
-            InputStream in = null;
-            BufferedReader reader = null;
-            List<String> lines = new ArrayList<>();
-            try {
-                fs = FileSystem.get(conf);
-                String hdfsFilePath = "/data/" + UserUtils.getCurrentLoginId() + ".txt";
-                Path path = new Path(hdfsFilePath);
-                in = fs.open(path);
-                reader = new BufferedReader(new InputStreamReader(in));
-                String line;
-
-                while ((line = reader.readLine()) != null) {
-                    lines.add(line);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                // 关闭资源
-                IOUtils.closeStream(reader);
-                IOUtils.closeStream(in);
-                try {
-                    if (fs != null) {
-                        fs.close();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            for (String line : lines){
-                String[] split = line.split("\\|");
-                dialogueList.add(new Dialogue().setContent(split[0]).setMessage(split[1]).setCreatedTime(LocalDateTime.parse(split[2])));
-            }
-            return dialogueList;
-        }
-
+        return dialogueMapper.selectList(new QueryWrapper<Dialogue>().lambda()
+                .eq(Dialogue::getUserId, UserUtils.getCurrentLoginId()).orderByDesc(Dialogue::getCreatedTime));
     }
 
     @Override

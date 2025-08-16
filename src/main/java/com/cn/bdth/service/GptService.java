@@ -6,6 +6,7 @@ import com.cn.bdth.entity.Dialogue;
 import com.cn.bdth.model.GptModel;
 import com.cn.bdth.model.ZhipuModel;
 import com.cn.bdth.structure.PersonalityConfigStructure;
+import io.reactivex.rxjava3.core.Completable;
 import reactor.core.publisher.Flux;
 
 import java.io.IOException;
@@ -19,29 +20,8 @@ import java.util.List;
  */
 public interface GptService {
 
-    /**
-     * 建立GPT 流式连接
-     *
-     * @param model 请求模型
-     * @return string 流数据
-     */
-    Flux<String> concatenationGpt(final GptModel model, String modelName, final ChatGptCommon.ChatGptStructure chatGptStructure);
 
-    /**
-     * 建立GLM 流式连接
-     *
-     * @param model 请求模型
-     * @return string 流数据
-     */
-    Flux<String> concatenationGLM(final ZhipuModel model, String modelName, final ChatGptCommon.ChatGptStructure chatGptStructure);
 
-    /**
-     * 通过GPT绘制图片
-     *
-     * @param promptWords 提此次
-     * @return string 流数据
-     */
-    String drawAccordingGpt(final String promptWords, final ChatGptCommon.ChatGptStructure chatGptStructure);
 
     /**
      * 建立GPT 流式连接 个性
@@ -62,24 +42,5 @@ public interface GptService {
      */
     void putPersonalityConfig(final PersonalityDto dto);
 
-    /**
-     * NewBing
-     *
-     * @return the flux
-     */
-    Flux<String> concatenationNewBing(final String messages);
 
-
-    /*
-     *  Claude
-     */
-    Flux<String> concatenationClaude(final String messages);
-
-
-    /**
-     * 添加对话
-     * @param dialogue
-     * @throws IOException
-     */
-    void putDialogue(Dialogue dialogue) throws IOException;
 }

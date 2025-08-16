@@ -1,3 +1,5 @@
+create database super_bot;
+use super_bot;
 create table code
 (
     code_id      bigint auto_increment

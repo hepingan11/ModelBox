@@ -30,6 +30,7 @@ public class RoutePathFilter {
                     SaRouter.match("/**")
                             .notMatch(
                                     "/auth/**",
+                                    "/chat/**",
                                     "/gpt/**",
                                     "/public/**",
                                     "/gpt-web/**",

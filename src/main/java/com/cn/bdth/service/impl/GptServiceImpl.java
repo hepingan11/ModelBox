@@ -1,33 +1,18 @@
 package com.cn.bdth.service.impl;
 
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.cn.bdth.common.ChatGptCommon;
-import com.cn.bdth.common.ClaudeCommon;
 import com.cn.bdth.common.ControlCommon;
-import com.cn.bdth.common.NewBingCommon;
-import com.cn.bdth.constants.AiModelConstant;
-import com.cn.bdth.constants.AiTypeConstant;
 import com.cn.bdth.constants.ServerConstant;
 import com.cn.bdth.constants.user.PersonalityConstant;
 import com.cn.bdth.dto.PersonalityDto;
-import com.cn.bdth.entity.Dialogue;
 import com.cn.bdth.entity.Personality;
-import com.cn.bdth.enums.FileEnum;
-import com.cn.bdth.exceptions.BingException;
-import com.cn.bdth.exceptions.DrawingException;
-import com.cn.bdth.exceptions.ExceptionMessages;
 import com.cn.bdth.exceptions.PersonalityConfigNullException;
-import com.cn.bdth.handler.Chat;
-import com.cn.bdth.interfaces.Callback;
 import com.cn.bdth.mapper.DialogueMapper;
 import com.cn.bdth.mapper.PersonalityMapper;
-import com.cn.bdth.model.ClaudeModel;
-import com.cn.bdth.model.GptImageModel;
 import com.cn.bdth.model.GptModel;
 import com.cn.bdth.model.ZhipuModel;
 import com.cn.bdth.service.GptService;
-import com.cn.bdth.structure.ControlStructure;
 import com.cn.bdth.structure.PersonalityConfigStructure;
 import com.cn.bdth.utils.AliUploadUtils;
 import com.cn.bdth.utils.BeanUtils;
@@ -35,31 +20,16 @@ import com.cn.bdth.utils.RedisUtils;
 import com.cn.bdth.utils.UserUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.*;
-import org.apache.hadoop.io.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
-import reactor.netty.http.client.HttpClient;
-import reactor.netty.transport.ProxyProvider;
 
-import java.io.BufferedWriter;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
+
 import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+
 
 
 @Service
@@ -68,29 +38,10 @@ import java.util.UUID;
 public class GptServiceImpl implements GptService {
 
     private final WebClient.Builder webClient;
-
-    private final ControlCommon controlCommon;
-
-    private final NewBingCommon newBingCommon;
-
-    private final ClaudeCommon claudeCommon;
-
+    
     private final RedisUtils redisUtils;
 
     private final PersonalityMapper personalityMapper;
-
-    private final AliUploadUtils aliUploadUtils;
-
-    private final DialogueMapper dialogueMapper;
-
-    @Value("${ali-oss.domain}")
-    private String domain;
-
-    @Value("${hdfs.url}")
-    private String hdfsUrl;
-
-    @Value("${hdfs.username}")
-    private String userName;
 
     @Override
     public PersonalityConfigStructure getPersonalityConfig(Long currentLoginId) {
@@ -111,7 +62,6 @@ public class GptServiceImpl implements GptService {
                             Personality::getOpenKey,
                             Personality::getMaxTokens,
                             Personality::getTemperature,
-                            Personality::getOpenAiUrl,
                             Personality::getSpeed,
                             Personality::getTopP,
                             Personality::getQuestions
@@ -123,7 +73,6 @@ public class GptServiceImpl implements GptService {
                         .setModel(personality.getModel())
                         .setQuestions(personality.getQuestions())
                         .setSpeed(personality.getSpeed())
-                        .setOpenAiUrl(personality.getOpenAiUrl())
                         .setMax_tokens(personality.getMaxTokens())
                         .setTemperature(personality.getTemperature())
                         .setOpenKey(personality.getOpenKey())
@@ -153,76 +102,7 @@ public class GptServiceImpl implements GptService {
 
     }
 
-    @Override
-    public Flux<String> concatenationGpt(final GptModel model, String modelName, final ChatGptCommon.ChatGptStructure chatGptStructure) {
-        String baseUrl;
-        String apiKey;
 
-        switch (modelName) {
-            case "BASIC":
-                model.setModel(AiModelConstant.BASIC);
-                baseUrl = chatGptStructure.getOpenAiUrl();
-                apiKey = chatGptStructure.getOpenKey();
-                break;
-            case "DEEPSEEK":
-                model.setModel(AiModelConstant.DEEPSEEK);
-                baseUrl = "https://api.deepseek.com";
-                apiKey = chatGptStructure.getDeepseekKey();
-                break;
-            case "DEEPSEEK_R":
-                model.setModel(AiModelConstant.DEEPSEEK_R);
-                baseUrl = "https://api.deepseek.com";
-                apiKey = chatGptStructure.getDeepseekKey();
-                break;
-            case "GLM":
-                model.setModel(AiModelConstant.GLM);
-                baseUrl = "https://open.bigmodel.cn/api/paas/v4";
-                apiKey = chatGptStructure.getGlmKey();
-                break;
-            default:
-                throw new RuntimeException("模型名称错误");
-        }
-
-        Flux<String> stringFlux = webClient.baseUrl(baseUrl)
-                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
-                .build()
-                .post()
-                .uri(ServerConstant.GPT_DIALOGUE)
-                .body(BodyInserters.fromValue(model))
-                .retrieve()
-                .bodyToFlux(String.class);
-        return stringFlux;
-
-    }
-
-    @Override
-    public Flux<String> concatenationGLM(ZhipuModel model, String modelName, ChatGptCommon.ChatGptStructure chatGptStructure) {
-        return null;
-    }
-
-    @Override
-    public String drawAccordingGpt(final String promptWords, final ChatGptCommon.ChatGptStructure str) {
-        try {
-            final String block = webClient.baseUrl(str.getOpenAiUrl())
-                    .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + str.getOpenKey())
-                    .build()
-                    .post()
-                    .uri(ServerConstant.GPT_DRAWING)
-                    .body(BodyInserters.fromValue(new GptImageModel()
-                            .setPrompt(promptWords)
-                    ))
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .block();
-            final JSONObject jsonObject = JSONObject.parseObject(block);
-            assert jsonObject != null;
-            final String imageUrl = jsonObject.getJSONArray("data").getJSONObject(0).getString("url");
-
-            return "![DRAWING](" + domain + aliUploadUtils.uploadImageFromUrl(imageUrl, FileEnum.PAINTING.getDec(), UUID.randomUUID() + ".jpg") + ")";
-        } catch (Exception e) {
-            throw new DrawingException();
-        }
-    }
 
     @Override
     public Flux<String> concatenationGpt(List<GptModel.Messages> messages, final Long userId) {
@@ -245,107 +125,6 @@ public class GptServiceImpl implements GptService {
                                 .setMax_tokens(config.getMax_tokens())))
                 .retrieve()
                 .bodyToFlux(String.class);
-    }
-
-
-    @Override
-    public Flux<String> concatenationNewBing(final String messages) {
-        final ControlStructure control = controlCommon.getControl();
-        //获取Cookie
-        final String newBingCookie = "_U=" + newBingCommon.getNewBingCookie();
-
-        final Chat chat;
-        if (control.getEnableProxy()) {
-            chat = new Chat(newBingCookie, false)
-                    .setProxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(control.getProxyIp(), control.getProxyPort())));
-        } else {
-            chat = new Chat(newBingCookie, false);
-        }
-        return Flux.create(f -> chat.newChat().newQuestion(messages, new Callback() {
-            @Override
-            public void onSuccess(JSONObject rawData) {
-                f.complete();
-            }
-
-            @Override
-            public void onFailure(JSONObject rawData, String cause) {
-                log.error("NEW BING现在已经不可用 原因:{}", cause);
-                throw new BingException(ExceptionMessages.BING_ERR);
-            }
-
-            @Override
-            public void onUpdate(JSONObject rawData) {
-                f.next(String.valueOf(rawData));
-            }
-        }));
-    }
-
-    @Override
-    public Flux<String> concatenationClaude(final String message) {
-        final ControlStructure control = controlCommon.getControl();
-        final ClaudeModel claudeModel = claudeCommon.getClaudeModel()
-                .setCompletion(new ClaudeModel.Completion().setPrompt(message))
-                .setText(message);
-        final WebClient.Builder builder = WebClient.builder()
-                .baseUrl("https://claude.ai/api/append_message")
-                .clientConnector(new ReactorClientHttpConnector())
-                .defaultHeader(HttpHeaders.ORIGIN, "https://claude.ai")
-                .defaultCookie("sessionKey", claudeModel.getSessionKey());
-        if (control.getEnableProxy()) {
-            builder.clientConnector(new ReactorClientHttpConnector(
-                    HttpClient.create()
-                            .proxy(proxy -> proxy
-                                    .type(ProxyProvider.Proxy.HTTP)
-                                    .address(new InetSocketAddress(control.getProxyIp(), control.getProxyPort())))
-            ));
-        }
-        return builder.build()
-                .post()
-                .body(BodyInserters.fromValue(claudeModel))
-                .retrieve()
-                .bodyToFlux(String.class);
-    }
-
-    @Override
-    public void putDialogue(Dialogue dialogue) throws IOException {
-        Object value = redisUtils.getValue(ServerConstant.Dialogue_Storage);
-        if (value.toString().equals("0")){
-            return;
-        }
-        String isHadoop = String.valueOf(redisUtils.getValue(ServerConstant.IS_HADOOP));
-        if (Objects.equals(isHadoop, "mysql")){
-            dialogueMapper.insert(dialogue.setCreatedTime(LocalDateTime.now()));
-        }else {
-            Configuration conf = new Configuration();
-            conf.set("fs.defaultFS",hdfsUrl);
-            // 如果需要的话，设置用户
-            System.setProperty("HADOOP_USER_NAME", userName);
-            FileSystem fs = FileSystem.get(conf);
-            // 创建一个路径对象，指向HDFS上的目标文件
-            String url = "/data/"+dialogue.getUserId()+".txt";
-            Path hdfspath = new Path(url);
-            // 检查文件是否存在
-            // 如果文件不存在，则创建文件
-            if (!fs.exists(hdfspath)) {
-                fs.createNewFile(hdfspath);
-            }
-            // 使用append方法打开输出流，以追加模式写入文件
-            FSDataOutputStream out = fs.append(hdfspath);
-            // 使用OutputStreamWriter和BufferedWriter包装FSDataOutputStream，并指定UTF-8编码
-            OutputStreamWriter osw = new OutputStreamWriter(out, StandardCharsets.UTF_8);
-            BufferedWriter writer = new BufferedWriter(osw);
-            // 要追加的内容
-            String contentToAppend = dialogue.getMessage()+"|"+dialogue.getContent()+"|"+LocalDateTime.now()+"\n";
-            // 写入内容
-            writer.write(contentToAppend);
-            // 关闭流
-            writer.close();
-            osw.close();
-            out.close(); // 关闭输出流
-            fs.close();
-        }
-
-
     }
 
 }

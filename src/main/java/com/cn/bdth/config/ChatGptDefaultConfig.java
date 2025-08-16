@@ -15,14 +15,17 @@ import org.springframework.stereotype.Component;
 public class ChatGptDefaultConfig {
 
 
-    @Value("${config.openAiUrl}")
-    private String openAiUrl;
-
     @Value("${config.openKey}")
     private String openKey;
 
     @Value("${config.deepseekKey}")
     private String deepseekKey;
+
+    @Value("${config.tongyiKey}")
+    private String tongyiKey;
+
+    @Value("${config.claudeKey}")
+    private String claudeKey;
 
     @Value("${config.glmKey}")
     private String glmKey;
@@ -33,6 +36,4 @@ public class ChatGptDefaultConfig {
     @Value("${config.gptFrequency}")
     private Long gptFrequency;
 
-    @Value("${config.gptPlusFrequency}")
-    private Long gptPlusFrequency;
 }

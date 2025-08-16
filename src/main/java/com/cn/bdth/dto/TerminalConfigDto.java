@@ -21,9 +21,6 @@ public class TerminalConfigDto {
     @NotNull(message = "代理端口不能为空")
     private Integer proxyPort;
 
-    @NotBlank(message = "小程序环境不能为空")
-    private String wechatAppEnv;
-
     @NotBlank(message = "敏感词过滤不能为空")
     private String sensitiveWords;
 
@@ -32,9 +29,6 @@ public class TerminalConfigDto {
 
     @NotNull(message = "增强开启不能空")
     private Boolean enableGptPlus;
-
-    @NotNull(message = "小程序主页面开启不能空")
-    private Boolean enableWechatAppMain;
 
     @NotNull(message = "代理开启不能为空")
     private Boolean enableProxy;

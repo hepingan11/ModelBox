@@ -13,35 +13,23 @@ import java.io.Serializable;
 @Data
 public class DispositionVo implements Serializable {
 
-    private String openAiUrl;
-
     private String openKey;
 
     private String deepseekKey;
 
+    private String claudeKey;
+
     private String glmKey;
+
+    private String tongyiKey;
 
     private Long gptTextImageFrequency;
 
     private Long gptFrequency;
 
-    private Long gptPlusFrequency;
-
     private String linkTopImg;
-
-    private String sdButton;
-
-    private String dialogueStorage;
-
-    private Long sdImageFrequency;
-
-    private String sdUrl;
 
     private Long incentiveFrequency;
 
     private Long signInFrequency;
-
-    private Long videoFrequency;
-
-    private String isHadoop;
 }

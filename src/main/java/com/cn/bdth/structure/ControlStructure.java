@@ -18,15 +18,11 @@ public class ControlStructure {
 
     private Integer proxyPort;
 
-    private String wechatAppEnv;
-
     private String sensitiveWords;
 
     private Boolean enableSensitive;
 
     private Boolean enableGptPlus;
-
-    private Boolean enableWechatAppMain;
 
     private Boolean enableProxy;
 

@@ -5,19 +5,12 @@ import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alipay.api.AlipayApiException;
-import com.alipay.api.AlipayClient;
-import com.alipay.api.AlipayConfig;
-import com.alipay.api.DefaultAlipayClient;
-import com.alipay.api.domain.AlipayTradePrecreateModel;
 import com.alipay.api.internal.util.AlipaySignature;
-import com.alipay.api.request.AlipayTradePrecreateRequest;
-import com.alipay.api.response.AlipayTradePrecreateResponse;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cn.bdth.constants.OrderConstant;
-import com.cn.bdth.constants.lock.LockPrefix;
 import com.cn.bdth.dto.ShelvesProductDto;
 import com.cn.bdth.entity.Orders;
 import com.cn.bdth.entity.Product;
@@ -28,13 +21,11 @@ import com.cn.bdth.mapper.OrdersMapper;
 import com.cn.bdth.mapper.ProductMapper;
 import com.cn.bdth.mapper.UserMapper;
 import com.cn.bdth.service.PayService;
-import com.cn.bdth.structure.AlipayCacheStructure;
-import com.cn.bdth.task.UnpaidOrderQueue;
 import com.cn.bdth.utils.*;
 import com.cn.bdth.vo.AlipayPayCodeVo;
 import com.cn.bdth.vo.OrderPageVo;
 import com.cn.bdth.vo.ProductVo;
-import com.google.zxing.WriterException;
+//import com.google.zxing.WriterException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +33,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -78,7 +68,7 @@ public class PayServiceImpl implements PayService {
     @Value("${ali-pay.domain}")
     private String domain;
 
-    private final UnpaidOrderQueue unpaidOrderQueue;
+
 
 
     /**

@@ -22,9 +22,6 @@ public class ControlDefaultConfig {
     @Value("${control.proxyPort}")
     private Integer proxyPort;
 
-    @Value("${control.wechatAppEnv}")
-    private String wechatAppEnv;
-
     @Value("${control.sensitiveWords}")
     private String sensitiveWords;
 
@@ -37,7 +34,5 @@ public class ControlDefaultConfig {
     @Value("${control.enableProxy}")
     private Boolean enableProxy;
 
-    @Value("${control.enableWechatAppMain}")
-    private Boolean enableWechatAppMain;
 
 }

@@ -3,24 +3,15 @@ package com.cn.bdth.api;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.cn.bdth.common.ChatGptCommon;
 import com.cn.bdth.constants.AiModelConstant;
-import com.cn.bdth.constants.ServerConstant;
 import com.cn.bdth.dto.PersonalityDto;
 import com.cn.bdth.dto.StarDialogueDto;
-import com.cn.bdth.dto.WeChatBindDto;
-import com.cn.bdth.dto.ZhipuWebDto;
-import com.cn.bdth.entity.Drawing;
-import com.cn.bdth.enums.FileEnum;
 import com.cn.bdth.exceptions.UploadException;
-import com.cn.bdth.exceptions.WeChatBindingException;
 import com.cn.bdth.model.ZhipuModel;
 import com.cn.bdth.msg.Result;
-import com.cn.bdth.service.DrawingService;
 import com.cn.bdth.service.GptService;
 import com.cn.bdth.service.StarService;
 import com.cn.bdth.service.UserService;
-import com.cn.bdth.utils.RedisUtils;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -34,28 +25,16 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
-/**
- * 小程序 (用户操作性接口) 非公开
- *
- * @author  @github dulaiduwang003
- * @version 1.0
- */
+
 @Slf4j
 @RestController
 @RequestMapping("/user")
@@ -65,8 +44,6 @@ public class UserController {
     private final UserService userService;
 
     private final StarService starService;
-
-    private final DrawingService drawingService;
 
     private final GptService gptService;
 
@@ -90,23 +67,6 @@ public class UserController {
         gptService.putPersonalityConfig(dto);
         return Result.ok();
     }
-
-
-    /**
-     * 微信绑定邮箱
-     *
-     * @return the result
-     */
-    @PostMapping(value = "/wechat/bind", name = "微信绑定邮箱", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result wechatBindEmail(@RequestBody @Validated WeChatBindDto dto) {
-        try {
-            userService.wechatBindEmail(dto.getEmail(), dto.getPassword());
-            return Result.ok();
-        } catch (WeChatBindingException e) {
-            return Result.error(e.getMessage());
-        }
-    }
-
 
     /**
      * 当前用户信息结果。
@@ -209,7 +169,7 @@ public class UserController {
      */
     @GetMapping(value = "/drawing/page", name = "获取我的作品", produces = MediaType.APPLICATION_JSON_VALUE)
     public Result getUserOpsPage(@RequestParam(defaultValue = "1") final int pageNum) {
-        return Result.data(drawingService.getUserDrawingOpsPage(pageNum));
+        return Result.data(null);
     }
 
     /**
@@ -227,38 +187,5 @@ public class UserController {
         return Result.data(userService.sign());
     }
 
-    @Value("${config.glmKey}")
-    private String glmKey;
 
-    @PostMapping(value = "/zhipu", name = "智谱图文对话", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result ZhipuChat(@RequestBody @Validated final List<Map<String, Object>> dto) {
-
-        ZhipuModel model = new ZhipuModel();
-        model.setMessages(dto);
-        model.setModel(AiModelConstant.GLM);
-        model.setStream(false);
-
-        // 设置请求的URL地址
-        CloseableHttpClient aDefault = HttpClients.createDefault();
-
-        HttpPost httpPost = new HttpPost("https://open.bigmodel.cn/api/paas/v4/chat/completions");
-        httpPost.setHeader("Authorization", "Bearer " +glmKey);
-        httpPost.setEntity(new StringEntity(JSON.toJSONString(model), ContentType.APPLICATION_JSON));
-        CloseableHttpResponse execute;
-        try {
-            execute = aDefault.execute(httpPost);
-            String str = EntityUtils.toString(execute.getEntity());
-            // 解析 JSON 字符串
-            JSONObject jsonObject = JSONObject.parseObject(str);
-            String content = jsonObject.getJSONArray("choices")
-                    .getJSONObject(0)
-                    .getJSONObject("message")
-                    .getString("content");
-
-            return Result.data(content);
-        } catch (IOException e) {
-            return Result.error("请求失败: " + e.getMessage());
-        }
-
-    }
 }
