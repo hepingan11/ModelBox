@@ -1,5 +1,3 @@
-create database super_bot;
-use super_bot;
 create table code
 (
     code_id      bigint auto_increment
@@ -39,6 +37,16 @@ create table code_image
     image_url     varchar(200) not null comment '图'
 )
     comment '代码项目图片';
+
+create table conversation_user
+(
+    conversation_id varchar(36)  not null comment '对话id',
+    user_id         bigint       not null comment '用户id',
+    title           varchar(255) null comment '对话名称',
+    created_time    datetime     not null comment '创建时间',
+    role            varchar(350) null comment '系统角色'
+)
+    comment '用户对话索引';
 
 create table drawing
 (
@@ -98,23 +106,23 @@ create index idx_update_time
 
 create table link
 (
-    link_id     bigint auto_increment comment 'id'
+    link_id      bigint auto_increment comment 'id'
         primary key,
-    user_id     bigint                             not null comment '申请人用户id',
-    link_name   varchar(50)                        not null comment '链接名称',
-    link_url    varchar(100)                       not null comment '链接地址',
-    link_intro  varchar(200)                       not null comment '链接简介',
-    link_sort   varchar(20)                        not null comment '链接分类',
-    link_img    varchar(200)                       not null comment '链接封面',
-    is_public   tinyint  default 0                 not null comment '是否申请成功',
-    is_hot      tinyint  default 0                 not null comment '是否为热门',
-    create_time datetime default CURRENT_TIMESTAMP not null comment '创建时间',
-    update_time datetime default CURRENT_TIMESTAMP not null comment '更新时间'
+    user_id      bigint                             not null comment '申请人用户id',
+    link_name    varchar(50)                        not null comment '链接名称',
+    link_url     varchar(100)                       not null comment '链接地址',
+    link_intro   varchar(200)                       not null comment '链接简介',
+    link_sort    varchar(20)                        not null comment '链接分类',
+    link_img     varchar(200)                       not null comment '链接封面',
+    is_public    tinyint  default 0                 not null comment '是否申请成功',
+    is_hot       tinyint  default 0                 not null comment '是否为热门',
+    created_time datetime default CURRENT_TIMESTAMP not null comment '创建时间',
+    update_time  datetime default CURRENT_TIMESTAMP not null comment '更新时间'
 )
     comment '链接';
 
 create index idx_created_time
-    on link (create_time);
+    on link (created_time);
 
 create index idx_is_hot
     on link (is_hot);
@@ -229,6 +237,25 @@ create table sd_model
 
 create index sd_model_model_name_text_name_index
     on sd_model (model_name, text_name);
+
+create table spring_ai_chat_memory
+(
+    id              bigint auto_increment
+        primary key,
+    conversation_id varchar(36)  not null,
+    content         text         not null,
+    media           varchar(160) null comment '媒体',
+    type            varchar(10)  not null,
+    timestamp       timestamp    not null,
+    model           varchar(36)  null comment '模型名',
+    is_mcp          tinyint(1)   null comment '是否开启了mcp',
+    is_rag          tinyint      null comment '是否开启了rag',
+    CONSTRAINT TYPE_CHECK CHECK (type IN ('USER', 'ASSISTANT', 'SYSTEM', 'TOOL'))
+
+);
+
+create index SPRING_AI_CHAT_MEMORY_CONVERSATION_ID_TIMESTAMP_IDX
+    on spring_ai_chat_memory (conversation_id, timestamp);
 
 create table star
 (
