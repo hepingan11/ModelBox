@@ -9,7 +9,6 @@ import com.cn.bdth.exceptions.UploadException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -72,14 +71,14 @@ public class AliUploadUtils {
         }
     }
 
-    public String uploadBase64(final String base64, String path) throws IOException {
-        byte[] imageBytes = Base64.getDecoder().decode(base64);
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(imageBytes);
-        // 生成随机的图片文件名
-        final String fileName = UUID.randomUUID() + ".jpg";
-        MultipartFile multipartFile = new MockMultipartFile(fileName, inputStream);
-        return uploadFile(multipartFile, path, fileName, true);
-    }
+//    public String uploadBase64(final String base64, String path) throws IOException {
+//        byte[] imageBytes = Base64.getDecoder().decode(base64);
+//        ByteArrayInputStream inputStream = new ByteArrayInputStream(imageBytes);
+//        // 生成随机的图片文件名
+//        final String fileName = UUID.randomUUID() + ".jpg";
+//        MultipartFile multipartFile = new MockMultipartFile(fileName, inputStream);
+//        return uploadFile(multipartFile, path, fileName, true);
+//    }
 
     public void deleteFile(final String filePath) {
         OSS ossClient = new OSSClientBuilder()

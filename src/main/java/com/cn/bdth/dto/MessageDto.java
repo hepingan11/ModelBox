@@ -18,5 +18,11 @@ public class MessageDto {
 
     private String model;
 
+    private Boolean isRag;
+
+    private Boolean isMcp;
+
+    private String role;
+
     private MultipartFile file;
 }

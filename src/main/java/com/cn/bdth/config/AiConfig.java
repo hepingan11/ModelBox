@@ -1,6 +1,7 @@
 package com.cn.bdth.config;
 
 import com.cn.bdth.common.ChatGptCommon;
+import com.cn.bdth.common.MysqlChatMemory;
 import com.cn.bdth.constants.AiBaseUrlConstant;
 import com.cn.bdth.constants.AiModelConstant;
 import com.cn.bdth.constants.ServerConstant;
@@ -48,17 +49,17 @@ public class AiConfig {
         return SimpleVectorStore.builder(embeddingModel).build();
     }
 
-    @Bean
-    public ChatMemory chatMemory(JdbcChatMemoryRepository chatMemoryRepository){
-        return MessageWindowChatMemory.builder()
-                .chatMemoryRepository(chatMemoryRepository)
-                .maxMessages(15)
-                .build();
-    }
+//    @Bean
+//    public ChatMemory chatMemory(JdbcChatMemoryRepository chatMemoryRepository){
+//        return MessageWindowChatMemory.builder()
+//                .chatMemoryRepository(chatMemoryRepository)
+//                .maxMessages(15)
+//                .build();
+//    }
 
     @Bean
     @Primary
-    public ChatClient openaiClient(OpenAiChatModel model, ChatMemory chatMemory) {
+    public ChatClient openaiClient(OpenAiChatModel model, MysqlChatMemory chatMemory) {
         return ChatClient.builder(model)
                 .defaultSystem("你叫何平安，是一个高冷酷酷的IT高手")
                 .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
@@ -66,7 +67,7 @@ public class AiConfig {
     }
 
     @Bean
-    public ChatClient zhipuClient(ZhiPuAiChatModel model, ChatMemory chatMemory) {
+    public ChatClient zhipuClient(ZhiPuAiChatModel model, MysqlChatMemory chatMemory) {
         return ChatClient.builder(model)
                 .defaultSystem("你叫何平安，是一个高冷酷酷的IT高手")
                 .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
@@ -144,6 +145,18 @@ public class AiConfig {
                         .baseUrl(AiBaseUrlConstant.GROK)
                         .build())
                 .defaultOptions(OpenAiChatOptions.builder().model(AiModelConstant.GROK).build())
+                .build();
+    }
+
+    @Bean
+    public OpenAiChatModel doubaoModel(){
+        final ChatGptCommon.ChatGptStructure chatGptStructure = (ChatGptCommon.ChatGptStructure) redisUtils.getValue(ServerConstant.CHAT_GPT_CONFIG);
+        return OpenAiChatModel.builder()
+                .openAiApi(OpenAiApi.builder()
+                        .apiKey(chatGptStructure.getClaudeKey())
+                        .baseUrl(AiBaseUrlConstant.DOUBAO)
+                        .build())
+                .defaultOptions(OpenAiChatOptions.builder().model(AiModelConstant.DOUBAO).build())
                 .build();
     }
 

@@ -25,7 +25,6 @@ import com.cn.bdth.utils.*;
 import com.cn.bdth.vo.AlipayPayCodeVo;
 import com.cn.bdth.vo.OrderPageVo;
 import com.cn.bdth.vo.ProductVo;
-//import com.google.zxing.WriterException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,25 +47,21 @@ public class PayServiceImpl implements PayService {
 
     private final RedisUtils redisUtils;
 
-    private final RedisLockHelper lockHelper;
-
-    private final IdGeneratorUtils idGeneratorUtils;
-
     private final OrdersMapper ordersMapper;
 
     private final UserMapper userMapper;
-
-    @Value("${ali-pay.appId}")
-    private String appId;
-
+//
+//    @Value("${ali-pay.appId}")
+//    private String appId;
+//
     @Value("${ali-pay.alipayPublicKey}")
     private String alipayPublicKey;
-
-    @Value("${ali-pay.privateKey}")
-    private String privateKey;
-
-    @Value("${ali-pay.domain}")
-    private String domain;
+//
+//    @Value("${ali-pay.privateKey}")
+//    private String privateKey;
+//
+//    @Value("${ali-pay.domain}")
+//    private String domain;
 
 
 

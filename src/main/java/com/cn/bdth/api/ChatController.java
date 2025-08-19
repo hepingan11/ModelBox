@@ -9,12 +9,6 @@ import com.cn.bdth.service.ChatService;
 import com.cn.bdth.utils.UserUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
-import org.springframework.ai.vectorstore.SearchRequest;
-import org.springframework.ai.vectorstore.VectorStore;
-import org.springframework.ai.zhipuai.ZhiPuAiImageOptions;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Flux;
@@ -22,7 +16,6 @@ import reactor.core.publisher.Flux;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.springframework.ai.chat.memory.ChatMemory.CONVERSATION_ID;
 
 @RestController
 @Slf4j
@@ -39,14 +32,18 @@ public class ChatController {
      * @return
      */
     @PostMapping(value = "/chat",produces = "text/html; charset=UTF-8")
-    public Flux<String> chat(@RequestPart("message") String message,
-    @RequestPart("chatId") String chatId,
-    @RequestPart("model") String model,
-    @RequestPart(value = "file", required = false) MultipartFile file){
+    public Flux<String> chat(@RequestParam("message") String message,
+                             @RequestParam("chatId") String chatId,
+                             @RequestParam("model") String model,
+                             @RequestParam("isMcp") Boolean isMcp,
+                             @RequestParam("isRag") Boolean isRag,
+                             @RequestPart(value = "file", required = false) MultipartFile file){
         MessageDto messageDto = new MessageDto()
                 .setMessage(message)
                 .setChatId(chatId)
                 .setModel(model)
+                .setIsMcp(isMcp)
+                .setIsRag(isRag)
                 .setFile(file);
         return chatService.aiChat(messageDto);
     }
@@ -100,6 +97,7 @@ public class ChatController {
     public Result updateConversation(@RequestBody MessageDto messageDto){
         try {
             conversationUserMapper.update(new ConversationUser()
+                            .setRole(messageDto.getRole())
                     .setTitle(messageDto.getTitle()),new QueryWrapper<ConversationUser>().lambda()
                     .eq(ConversationUser::getConversationId, messageDto.getChatId())
             );

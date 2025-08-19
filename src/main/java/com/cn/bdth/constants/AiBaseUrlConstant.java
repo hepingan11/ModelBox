@@ -11,11 +11,12 @@ public interface AiBaseUrlConstant {
 
     String GLM = "https://open.bigmodel.cn/api/paas/v4";
 
-    String DOUBAO = "https://ark.cn-beijing.volces.com/api";
+    String DOUBAO = "https://sg.uiuiapi.com";
 
     String CLAUDE = "https://sg.uiuiapi.com";
 
     String GEMINI = "https://sg.uiuiapi.com";
 
     String GROK = "https://sg.uiuiapi.com";
+
 }

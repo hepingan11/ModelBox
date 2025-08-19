@@ -20,4 +20,6 @@ public class ConversationUser {
 
     private LocalDateTime createdTime;
 
+    private String role;
+
 }

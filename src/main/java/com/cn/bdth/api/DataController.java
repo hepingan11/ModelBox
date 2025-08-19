@@ -15,10 +15,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -28,23 +25,17 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class DataController {
+
     private final DataService dataService;
 
-    @GetMapping(value = "/getDialogueData",name = "获取对话数据",produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result getDialogueData() {
-        List<Dialogue> dialogueList = dataService.getDialogueData();
-        return Result.data(dialogueList);
+    @GetMapping(value = "/getTimeFrequency/{type}", name = "获取时间频率")
+    public Result getTimeFrequency(@PathVariable Integer type) {
+        return Result.data(dataService.timeFrequency(type));
     }
 
-    @GetMapping(value = "/getDialogueData/page",name = "获取对话数据",produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result getDialogueDataPage(@RequestParam("no") Integer no,
-                                  @RequestParam("size") Integer size) {
-        return Result.data(dataService.getDialogueDataPage(no, size));
-    }
-
-    @GetMapping(value = "/timeFrequency",name = "按月获取对话频率",produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result timeFrequency() {
-        return Result.data(dataService.timeFrequency());
+    @GetMapping(value = "/getModelFrequency", name = "获取模型使用频率")
+    public Result getModelFrequency() {
+        return Result.data(dataService.getModelFrequency());
     }
 
     @GetMapping(value = "/getContentCloud", name = "获取问题词云")
@@ -52,8 +43,10 @@ public class DataController {
         return Result.data(dataService.getWordFrequency(1));
     }
 
-    @GetMapping(value = "/getMessageCloud", name = "获取问题词云")
+    @GetMapping(value = "/getMessageCloud", name = "获取回答词云")
     public Result getMessageFrequency() {
         return Result.data(dataService.getWordFrequency(2));
     }
+
+
 }

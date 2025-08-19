@@ -74,7 +74,8 @@ public class DrawServiceImpl implements DrawService {
                 String base64 = jsonObject.getJSONArray("data")
                         .getJSONObject(0)
                         .getString("b64_json");
-                return aliUploadUtils.uploadBase64(base64, FileEnum.PAINTING.getDec());
+                return null;
+//                return aliUploadUtils.uploadBase64(base64, FileEnum.PAINTING.getDec());
             }else {
                 return jsonObject.getJSONArray("data")
                         .getJSONObject(0)

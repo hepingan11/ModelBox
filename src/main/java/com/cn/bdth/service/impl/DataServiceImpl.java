@@ -2,8 +2,12 @@ package com.cn.bdth.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.cn.bdth.constants.ServerConstant;
+import com.cn.bdth.entity.ConversationUser;
 import com.cn.bdth.entity.Dialogue;
+import com.cn.bdth.entity.SpringAiChatMemory;
+import com.cn.bdth.mapper.ConversationUserMapper;
 import com.cn.bdth.mapper.DialogueMapper;
+import com.cn.bdth.mapper.SpringAiChatMemoryMapper;
 import com.cn.bdth.service.DataService;
 import com.cn.bdth.utils.RedisUtils;
 import com.cn.bdth.utils.UserUtils;
@@ -24,73 +28,91 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class DataServiceImpl implements DataService {
 
-    private final DialogueMapper dialogueMapper;
-    private final RedisUtils redisUtils;
+    private final SpringAiChatMemoryMapper springAiChatMemoryMapper;
+
+    private final ConversationUserMapper conversationUserMapper;
 
 
     @Override
-    public List<Dialogue> getDialogueData() {
-        return dialogueMapper.selectList(new QueryWrapper<Dialogue>().lambda().eq(Dialogue::getUserId, UserUtils.getCurrentLoginId()));
-    }
+    public List<Map<String,Integer>> timeFrequency(Integer type) {
+        List<ConversationUser> conversationUsers = conversationUserMapper.selectList(new QueryWrapper<ConversationUser>().lambda()
+                .eq(ConversationUser::getUserId, UserUtils.getCurrentLoginId()));
+        Map<String, Integer> dateCountMap = new HashMap<>();
+        if (type<4){
+            for (ConversationUser conversationUser : conversationUsers){
+                List<SpringAiChatMemory> springAiChatMemories = springAiChatMemoryMapper.selectList(new QueryWrapper<SpringAiChatMemory>().lambda()
+                        .ge(SpringAiChatMemory::getTimestamp, LocalDateTime.now().minusMonths(type))
+                        .eq(SpringAiChatMemory::getType, "USER")
+                        .eq(SpringAiChatMemory::getConversationId, conversationUser.getConversationId()));
+                for (SpringAiChatMemory springAiChatMemory : springAiChatMemories){
+                    // 将时间戳格式化为日期字符串（精确到日）
+                    String dateStr = springAiChatMemory.getTimestamp().toLocalDate().toString();
+                    // 统计相同日期的数据个数
+                    dateCountMap.put(dateStr, dateCountMap.getOrDefault(dateStr, 0) + 1);
+                }
+            }
+        }else {
+            for (ConversationUser conversationUser : conversationUsers){
+                List<SpringAiChatMemory> springAiChatMemories = springAiChatMemoryMapper.selectList(new QueryWrapper<SpringAiChatMemory>().lambda()
+                        .ge(SpringAiChatMemory::getTimestamp, LocalDateTime.now().minusMonths(type))
+                        .eq(SpringAiChatMemory::getConversationId, conversationUser.getConversationId()));
+                for (SpringAiChatMemory springAiChatMemory : springAiChatMemories){
+                    // 将时间戳格式化为日期字符串（精确到日）
+                    String dateStr = springAiChatMemory.getTimestamp().getYear() + "-" + String.format("%02d", springAiChatMemory.getTimestamp().getMonthValue());                    // 统计相同日期的数据个数
+                    dateCountMap.put(dateStr, dateCountMap.getOrDefault(dateStr, 0) + 1);
+                }
+            }
+        }
 
-    @Override
-    public List<Dialogue> getDialogueDataPage(Integer no, Integer size) {
-        return dialogueMapper.selectList(new QueryWrapper<Dialogue>().lambda()
-                .eq(Dialogue::getUserId, UserUtils.getCurrentLoginId()).orderByDesc(Dialogue::getCreatedTime));
-    }
+        List<Map<String, Integer>> result = new ArrayList<>();
+        for (Map.Entry<String, Integer> entry : dateCountMap.entrySet()) {
+            Map<String, Integer> item = new HashMap<>();
+            item.put(entry.getKey(), entry.getValue());
+            result.add(item);
+        }
 
-    @Override
-    public List<Dialogue> timeFrequency() {
-        return List.of();
+        return result;
     }
 
     @Override
     public List<Map<String, Object>> getWordFrequency(int v) {
         String text = "";
         //mysql
-        String value = String.valueOf(redisUtils.getValue(ServerConstant.IS_HADOOP));
-        if (value.equals("mysql")){
-            List<Dialogue> dialogueList = dialogueMapper.selectList(new QueryWrapper<Dialogue>().lambda().eq(Dialogue::getUserId, UserUtils.getCurrentLoginId()));
-            if (v==1){
-                for (Dialogue dialogue : dialogueList){
+        List<ConversationUser> conversationUsers = conversationUserMapper.selectList(new QueryWrapper<ConversationUser>().lambda()
+                .eq(ConversationUser::getUserId, UserUtils.getCurrentLoginId()));
+        if (v == 1){
+            for (ConversationUser conversationUser : conversationUsers) {
+                List<SpringAiChatMemory> springAiChatMemories = springAiChatMemoryMapper.selectList(new QueryWrapper<SpringAiChatMemory>().lambda()
+                        .eq(SpringAiChatMemory::getConversationId, conversationUser.getConversationId())
+                        .eq(SpringAiChatMemory::getType, "USER"));
+                for (SpringAiChatMemory springAiChatMemory : springAiChatMemories) {
                     StringBuilder sb = new StringBuilder(text);
-                    sb.append(dialogue.getContent());
+                    sb.append(springAiChatMemory.getContent());
                     text = sb.toString();
                 }
             }
-            if (v == 2){
-                for (Dialogue dialogue : dialogueList){
-                    StringBuilder sb = new StringBuilder(text);
-                    sb.append(dialogue.getMessage());
-                    text = sb.toString();
-                }
-            }
-
         }else {
-            List<Dialogue> dataPage = getDialogueDataPage(1, 1);
-            if (v == 1){
-                for (Dialogue dialogue : dataPage){
+            for (ConversationUser conversationUser : conversationUsers) {
+                List<SpringAiChatMemory> springAiChatMemories = springAiChatMemoryMapper.selectList(new QueryWrapper<SpringAiChatMemory>().lambda()
+                        .eq(SpringAiChatMemory::getConversationId, conversationUser.getConversationId())
+                        .eq(SpringAiChatMemory::getType, "ASSISTANT"));
+                for (SpringAiChatMemory springAiChatMemory : springAiChatMemories) {
                     StringBuilder sb = new StringBuilder(text);
-                    sb.append(dialogue.getContent());
-                    text = sb.toString();
-                }
-            }
-            if (v == 2) {
-                for (Dialogue dialogue : dataPage) {
-                    StringBuilder sb = new StringBuilder(text);
-                    sb.append(dialogue.getMessage());
+                    sb.append(springAiChatMemory.getContent());
                     text = sb.toString();
                 }
             }
         }
+
         // 提取频率最高的几个词
-        List<Map.Entry<String, Integer>> list =  findTopFrequentWords(text, 10);
+        List<Map.Entry<String, Integer>> list =  findTopFrequentWords(text, 20);
         ArrayList<Map<String, Object>> dataList = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {
             Map<String, Object> item = new HashMap<>();
@@ -102,37 +124,54 @@ public class DataServiceImpl implements DataService {
         return dataList;
     }
 
+    @Override
+    public List<Map<String, Integer>> getModelFrequency() {
+        List<ConversationUser> conversationUsers = conversationUserMapper.selectList(new QueryWrapper<ConversationUser>().lambda()
+                .eq(ConversationUser::getUserId, UserUtils.getCurrentLoginId()));
+
+        Map<String, Integer> modelCountMap = new HashMap<>();
+        for (ConversationUser conversationUser : conversationUsers){
+            List<SpringAiChatMemory> springAiChatMemories = springAiChatMemoryMapper.selectList(new QueryWrapper<SpringAiChatMemory>().lambda()
+                    .eq(SpringAiChatMemory::getConversationId, conversationUser.getConversationId())
+                    .eq(SpringAiChatMemory::getType, "USER"));
+            for (SpringAiChatMemory springAiChatMemory : springAiChatMemories){
+                if (springAiChatMemory.getModel() != null){
+                    modelCountMap.put(springAiChatMemory.getModel() , modelCountMap.getOrDefault(springAiChatMemory.getModel(), 0) + 1);
+                }
+            }
+        }
+        List<Map<String, Integer>> result = new ArrayList<>();
+        for (Map.Entry<String, Integer> entry : modelCountMap.entrySet()) {
+            Map<String, Integer> item = new HashMap<>();
+            item.put(entry.getKey(), entry.getValue());
+            result.add(item);
+        }
+
+        return result;
+    }
+
     public static List<Map.Entry<String, Integer>> findTopFrequentWords(String text, int n) {
-        // 分词
-        List<Term> termList = HanLP.segment(text);
-        // 使用优先队列维护频率最高的5个词
-        PriorityQueue<Map.Entry<String, Integer>> pq = new PriorityQueue<>(
-                n, Map.Entry.comparingByValue(Comparator.reverseOrder())
-        );
+            if (text == null || text.isEmpty()) return List.of();
 
-        // 统计词频
-        Map<String, Integer> wordFreqMap = new HashMap<>();
-        for (Term term : termList) {
-            // 这里只统计名词和动词，可以根据需要调整
-            if (term.nature.startsWith('n') || term.nature.startsWith('v')) {
-                String word = term.word;
-                wordFreqMap.put(word, wordFreqMap.getOrDefault(word, 0) + 1);
-            }
-        }
-        // 遍历词频Map，维护频率最高的5个词
-        for (Map.Entry<String, Integer> entry : wordFreqMap.entrySet()) {
-            pq.offer(entry);
-            if (pq.size() > n) { // 如果超过5个，移除频率最低的词
-                pq.poll();
-            }
-        }
-        // 输出频率最高的5个词
-        List<Map.Entry<String, Integer>> topWords = new ArrayList<>();
-        while (!pq.isEmpty()) {
-            topWords.add( pq.poll());
-        }
-        Collections.reverse(topWords); // 由于是最大堆，需要反转才能得到降序
+            List<Term> terms = HanLP.segment(text);
+            Map<String, Integer> cnt = new HashMap<>();
 
-        return topWords;
+            for (Term t : terms) {
+                String w = t.word.trim();
+                String pos = String.valueOf(t.nature); // 词性
+                if (w.length() < 2) continue;          // 常见做法：忽略单字词，可按需调整
+                // 仅统计名词/动词/形容词，可按需放宽
+                if (!(pos.startsWith("n") || pos.startsWith("v") || pos.startsWith("a"))) continue;
+                cnt.merge(w, 1, Integer::sum);
+            }
+
+            return cnt.entrySet().stream()
+                    .sorted((a, b) -> {
+                        int c = Integer.compare(b.getValue(), a.getValue());
+                        return c != 0 ? c : a.getKey().compareTo(b.getKey());
+                    })
+                    .limit(n > 0 ? n : Long.MAX_VALUE)
+                    .collect(Collectors.toList());
+
     }
 }
