@@ -1,6 +1,5 @@
 package com.cn.bdth.dto;
 
-import com.cn.bdth.model.GptModel;
 import com.cn.bdth.model.ZhipuModel;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;

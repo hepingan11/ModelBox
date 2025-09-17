@@ -25,49 +25,49 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 @Slf4j
 public class RewardTaskTimer {
+//
+//    private final UserMapper userMapper;
+//
+//    private final DrawingMapper drawingMapper;
+//
+//    private final AliUploadUtils aliUploadUtils;
 
-    private final UserMapper userMapper;
+//    @Scheduled(cron = " 0 0 0 * * ?")
+//    @Transactional(rollbackFor = Exception.class)
+//    public void executeTask() {
+//        //回滚签到
+//        userMapper.update(new User().setIsSignIn(0L), null);
+//        //清除无效绘图
+//        drawingMapper.selectList(new QueryWrapper<Drawing>()
+//                .lambda()
+//                .eq(Drawing::getGenerateUrl, null)
+//                .select(Drawing::getOriginalUrl, Drawing::getGenerateUrl, Drawing::getDrawingId)
+//        ).forEach(this::deleteResource);
+//
+//        drawingMapper.selectList(new QueryWrapper<Drawing>()
+//                .lambda()
+//                .eq(Drawing::getEnv, 0)
+//                .lt(Drawing::getCreatedTime, LocalDateTime.now().minusDays(2))
+//        ).forEach(this::deleteResource);
+//
+//    }
 
-    private final DrawingMapper drawingMapper;
-
-    private final AliUploadUtils aliUploadUtils;
-
-    @Scheduled(cron = " 0 0 0 * * ?")
-    @Transactional(rollbackFor = Exception.class)
-    public void executeTask() {
-        //回滚签到
-        userMapper.update(new User().setIsSignIn(0L), null);
-        //清除无效绘图
-        drawingMapper.selectList(new QueryWrapper<Drawing>()
-                .lambda()
-                .eq(Drawing::getGenerateUrl, null)
-                .select(Drawing::getOriginalUrl, Drawing::getGenerateUrl, Drawing::getDrawingId)
-        ).forEach(this::deleteResource);
-
-        drawingMapper.selectList(new QueryWrapper<Drawing>()
-                .lambda()
-                .eq(Drawing::getEnv, 0)
-                .lt(Drawing::getCreatedTime, LocalDateTime.now().minusDays(2))
-        ).forEach(this::deleteResource);
-
-    }
-
-    private void deleteResource(Drawing drawing) {
-        final String generateUrl = drawing.getGenerateUrl();
-        if (!StringUtils.notEmpty(generateUrl)) {
-            //删除图片数据
-            drawingMapper.delete(new QueryWrapper<Drawing>().lambda().eq(Drawing::getDrawingId, drawing.getDrawingId()));
-            final String originalUrl = drawing.getOriginalUrl();
-            try {
-                if (StringUtils.notEmpty(originalUrl)) {
-                    aliUploadUtils.deleteFile(originalUrl);
-                }
-                if (StringUtils.notEmpty(generateUrl)) {
-                    aliUploadUtils.deleteFile(generateUrl);
-                }
-            } catch (Exception e) {
-                log.warn("删除OSS图片数据失败");
-            }
-        }
-    }
+//    private void deleteResource(Drawing drawing) {
+//        final String generateUrl = drawing.getGenerateUrl();
+//        if (!StringUtils.notEmpty(generateUrl)) {
+//            //删除图片数据
+//            drawingMapper.delete(new QueryWrapper<Drawing>().lambda().eq(Drawing::getDrawingId, drawing.getDrawingId()));
+//            final String originalUrl = drawing.getOriginalUrl();
+//            try {
+//                if (StringUtils.notEmpty(originalUrl)) {
+//                    aliUploadUtils.deleteFile(originalUrl);
+//                }
+//                if (StringUtils.notEmpty(generateUrl)) {
+//                    aliUploadUtils.deleteFile(generateUrl);
+//                }
+//            } catch (Exception e) {
+//                log.warn("删除OSS图片数据失败");
+//            }
+//        }
+//    }
 }

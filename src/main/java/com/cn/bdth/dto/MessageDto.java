@@ -22,6 +22,8 @@ public class MessageDto {
 
     private Boolean isMcp;
 
+    private List<Long> mcpList;
+
     private String role;
 
     private MultipartFile file;

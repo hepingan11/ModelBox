@@ -56,6 +56,7 @@ public class ServerServiceImpl implements ServerService {
                         .setGptFrequency(dto.getGptFrequency())
                         .setOpenKey(dto.getOpenKey())
                         .setDeepseekKey(dto.getDeepseekKey())
+                        .setDoubaoKey(dto.getDoubaoKey())
                         .setTongyiKey(dto.getTongyiKey())
                         .setClaudeKey(dto.getClaudeKey())
                         .setGlmKey(dto.getGlmKey())
@@ -86,6 +87,7 @@ public class ServerServiceImpl implements ServerService {
         dispositionVo.setGptFrequency(chatGptStructure != null ? chatGptStructure.getGptFrequency() : null);
         dispositionVo.setOpenKey(chatGptStructure != null ? chatGptStructure.getOpenKey() : null);
         dispositionVo.setDeepseekKey(chatGptStructure != null ? chatGptStructure.getDeepseekKey() : null);
+        dispositionVo.setDoubaoKey(chatGptStructure != null ? chatGptStructure.getDoubaoKey() : null);
         dispositionVo.setTongyiKey(chatGptStructure !=null ? chatGptStructure.getTongyiKey() : null);
         dispositionVo.setClaudeKey(chatGptStructure !=null ? chatGptStructure.getClaudeKey() : null);
         dispositionVo.setGptTextImageFrequency(chatGptStructure != null ? chatGptStructure.getGptTextImageFrequency() : null);

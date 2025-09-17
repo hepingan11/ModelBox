@@ -1,15 +1,10 @@
 package com.cn.bdth.service;
 
-import com.cn.bdth.common.ChatGptCommon;
 import com.cn.bdth.dto.PersonalityDto;
-import com.cn.bdth.entity.Dialogue;
 import com.cn.bdth.model.GptModel;
-import com.cn.bdth.model.ZhipuModel;
 import com.cn.bdth.structure.PersonalityConfigStructure;
-import io.reactivex.rxjava3.core.Completable;
 import reactor.core.publisher.Flux;
 
-import java.io.IOException;
 import java.util.List;
 
 /**

@@ -2,10 +2,6 @@ package com.cn.bdth.vo;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.File;
-import java.util.List;
 
 @Data
 @Accessors(chain = true)

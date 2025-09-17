@@ -13,8 +13,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Flux;
 
+import java.net.MalformedURLException;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -37,6 +40,7 @@ public class ChatController {
                              @RequestParam("model") String model,
                              @RequestParam("isMcp") Boolean isMcp,
                              @RequestParam("isRag") Boolean isRag,
+                             @RequestParam("mcpList") String  mcpList,
                              @RequestPart(value = "file", required = false) MultipartFile file){
         MessageDto messageDto = new MessageDto()
                 .setMessage(message)
@@ -44,8 +48,48 @@ public class ChatController {
                 .setModel(model)
                 .setIsMcp(isMcp)
                 .setIsRag(isRag)
+                .setMcpList(parseMcpList(mcpList))
                 .setFile(file);
-        return chatService.aiChat(messageDto);
+        try {
+            return chatService.aiChat(messageDto);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @PostMapping(value = "/chat2",produces = "text/html; charset=UTF-8")
+    public Flux<String> chat2(@RequestParam("message") String message,
+                             @RequestParam("chatId") String chatId,
+                             @RequestParam("model") String model,
+                             @RequestParam("isMcp") Boolean isMcp,
+                             @RequestParam("isRag") Boolean isRag,
+                             @RequestParam("mcpList") String  mcpList,
+                             @RequestPart(value = "file", required = false) MultipartFile file){
+        MessageDto messageDto = new MessageDto()
+                .setMessage(message)
+                .setChatId(chatId)
+                .setModel(model)
+                .setIsMcp(isMcp)
+                .setIsRag(isRag)
+                .setMcpList(parseMcpList(mcpList))
+                .setFile(file);
+        return chatService.aiChat2(messageDto);
+    }
+
+    private List<Long> parseMcpList(String mcpListStr) {
+        if (mcpListStr == null || mcpListStr.isEmpty()) {
+            return List.of();
+        }
+        // 移除方括号并按逗号分割
+        String cleaned = mcpListStr.replaceAll("[\\[\\]]", "");
+        if (cleaned.isEmpty()) {
+            return List.of();
+        }
+        return Arrays.stream(cleaned.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .map(Long::valueOf)
+                .collect(Collectors.toList());
     }
 
 
@@ -72,11 +116,20 @@ public class ChatController {
         }
     }
 
+    /**
+     * 获取会话列表
+     * @return
+     */
     @GetMapping(value = "/conversation/list")
     public Result getConversationList(){
         return Result.data(chatService.conversationList());
     }
 
+    /**
+     * 添加会话
+     * @param messageDto
+     * @return
+     */
     @PostMapping(value = "/conversation/add")
     public Result addConversation(@RequestBody MessageDto messageDto){
         try {
@@ -93,6 +146,11 @@ public class ChatController {
     }
 
 
+    /**
+     * 修改会话
+     * @param messageDto
+     * @return
+     */
     @PostMapping(value = "/conversation/update")
     public Result updateConversation(@RequestBody MessageDto messageDto){
         try {
@@ -105,6 +163,69 @@ public class ChatController {
         }catch (Exception e){
             return Result.error("修改失败");
         }
+    }
+
+    /**
+     * 上传 rag文件
+     * @param file
+     * @return
+     */
+    @PostMapping(value = "/rag/upload")
+    public Result updateRag(@RequestParam("file") MultipartFile file){
+        try {
+            chatService.updateRag(file);
+            return Result.ok();
+        }catch (Exception e){
+            return Result.error("修改失败");
+        }
+    }
+
+    /**
+     * rag列表
+     * @return
+     */
+    @GetMapping(value = "/rag/list")
+    public Result ragList(){
+        return Result.data(chatService.ragList());
+    }
+
+    /**
+     * 删除 rag
+     * @param ragId
+     * @return
+     */
+    @GetMapping(value = "/rag/delete/{ragId}")
+    public Result deleteRag(@PathVariable Long ragId){
+        try {
+            chatService.deleteRag(ragId);
+            return Result.ok();
+        }catch (Exception e){
+            return Result.error("删除失败");
+        }
+    }
+
+    /**
+     * 修改是否启用 rag
+     * @param ragId
+     * @return
+     */
+    @PostMapping(value = "/rag/toggle/{ragId}")
+    public Result toggleRag(@PathVariable Long ragId){
+        try {
+            chatService.toggleRag(ragId);
+            return Result.ok();
+        }catch (Exception e){
+            return Result.error("删除失败");
+        }
+    }
+
+    /**
+     * mcp列表
+     * @return
+     */
+    @GetMapping(value = "/mcp/list")
+    public Result mcpList(){
+        return Result.data(chatService.mcpList());
     }
 
 }

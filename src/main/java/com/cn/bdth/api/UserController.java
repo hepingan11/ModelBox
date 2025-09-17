@@ -1,13 +1,9 @@
 package com.cn.bdth.api;
 
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import com.cn.bdth.constants.AiModelConstant;
 import com.cn.bdth.dto.PersonalityDto;
 import com.cn.bdth.dto.StarDialogueDto;
 import com.cn.bdth.exceptions.UploadException;
-import com.cn.bdth.model.ZhipuModel;
 import com.cn.bdth.msg.Result;
 import com.cn.bdth.service.GptService;
 import com.cn.bdth.service.StarService;
@@ -17,22 +13,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 
 
 @Slf4j

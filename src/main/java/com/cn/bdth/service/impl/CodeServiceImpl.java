@@ -7,7 +7,9 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cn.bdth.dto.CodeDto;
-import com.cn.bdth.entity.*;
+import com.cn.bdth.entity.Code;
+import com.cn.bdth.entity.CodeExchange;
+import com.cn.bdth.entity.CodeImage;
 import com.cn.bdth.exceptions.ExceptionMessages;
 import com.cn.bdth.exceptions.OrdersException;
 import com.cn.bdth.mapper.CodeExchangeMapper;
@@ -316,7 +318,7 @@ public class CodeServiceImpl extends ServiceImpl<CodeMapper, Code> implements Co
 
     @Override
     public List<CodeListVo> allCode() {
-        List<Code> codeList = codeMapper.selectList(null);
+        List<Code> codeList = codeMapper.selectList(new QueryWrapper<Code>().lambda().orderByDesc(Code::getCreatedTime));
         return getCodeListVos(codeList);
     }
 

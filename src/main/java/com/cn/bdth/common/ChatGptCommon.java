@@ -60,6 +60,8 @@ public class ChatGptCommon {
 
         private String claudeKey;
 
+        private String doubaoKey;
+
         private String glmKey;
 
         private Long gptFrequency;

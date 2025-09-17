@@ -1,33 +1,23 @@
 package com.cn.bdth.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.cn.bdth.constants.ServerConstant;
 import com.cn.bdth.entity.ConversationUser;
-import com.cn.bdth.entity.Dialogue;
 import com.cn.bdth.entity.SpringAiChatMemory;
 import com.cn.bdth.mapper.ConversationUserMapper;
-import com.cn.bdth.mapper.DialogueMapper;
 import com.cn.bdth.mapper.SpringAiChatMemoryMapper;
 import com.cn.bdth.service.DataService;
-import com.cn.bdth.utils.RedisUtils;
 import com.cn.bdth.utils.UserUtils;
 import com.hankcs.hanlp.HanLP;
 import com.hankcs.hanlp.seg.common.Term;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-//import org.apache.hadoop.conf.Configuration;
-//import org.apache.hadoop.fs.FileSystem;
-//import org.apache.hadoop.fs.Path;
-//import org.apache.hadoop.io.IOUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -106,13 +96,16 @@ public class DataServiceImpl implements DataService {
                 for (SpringAiChatMemory springAiChatMemory : springAiChatMemories) {
                     StringBuilder sb = new StringBuilder(text);
                     sb.append(springAiChatMemory.getContent());
+                    if (sb.length() >209715200){
+                        break;
+                    }
                     text = sb.toString();
                 }
             }
         }
 
         // 提取频率最高的几个词
-        List<Map.Entry<String, Integer>> list =  findTopFrequentWords(text, 20);
+        List<Map.Entry<String, Integer>> list =  findTopFrequentWords(text, 25);
         ArrayList<Map<String, Object>> dataList = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {
             Map<String, Object> item = new HashMap<>();

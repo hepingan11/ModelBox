@@ -1,24 +1,13 @@
 package com.cn.bdth.api;
 
-import com.alibaba.fastjson.JSONObject;
-import com.cn.bdth.entity.Dialogue;
 import com.cn.bdth.msg.Result;
 import com.cn.bdth.service.DataService;
-import com.cn.bdth.vo.DataNormalVo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.Header;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicHeader;
-import org.apache.http.util.EntityUtils;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
-
-import java.io.IOException;
-import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RequestMapping("/data")
 @RestController

@@ -1,28 +1,8 @@
 package com.cn.bdth.net;
 
-import cn.dev33.satoken.stp.StpUtil;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.cn.bdth.common.ChatGptCommon;
-import com.cn.bdth.common.ControlCommon;
-import com.cn.bdth.dto.GptWebDto;
-import com.cn.bdth.entity.Dialogue;
-import com.cn.bdth.exceptions.CloseException;
-import com.cn.bdth.exceptions.DrawingException;
-import com.cn.bdth.exceptions.ExceptionMessages;
-import com.cn.bdth.exceptions.FrequencyException;
-import com.cn.bdth.service.GptService;
-import com.cn.bdth.utils.ChatUtils;
-import com.cn.bdth.utils.SpringContextUtil;
-import com.cn.bdth.utils.UserUtils;
-import jakarta.websocket.*;
-import jakarta.websocket.server.PathParam;
 import jakarta.websocket.server.ServerEndpoint;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.io.IOException;
 
 
 /**

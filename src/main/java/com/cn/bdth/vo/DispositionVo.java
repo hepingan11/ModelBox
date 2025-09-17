@@ -23,6 +23,8 @@ public class DispositionVo implements Serializable {
 
     private String tongyiKey;
 
+    private String doubaoKey;
+
     private Long gptTextImageFrequency;
 
     private Long gptFrequency;

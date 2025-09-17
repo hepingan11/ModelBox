@@ -27,6 +27,9 @@ public class ChatGptDefaultConfig {
     @Value("${config.claudeKey}")
     private String claudeKey;
 
+    @Value("${config.doubaokey}")
+    private String doubaoKey;
+
     @Value("${config.glmKey}")
     private String glmKey;
 

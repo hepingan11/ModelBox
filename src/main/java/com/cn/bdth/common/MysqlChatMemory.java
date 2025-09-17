@@ -11,7 +11,6 @@ import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.stereotype.Component;
 
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -36,8 +35,9 @@ public class MysqlChatMemory implements ChatMemory {
     public List<Message> get(String conversationId) {
         List<SpringAiChatMemory> springAiChatMemories = springAiChatMemoryMapper.selectList(new QueryWrapper<SpringAiChatMemory>().lambda()
                 .eq(SpringAiChatMemory::getConversationId, conversationId)
-                .orderByDesc(SpringAiChatMemory::getId)
-                .last("LIMIT 14"));
+                .orderByDesc(SpringAiChatMemory::getTimestamp)
+                .last("LIMIT 20"));
+        Collections.reverse(springAiChatMemories);
         List<Message> messages = new ArrayList<>();
         for (SpringAiChatMemory springAiChatMemory : springAiChatMemories){
             String type = springAiChatMemory.getType();

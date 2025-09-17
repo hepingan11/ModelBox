@@ -1,6 +1,5 @@
 package com.cn.bdth.service;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.cn.bdth.entity.Photo;
 import org.springframework.web.multipart.MultipartFile;
 

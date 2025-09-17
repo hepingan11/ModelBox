@@ -1,18 +1,13 @@
 package com.cn.bdth.config;
 
 import com.cn.bdth.common.ChatGptCommon;
-import com.cn.bdth.common.MysqlChatMemory;
 import com.cn.bdth.constants.AiBaseUrlConstant;
 import com.cn.bdth.constants.AiModelConstant;
 import com.cn.bdth.constants.ServerConstant;
 import com.cn.bdth.utils.RedisUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
-import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.ChatMemoryRepository;
 import org.springframework.ai.chat.memory.InMemoryChatMemoryRepository;
-import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.chat.memory.repository.jdbc.JdbcChatMemoryRepository;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatOptions;
@@ -21,7 +16,6 @@ import org.springframework.ai.reader.TextReader;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.vectorstore.SimpleVectorStore;
 import org.springframework.ai.vectorstore.VectorStore;
-import org.springframework.ai.zhipuai.ZhiPuAiChatModel;
 import org.springframework.ai.zhipuai.ZhiPuAiEmbeddingModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,6 +43,7 @@ public class AiConfig {
         return SimpleVectorStore.builder(embeddingModel).build();
     }
 
+
 //    @Bean
 //    public ChatMemory chatMemory(JdbcChatMemoryRepository chatMemoryRepository){
 //        return MessageWindowChatMemory.builder()
@@ -57,22 +52,22 @@ public class AiConfig {
 //                .build();
 //    }
 
-    @Bean
-    @Primary
-    public ChatClient openaiClient(OpenAiChatModel model, MysqlChatMemory chatMemory) {
-        return ChatClient.builder(model)
-                .defaultSystem("你叫何平安，是一个高冷酷酷的IT高手")
-                .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
-                .build();
-    }
-
-    @Bean
-    public ChatClient zhipuClient(ZhiPuAiChatModel model, MysqlChatMemory chatMemory) {
-        return ChatClient.builder(model)
-                .defaultSystem("你叫何平安，是一个高冷酷酷的IT高手")
-                .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
-                .build();
-    }
+//    @Bean
+//    @Primary
+//    public ChatClient openaiClient(OpenAiChatModel model, MysqlChatMemory chatMemory) {
+//        return ChatClient.builder(model)
+//                .defaultSystem("你叫何平安，是一个高冷酷酷的IT高手")
+//                .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
+//                .build();
+//    }
+//
+//    @Bean
+//    public ChatClient zhipuClient(ZhiPuAiChatModel model, MysqlChatMemory chatMemory) {
+//        return ChatClient.builder(model)
+//                .defaultSystem("你叫何平安，是一个高冷酷酷的IT高手")
+//                .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
+//                .build();
+//    }
 
 
     @Bean
@@ -96,7 +91,7 @@ public class AiConfig {
                         .apiKey(chatGptStructure.getOpenKey())
                         .baseUrl(AiBaseUrlConstant.GPT)
                         .build())
-                .defaultOptions(OpenAiChatOptions.builder().model("gpt-5").build())
+                .defaultOptions(OpenAiChatOptions.builder().model(AiModelConstant.GPT).build())
                 .build();
     }
 
@@ -161,6 +156,7 @@ public class AiConfig {
     }
 
 
+    //classpath:templates/test.txt
     @Bean
     CommandLineRunner commandLineRunner(@Autowired VectorStore vectorStore, @Value("classpath:templates/test.txt") Resource testTxt){
         return args -> {

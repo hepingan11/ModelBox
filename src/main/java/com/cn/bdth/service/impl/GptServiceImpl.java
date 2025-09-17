@@ -1,32 +1,25 @@
 package com.cn.bdth.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.cn.bdth.common.ChatGptCommon;
-import com.cn.bdth.common.ControlCommon;
 import com.cn.bdth.constants.ServerConstant;
 import com.cn.bdth.constants.user.PersonalityConstant;
 import com.cn.bdth.dto.PersonalityDto;
 import com.cn.bdth.entity.Personality;
 import com.cn.bdth.exceptions.PersonalityConfigNullException;
-import com.cn.bdth.mapper.DialogueMapper;
 import com.cn.bdth.mapper.PersonalityMapper;
 import com.cn.bdth.model.GptModel;
-import com.cn.bdth.model.ZhipuModel;
 import com.cn.bdth.service.GptService;
 import com.cn.bdth.structure.PersonalityConfigStructure;
-import com.cn.bdth.utils.AliUploadUtils;
 import com.cn.bdth.utils.BeanUtils;
 import com.cn.bdth.utils.RedisUtils;
 import com.cn.bdth.utils.UserUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
-
 
 import java.util.List;
 

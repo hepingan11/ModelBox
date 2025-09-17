@@ -6,15 +6,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Data
 @Accessors(chain = true)
-public class ZhipuDrawDto {
-    private String model;
+public class VideoDto {
 
     private String prompt;
 
-    private String quality;
-
-    private String size;
-
-    private String image;
-
+    private MultipartFile file;
 }

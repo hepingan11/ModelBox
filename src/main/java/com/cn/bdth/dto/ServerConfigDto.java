@@ -1,6 +1,5 @@
 package com.cn.bdth.dto;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -22,6 +21,8 @@ public class ServerConfigDto {
     private String tongyiKey;
 
     private String claudeKey;
+
+    private String doubaoKey;
 
     private String glmKey;
 

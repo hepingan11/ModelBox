@@ -1,8 +1,6 @@
 package com.cn.bdth.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -26,17 +24,19 @@ public class Drawing {
 
     private String prompt;
 
-    private String originalUrl;
-
     private String generateUrl;
 
-    private Long isPublic;
+    private Boolean isPublic;
 
-    private Integer env;
+    private String model;
 
+    private String size;
+
+    private String image;
+
+    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdTime;
 
-    private LocalDateTime updateTime;
 
 
 }

@@ -54,16 +54,13 @@ create table drawing
         primary key,
     user_id      bigint                             not null comment '所属用户',
     prompt       text                               not null comment '提示词',
-    original_url varchar(200)                       null comment '上传图',
-    generate_url varchar(200)                       null comment '生成图',
+    generate_url varchar(700)                       null comment '生成图',
     is_public    tinyint  default 0                 not null comment '是否公开',
-    created_time datetime default CURRENT_TIMESTAMP not null comment '创建时间',
-    update_time  datetime default CURRENT_TIMESTAMP not null comment '修改时间',
-    env          tinyint  default 0                 not null
+    model        varchar(30)                        null comment '使用的模型',
+    size         varchar(15)                        null comment '大小',
+    image        varchar(200)                       null comment '参考图片',
+    created_time datetime default CURRENT_TIMESTAMP not null comment '创建时间'
 );
-
-create index drawing_env_index
-    on drawing (env);
 
 create index drawing_generate_url_index
     on drawing (generate_url);
@@ -73,9 +70,6 @@ create index idx_created_time
 
 create index idx_is_public
     on drawing (is_public);
-
-create index idx_update_time
-    on drawing (update_time);
 
 create index idx_user_id
     on drawing (user_id);
@@ -110,7 +104,7 @@ create table link
         primary key,
     user_id      bigint                             not null comment '申请人用户id',
     link_name    varchar(50)                        not null comment '链接名称',
-    link_url     varchar(100)                       not null comment '链接地址',
+    link_url     varchar(255)                       not null comment '链接地址',
     link_intro   varchar(200)                       not null comment '链接简介',
     link_sort    varchar(20)                        not null comment '链接分类',
     link_img     varchar(200)                       not null comment '链接封面',
@@ -150,6 +144,18 @@ create index stat_link_stat_id
 
 create index stat_link_user_id
     on link_stat (user_id);
+
+create table mcps
+(
+    mcps_id      bigint auto_increment
+        primary key,
+    method_name  varchar(50)  not null comment '方法名(必须与调用方法名一样)',
+    mcp_name     varchar(100) not null comment 'mcp名称',
+    introduce    varchar(400) null comment '介绍',
+    icon         varchar(200) null comment '图标url',
+    created_time datetime     null
+)
+    comment 'mcp服务列表';
 
 create table orders
 (
@@ -205,7 +211,7 @@ create table photo
     name         varchar(100) null comment 'name',
     user_id      bigint       not null comment '用户id',
     created_time datetime     not null,
-    is_public    int          not null
+    is_public    tinyint(1)   not null
 );
 
 create index photo_user_id
@@ -224,6 +230,18 @@ create table product
 
 create index product_product_name_index
     on product (product_name);
+
+create table rag
+(
+    rag_id       bigint auto_increment
+        primary key,
+    rag_url      varchar(200) not null comment 'rag知识库地址',
+    rag_name     varchar(100) null,
+    user_id      bigint       not null,
+    is_enable    tinyint      not null comment '是否启用',
+    created_time datetime     not null comment '创建时间'
+)
+    comment '用户知识库';
 
 create table sd_model
 (
@@ -249,9 +267,7 @@ create table spring_ai_chat_memory
     timestamp       timestamp    not null,
     model           varchar(36)  null comment '模型名',
     is_mcp          tinyint(1)   null comment '是否开启了mcp',
-    is_rag          tinyint      null comment '是否开启了rag',
-    CONSTRAINT TYPE_CHECK CHECK (type IN ('USER', 'ASSISTANT', 'SYSTEM', 'TOOL'))
-
+    is_rag          tinyint      null comment '是否开启了rag'
 );
 
 create index SPRING_AI_CHAT_MEMORY_CONVERSATION_ID_TIMESTAMP_IDX
@@ -307,6 +323,37 @@ create index idx_update_time
 
 create index user_email_password_index
     on user (email, password);
+
+create table video
+(
+    video_id     bigint auto_increment
+        primary key,
+    prompt       varchar(500)         not null comment '提示词',
+    status       varchar(10)          not null comment '状态',
+    user_id      bigint               not null,
+    img_url      varchar(200)         null comment '图片url',
+    task_id      varchar(100)         not null comment '任务ID',
+    video_url    varchar(500)         null comment '视频url地址',
+    cover_url    varchar(200)         null comment '视频封面图',
+    created_time datetime             not null comment '创建时间',
+    is_public    tinyint(1) default 0 null
+)
+    comment '视频生成';
+
+create table video_detail
+(
+    video_detail_id   bigint auto_increment
+        primary key,
+    video_id          bigint       not null,
+    model             varchar(100) null comment '模型',
+    seed              int          null comment '本次请求使用的种子整数值',
+    resolution        varchar(10)  null comment '生成视频的分辨率',
+    ratio             varchar(10)  null comment '视频的宽高比',
+    duration          int          null comment '视频的时长，单位：秒',
+    framespersecond   int          null comment '生成视频的帧率',
+    completion_tokens int          not null comment '模型生成的 token 数量'
+)
+    comment '视频详细';
 
 create table work
 (
