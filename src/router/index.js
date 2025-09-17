@@ -1,0 +1,398 @@
+import {createRouter, createWebHashHistory} from 'vue-router'
+import {cancelArr} from "@/utils/BSideRequest";
+
+const routes = [{
+    path: '/app',
+    name: 'Index',
+    component: () => import('../views/DialogueView.vue'),
+    meta: {
+        title: '智能问答', // TODO 浏览器标题
+        isHeadNavigation: true, // TODO 是否显示tab
+        keepAlive: true,
+        isLeftMenu: false
+    }
+    },
+    {
+        path: '/create',
+        name: 'Create',
+        component: () => import('../views/Create/CreateView.vue'),
+        meta: {
+            title: '灵感创作',
+            isHeadNavigation: true,
+            keepAlive: false,
+            isLeftMenu: true
+        }
+    },
+    {
+        path: '/',
+        name: 'PassView',
+        component: () => import('../views/PassView.vue'),
+        meta: {
+            title: '灵感创作',
+            isHeadNavigation: true,
+            keepAlive: false,
+            isLeftMenu: false
+        }
+    },
+    {
+        path: "/personality_view",
+        name: "PersonalityView",
+        component: () => import('../views/PersonalityView.vue'),
+        meta: {
+            title: 'PERSONALITY GPT',
+            isHeadNavigation: true,
+            keepAlive: true,
+            isLeftMenu: true
+        }
+    },
+    {
+        path: "/drawing",
+        name: "NEW DRAWING",
+        component: () => import('../views/Drawing/DrawingView.vue'),
+        meta: {
+            title: '新绘图',
+            isHeadNavigation: true,
+            keepAlive: true,
+            isLeftMenu: false
+        },
+    },
+    {
+        path: "/create_edit",
+        name: "CreateEdit",
+        component: () => import('../views/Create/CreateEditView.vue'),
+        meta: {
+            title: '创作编辑',
+            isHeadNavigation: true,
+            keepAlive: false,
+            isLeftMenu: true
+        },
+    },
+    {
+        path: "/create_detail",
+        name: "CreateDetail",
+        component: () => import('../views/Create/CreateDetailView.vue'),
+        meta: {
+            title: '创作结果',
+            isHeadNavigation: true,
+            keepAlive: false,
+            isLeftMenu: true
+        },
+    },
+    {
+        path: '/purchase',
+        name: 'Purchase',
+        component: () => import('../views/PurchaseView.vue'),
+        meta: {
+            title: '购买',
+            isHeadNavigation: true,
+            keepAlive: false,
+            isLeftMenu: true
+        }
+    },
+    {
+        path: '/orders',
+        name: 'Orders',
+        component: () => import('../views/OrdersView.vue'),
+        meta: {
+            title: '打赏记录',
+            isHeadNavigation: true,
+            keepAlive: false,
+            isLeftMenu: true
+        }
+    },
+    {
+        path: '/collection',
+        name: 'Collection',
+        component: () => import('../views/CollectionView.vue'),
+        meta: {
+            title: '我的收藏',
+            isHeadNavigation: true,
+            keepAlive: false,
+            isLeftMenu: true
+        }
+    },
+    {
+        path: "/exchange",
+        name: "Exchange",
+        component: () => import('../views/ExchangeView.vue'),
+        meta: {
+            title: '兑换中心',
+            isHeadNavigation: true,
+            keepAlive: false,
+            isLeftMenu: true
+        }
+    },
+    {
+        path: "/custom",
+        name: "Custom",
+        component: () => import('../views/CustomView.vue'),
+        meta: {
+            title: '自定义对话',
+            isHeadNavigation: true,
+            keepAlive: false,
+            isLeftMenu: true
+        }
+    },
+    {
+        path: "/preset_character",
+        name: "PresetCharacter",
+        component: () => import('../views/PresetCharacterView.vue'),
+        meta: {
+            title: '预设角色',
+            isHeadNavigation: true,
+            keepAlive: false,
+            isLeftMenu: true
+        }
+    },
+    {
+        path: "/laboratory",
+        name: "Laboratory",
+        component: () => import('../views/LaboratoryView.vue'),
+        meta: {
+            title: '超级实验室',
+            isHeadNavigation: true,
+            keepAlive: false,
+            isLeftMenu: true
+        }
+    }
+    , {
+        path: '/admin',
+        name: 'Admin',
+        component: () => import('@/views/Admin/AdminView.vue'),
+        meta: {
+            title: '管理控制台',
+            isHeadNavigation: true,
+            keepAlive: true,
+            isLeftMenu: true
+        }
+    },
+    {
+        path: '/link_view',
+        name: 'LinkView',
+        component: () => import('@/views/LinkView.vue'),
+        meta: {
+            title: '链接',
+            isHeadNavigation: true,
+            keepAlive: false,
+            isLeftMenu: false
+        }
+    },
+    {
+        path: '/apply_view',
+        name: 'ApplyLinkView',
+        component: () => import('@/views/ApplyLinkView.vue'),
+        meta: {
+            title: '管理控制台',
+            isHeadNavigation: true,
+            keepAlive: true,
+            isLeftMenu: false
+        }
+    },
+    {
+        path: '/user_view',
+        name: 'UserView',
+        component: () => import('@/views/UserView.vue'),
+        meta: {
+            title: '用户中心',
+            isHeadNavigation: true,
+            keepAlive: true,
+            isLeftMenu: true
+        }
+    },
+    {
+        path: '/photo_view',
+        name: 'PhotoView',
+        component: () => import('@/views/PhotoView.vue'),
+        meta: {
+            title: '图床',
+            isHeadNavigation: true,
+            keepAlive: true,
+            isLeftMenu: true
+        }
+    },
+    {
+        path: '/funny',
+        name: 'FunnyView',
+        component: () => import('@/views/FunnyView.vue'),
+        meta: {
+            title: '视觉盛宴',
+            isHeadNavigation: true,
+            keepAlive: false,
+            isLeftMenu: false
+        }
+    },
+    {
+        path: '/zhipu',
+        name: 'ZhipuView',
+        component: () => import('@/views/ZhipuView.vue'),
+        meta: {
+            title: '智谱Ai',
+            isHeadNavigation: true,
+            keepAlive: false,
+            isLeftMenu: false
+        }
+    },
+    {
+        path: '/video',
+        name: 'VideoView',
+        component: () => import('@/views/VideoView.vue'),
+        meta: {
+            title: 'AI视频生成',
+            isHeadNavigation: true,
+            keepAlive: false,
+            isLeftMenu: false
+        }
+    },
+    {
+        path: '/video_generate',
+        name: 'VideoGenerateView',
+        component: () => import('@/views/VideoGenerateView.vue'),
+        meta: {
+            title: 'AI视频生成',
+            isHeadNavigation: true,
+            keepAlive: false,
+            isLeftMenu: false
+        }
+    },
+    {
+        path: '/mydata',
+        name: 'MyDataView',
+        component: () => import('@/views/MyDataView.vue'),
+        meta: {
+            title: '我的数据',
+            isHeadNavigation: true,
+            keepAlive: false,
+            isLeftMenu: false
+        }
+    },
+    {
+        path: '/loading',
+        name: 'Loading',
+        component: () => import('@/components/Loading.vue'),
+        meta: {
+            title: '加载中...',
+            isHeadNavigation: true,
+            keepAlive: false,
+            isLeftMenu: false
+        }
+    },
+    {
+        path: '/about',
+        name: 'About',
+        component: () => import('@/views/AboutView.vue'),
+        meta: {
+            title: '关于我',
+            isHeadNavigation: true,
+            keepAlive: false,
+            isLeftMenu: false
+        }
+    },
+    {
+        path: '/code',
+        name: 'Code',
+        component: () => import('@/views/CodeView.vue'),
+        meta: {
+            title: '源码市场',
+            isHeadNavigation: true,
+            keepAlive: false,
+            isLeftMenu: false
+        }
+    },
+    {
+        path: '/pay_success',
+        name: 'PaySuccess',
+        component: () => import('@/views/PaySuccess.vue'),
+        meta: {
+            title: '支付成功',
+            isHeadNavigation: true,
+            keepAlive: false,
+            isLeftMenu: false
+        }
+    },
+    {
+        path: '/generation',
+        name: 'Generation',
+        component: () => import('@/views/Generation.vue'),
+        meta: {
+            title: '生成工具',
+            isHeadNavigation: true,
+            keepAlive: false,
+            isLeftMenu: false
+        }
+    },
+    {
+        path: '/toolsMoudle',
+        name: 'ToolsMoudle',
+        component: () => import('@/views/Tools/ToolsMoudleView.vue'),
+        meta: {
+            title: '工具模块',
+            isHeadNavigation: true,
+            keepAlive: false,
+            isLeftMenu: false
+        }
+    },
+    {
+        path: '/toolsIllustration',
+        name: 'ToolsIllustration',
+        component: () => import('@/views/Tools/ToolsIllustrationView.vue'),
+        meta: {
+            title: '工具插画',
+            isHeadNavigation: true,
+            keepAlive: false,
+            isLeftMenu: false
+        }
+    },
+    {
+        path: '/publish_code',
+        name: 'PublishCode',
+        component: () => import('@/views/Code/PublishCode.vue'),
+        meta: {
+            title: '发布源码',
+            isHeadNavigation: true,
+            keepAlive: false,
+            isLeftMenu: false
+        }
+    },
+    {
+        path: '/my_code',
+        name: 'MyCode',
+        component: () => import('@/views/Code/MyCode.vue'),
+        meta: {
+            title: '我的源码',
+            isHeadNavigation: true,
+            keepAlive: false,
+            isLeftMenu: false
+        }
+    },
+    {
+        path: '/profile',
+        name: 'Profile',
+        component: () => import('@/views/ProfileView.vue'),
+        meta: {
+            title: '我的简介',
+            isHeadNavigation: true,
+            keepAlive: false,
+            isLeftMenu: false
+        }
+    }
+]
+
+const router = createRouter({
+    history: createWebHashHistory(),
+    routes
+})
+
+
+// TODO 全局前置守卫
+router.beforeEach(async (to) => {
+    // TODO 页面切换中断所有请求
+    cancelArr.forEach((cancel, index) => {
+        cancel()
+        cancelArr.splice(index, 1)
+    })
+
+    // TODO 设置浏览器Title
+    document.title = (to.meta.title ? to.meta.title : '') + ' - Pass Assistant'
+})
+
+export default router
