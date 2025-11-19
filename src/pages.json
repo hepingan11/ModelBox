@@ -1,0 +1,283 @@
+{
+	"pages": [ 
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationBarTitleText": "首页"
+			}
+		},
+		{
+			"path": "pages/login/login",
+			"style": {
+				"navigationBarTitleText": "登录"
+			}
+		},
+		{
+			"path": "pages/login/register",
+			"style": {
+				"navigationBarTitleText": "注册"
+			}
+		},
+		{
+			"path": "pages/user/user",
+			"style": {
+				"navigationBarTitleText": "我的"
+			}
+		},
+		{
+			"path" : "pages/user/edit-profile",
+			"style" : 
+			{
+				"navigationBarTitleText" : "编辑资料"
+			}
+		},
+		{
+			"path" : "pages/user/frame",
+			"style" : 
+			{
+				"navigationBarTitleText" : "头像框"
+			}
+		},
+		{
+			"path" : "pages/user/personal-center",
+			"style" : 
+			{
+				"navigationBarTitleText" : "个人中心"
+			}
+		},
+		{
+			"path" : "pages/forum/forum",
+			"style" : 
+			{
+				"navigationBarTitleText" : "论坛"
+			}
+		},
+		{
+			"path" : "pages/forum/publish",
+			"style" : 
+			{
+				"navigationBarTitleText" : "发布"
+			}
+		},
+		{
+			"path" : "pages/forum/detail",
+			"style" : 
+			{
+				"navigationBarTitleText" : "详情"
+			}
+		},
+		{
+			"path" : "pages/shop/index",
+			"style" : 
+			{
+				"navigationBarTitleText" : "二手交易"
+			}
+		},
+		{
+			"path" : "pages/shop/publish",
+			"style" : 
+			{
+				"navigationBarTitleText" : "发布商品"
+			}
+		},
+		{
+			"path" : "pages/shop/order",
+			"style" : 
+			{
+				"navigationBarTitleText" : "订单"
+			}
+		},
+		{
+			"path" : "pages/login/admin-login",
+			"style" : 
+			{
+				"navigationBarTitleText" : "管理员登录"
+			}
+		},
+		{
+			"path" : "pages/shop/detail",
+			"style" : 
+			{
+				"navigationBarTitleText" : "商品详情"
+			}
+		},
+		{
+			"path" : "pages/chat/chat",
+			"style" : 
+			{
+				"navigationBarTitleText" : "聊天"
+			}
+		},
+		{
+			"path" : "pages/shop/myshop",
+			"style" : 
+			{
+				"navigationBarTitleText" : "我的店铺"
+			}
+		},
+		{
+			"path" : "pages/shop/favorite",
+			"style" : 
+			{
+				"navigationBarTitleText" : "收藏商品"
+			}
+		},
+		{
+			"path": "pages/user/about",
+			"style" : 
+			{
+				"navigationBarTitleText" : "关于我们"
+			}
+		},
+		{
+			"path": "pages/admin/index",
+			"style" : 
+			{
+				"navigationBarTitleText" : "管理员界面"
+			}
+		},
+		{
+			"path": "pages/shop/message",
+			"style" : 
+			{
+				"navigationBarTitleText" : "消息列表"
+			}
+		},
+		{
+			"path": "pages/forum/mypost",
+			"style": {
+				"navigationBarTitleText": "我的帖子"
+			}
+		},
+		{
+			"path": "pages/forum/message",
+			"style": {
+				"navigationBarTitleText": "消息列表"
+			}
+		},
+		{
+			"path": "pages/forum/mylike",
+			"style": {
+				"navigationBarTitleText": "我的点赞"
+			}
+		},
+		{
+			"path": "pages/admin/userList",
+			"style": {
+				"navigationBarTitleText": "用户列表"
+			}
+		},
+		{
+			"path": "pages/admin/activityList",
+			"style": {
+				"navigationBarTitleText": "活动列表"
+			}
+		},
+		{
+			"path": "pages/admin/shopList",
+			"style": {
+				"navigationBarTitleText": "商品列表"
+			}
+		},
+		{
+			"path": "pages/admin/forumList",
+			"style": {
+				"navigationBarTitleText": "帖子列表"
+			}
+		},
+		{
+			"path" : "pages/admin/activityEdit",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
+		},
+		{
+			"path": "pages/admin/carouselList",
+			"style": {
+				"navigationBarTitleText": "轮播图列表"
+			}
+		},
+		{
+			"path": "pages/admin/messageList",
+			"style": {
+				"navigationBarTitleText": "消息列表"
+			}
+		},
+		{
+			"path": "pages/index/report",
+			"style": {
+				"navigationBarTitleText": "举报"
+			}
+		},
+		{
+			"path": "pages/user/myReport",
+			"style": {
+				"navigationBarTitleText": "我的举报"
+			}
+		},
+		{
+			"path": "pages/admin/reportList",
+			"style": {
+				"navigationBarTitleText": "举报列表"
+			}
+		},
+		{
+			"path": "pages/admin/avatarList",
+			"style": {
+				"navigationBarTitleText": "头像框列表"
+			}
+		},
+		{
+			"path": "pages/admin/avatarEdit",
+			"style": {
+				"navigationBarTitleText": "头像框编辑"
+			}
+		},
+		{
+			"path": "pages/admin/frameLock",
+			"style": {
+				"navigationBarTitleText": "解锁头像框"
+			}
+		}
+	],
+	"tabBar": {
+		"color": "#111111",
+		"selectedColor": "#1abc9c",
+		"backgroundColor": "#FFFFFF",
+		"borderStyle": "black",
+		"list": [
+			{
+				"pagePath": "pages/index/index",
+				"text": "首页",
+				"iconPath": "static/home.png",
+				"selectedIconPath": "static/home-selected.png"
+			},
+			{
+				"pagePath": "pages/shop/index",
+				"text": "二手交易",
+				"iconPath": "static/shop.png",
+				"selectedIconPath": "static/shop-selected.png"
+			},
+			{
+				"pagePath": "pages/forum/forum",
+				"text": "论坛",
+				"iconPath": "static/discussion.png",
+				"selectedIconPath": "static/discussion-selected.png"
+			},
+			{
+				"pagePath": "pages/user/user",
+				"text": "我的",
+				"iconPath": "static/user.png",
+				"selectedIconPath": "static/user-selected.png"
+			}
+		]
+	},
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "uni-app",
+		"navigationBarBackgroundColor": "#FFFFFF",
+		"backgroundColor": "#F8F8F8"
+	},
+	"uniIdRouter": {}
+}
