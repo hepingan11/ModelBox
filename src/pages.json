@@ -239,6 +239,20 @@
 			"style": {
 				"navigationBarTitleText": "解锁头像框"
 			}
+		},
+		{
+			"path": "pages/delivery/delivery-orders",
+			"style": {
+				"navigationBarTitleText": "跑腿抢单",
+				"enablePullDownRefresh": true
+			}
+		},
+		{
+			"path": "pages/delivery/delivery-create",
+			"style": {
+				"navigationBarTitleText": "发布跑腿",
+				"navigationStyle": "custom"
+			}
 		}
 	],
 	"tabBar": {

@@ -25,6 +25,24 @@
 			</swiper>
 		</view>
 		
+		<!-- 外卖跑腿业务模块 -->
+		<view class="delivery-section">
+			<view class="delivery-card take-order" @click="navigateToDeliveryTake">
+				<view class="delivery-content">
+					<text class="delivery-title">我要接单</text>
+					<text class="delivery-desc">赚取配送费</text>
+				</view>
+				<image src="/static/shop.png" class="delivery-icon" mode="aspectFit"></image>
+			</view>
+			<view class="delivery-card place-order" @click="navigateToDeliveryOrder">
+				<view class="delivery-content">
+					<text class="delivery-title">我要下单</text>
+					<text class="delivery-desc">帮我送东西</text>
+				</view>
+				<image src="/static/shop-selected.png" class="delivery-icon" mode="aspectFit"></image>
+			</view>
+		</view>
+		
 		<!-- 功能工具栏 -->
 		<!-- <view class="tools-section">
 			<scroll-view class="tools-scroll" scroll-x>
@@ -410,6 +428,21 @@ const navigateToGoodsDetail = (id) => {
 const viewMoreGoods = () => {
 	uni.switchTab({ url: '/pages/shop/index' })
 }
+
+// 跳转到接单页面
+const navigateToDeliveryTake = () => {
+	uni.navigateTo({
+		url: '/pages/delivery/delivery-orders'
+	})
+}
+
+// 跳转到下单页面
+const navigateToDeliveryOrder = () => {
+	uni.navigateTo({
+		url: '/pages/delivery/delivery-create'
+	})
+}
+
 </script>
 
 <style>
@@ -514,6 +547,63 @@ const viewMoreGoods = () => {
 	margin-bottom: 30rpx;
 	position: relative;
 	z-index: 1;
+}
+
+.delivery-section {
+	margin: 0 24rpx 30rpx;
+	display: flex;
+	justify-content: space-between;
+	position: relative;
+	z-index: 1;
+}
+
+.delivery-card {
+	width: 48%;
+	height: 160rpx;
+	border-radius: 20rpx;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 0 30rpx;
+	box-sizing: border-box;
+	box-shadow: 0 8rpx 16rpx rgba(0, 0, 0, 0.05);
+	transition: transform 0.2s ease;
+}
+
+.delivery-card:active {
+	transform: scale(0.98);
+}
+
+.take-order {
+	background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+}
+
+.place-order {
+	background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+}
+
+.delivery-content {
+	display: flex;
+	flex-direction: column;
+}
+
+.delivery-title {
+	font-size: 32rpx;
+	font-weight: bold;
+	color: #333;
+	margin-bottom: 8rpx;
+}
+
+.delivery-desc {
+	font-size: 24rpx;
+	color: #666;
+}
+
+.delivery-icon {
+	width: 80rpx !important;
+	height: 80rpx !important;
+	opacity: 0.8;
+	flex-shrink: 0;
 }
 
 .home-swiper {

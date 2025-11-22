@@ -212,7 +212,7 @@ const getGoodsInfo = async () => {
 // 获取地址列表
 const getAddressList = async () => {
     try {
-        const res = await request('/orders/address/list', {
+        const res = await request('/address/list', {
             method: 'GET'
         })
 
@@ -295,7 +295,7 @@ const saveAddress = async () => {
             payload.id = editingAddress.value.id
         }
 
-        const res = await request('/orders/address/update', {
+        const res = await request('/address/update', {
             method: 'POST',
             data: payload
         })
@@ -338,7 +338,7 @@ const deleteAddress = async (addressId) => {
                         mask: true
                     })
 
-                    const deleteRes = await request('/orders/address/delete', {
+                    const deleteRes = await request('/address/delete', {
                         method: 'POST',
                         data: { addressId }
                     })
@@ -382,7 +382,7 @@ const createOrder = async () => {
         }
 
         console.log('创建订单，数据:', orderData)
-        const res = await request('/pay/jsapi/create', {
+        const res = await request('/shop/orders/create', {
             method: 'POST',
             data: orderData
         })
