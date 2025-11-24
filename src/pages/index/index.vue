@@ -25,6 +25,15 @@
 			</swiper>
 		</view>
 		
+		<!-- 学校绑定区域 -->
+		<view class="school-section" @click="openSchoolPopup">
+			<view class="school-info">
+				<text class="school-icon">📍</text>
+				<text class="school-name">{{ currentSchool ? currentSchool.schoolName : '点击绑定学校' }}</text>
+			</view>
+			<image src="/static/icon/arrow-right.png" class="school-arrow-icon" mode="aspectFit"></image>
+		</view>
+		
 		<!-- 外卖跑腿业务模块 -->
 		<view class="delivery-section">
 			<view class="delivery-card take-order" @click="navigateToDeliveryTake">
@@ -188,86 +197,233 @@
 				</scroll-view>
 			</view>
 		</view>
+		
+		<!-- 学校选择弹窗 -->
+		<view class="popup-mask" v-if="showSchoolPopup" @click="closeSchoolPopup" :class="{ 'popup-show': showPopupAnimation }">
+			<view class="popup-content" @click.stop>
+				<view class="popup-header">
+					<text class="popup-title">选择学校</text>
+					<text class="close-icon" @click="closeSchoolPopup">×</text>
+				</view>
+				<view class="search-box">
+					<input 
+						type="text" 
+						v-model="searchSchoolName" 
+						placeholder="请输入学校名称搜索" 
+						class="search-input"
+						@input="onSearchInput"
+						@confirm="searchSchools"
+					/>
+					<view class="search-btn" @click="searchSchools">搜索</view>
+				</view>
+				<scroll-view scroll-y class="school-list">
+					<view 
+						class="school-item" 
+						v-for="school in schoolSearchResults" 
+						:key="school.schoolId"
+						@click="selectSchool(school)"
+					>
+						<text class="school-item-name">{{ school.schoolName }}</text>
+					</view>
+					<view v-if="hasSearched && schoolSearchResults.length === 0" class="empty-result">
+						<text>未找到相关学校</text>
+					</view>
+				</scroll-view>
+			</view>
+		</view>
 	</view>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import request from '@/utils/request.js'
+  import { ref, onMounted } from 'vue'
+  import request from '@/utils/request.js'
 
-// 轮播图图片
-const banners = ref([])
+  // 轮播图图片
+  const banners = ref([])
 
-// 活动广告列表
-const activityList = ref([])
-// 活动页码
-const activityPageNum = ref(1)
-// 活动加载状态
-const isLoadingActivities = ref(true)
+  // 活动广告列表
+  const activityList = ref([])
+  // 活动页码
+  const activityPageNum = ref(1)
+  // 活动加载状态
+  const isLoadingActivities = ref(true)
 
-// 最新商品列表
-const latestGoodsList = ref([])
-// 商品加载状态
-const isLoadingGoods = ref(true)
+  // 最新商品列表
+  const latestGoodsList = ref([])
+  // 商品加载状态
+  const isLoadingGoods = ref(true)
+  
+  // 活动通知控制
+  const showActivity = ref(true)
+  
+  // 学校相关状态
+  const currentSchool = ref(null)
+  const showSchoolPopup = ref(false)
+  const showPopupAnimation = ref(false)
+  const searchSchoolName = ref('')
+  const schoolSearchResults = ref([])
+  const hasSearched = ref(false)
+  
+  let searchTimer = null
 
-// 活动通知控制
-const showActivity = ref(true)
+  // 获取轮播图数据
+  const getCarouselList = async () => {
+  	try {
+  		const res = await request('/system/carousel/list', {
+  			method: 'GET'
+  		})
+  		
+  		if (res.code === 200) {
+  			banners.value = (res.data || []).map(item => item.url)
+  		} else {
+  			console.error('获取轮播图列表失败:', res.msg)
+  		}
+  	} catch (error) {
+  		console.error('获取轮播图列表失败:', error)
+  	}
+  }
+  
+  // 页面加载时的动画效果和数据获取
+  onMounted(() => {
+  	// 获取轮播图数据
+  	getCarouselList()
+  	// 获取活动广告数据
+  	getActivityList()
+  	// 获取最新商品数据
+  	getLatestGoods()
+	// 获取已绑定的学校
+	getBoundSchool()
+  })
+  
+  // 打开学校选择弹窗
+  const openSchoolPopup = () => {
+  	showSchoolPopup.value = true
+  	setTimeout(() => {
+  		showPopupAnimation.value = true
+  	}, 10)
+  	searchSchoolName.value = ''
+  	schoolSearchResults.value = []
+  	hasSearched.value = false
+  }
 
-// 获取轮播图数据
-const getCarouselList = async () => {
-	try {
-		const res = await request('/system/carousel/list', {
-			method: 'GET'
-		})
-		
-		if (res.code === 200) {
-			banners.value = (res.data || []).map(item => item.url)
-		} else {
-			console.error('获取轮播图列表失败:', res.msg)
+  // 关闭学校选择弹窗
+  const closeSchoolPopup = () => {
+  	showPopupAnimation.value = false
+  	setTimeout(() => {
+  		showSchoolPopup.value = false
+  	}, 300)
+  }
+  
+  const onSearchInput = () => {
+	if (searchTimer) clearTimeout(searchTimer)
+	searchTimer = setTimeout(() => {
+		if (!searchSchoolName.value.trim()) {
+			schoolSearchResults.value = []
+			hasSearched.value = false
+			return
 		}
-	} catch (error) {
-		console.error('获取轮播图列表失败:', error)
-	}
+		searchSchools(true)
+	}, 500)
 }
 
-// 页面加载时的动画效果和数据获取
-onMounted(() => {
-	// 获取轮播图数据
-	getCarouselList()
-	// 获取活动广告数据
-	getActivityList()
-	// 获取最新商品数据
-	getLatestGoods()
-})
-
-// 获取活动广告列表
-const getActivityList = async () => {
-	isLoadingActivities.value = true
-	
-	try {
-		const res = await request('/activity/list', {
-			method: 'GET',
-			data: {
-				pageNum: activityPageNum.value
-			}
-		})
-		
-		if (res.code === 200) {
-			let list = res.data || []
-			activityList.value = list
-		} else {
-			console.error('获取活动列表失败:', res.msg)
-		}
-	} catch (error) {
-		console.error('获取活动列表失败:', error)
-	} finally {
-		isLoadingActivities.value = false
-	}
-}
-
-// 获取最新商品列表
-const getLatestGoods = async () => {
-	isLoadingGoods.value = true
+  // 搜索学校
+  const searchSchools = async (isAuto = false) => {
+  	if (!searchSchoolName.value.trim()) {
+  		if (!isAuto) {
+  			uni.showToast({
+  				title: '请输入学校名称',
+  				icon: 'none'
+  			})
+  		}
+  		return
+  	}
+  	
+  	try {
+  		const res = await request('/delivery/school/list', {
+  			method: 'GET',
+  			data: {
+  				schoolName: searchSchoolName.value
+  			}
+  		})
+  		
+  		if (res.code === 200) {
+  			schoolSearchResults.value = res.data || []
+  			hasSearched.value = true
+  		} else {
+  			uni.showToast({
+  				title: res.msg || '搜索失败',
+  				icon: 'none'
+  			})
+  		}
+  	} catch (error) {
+  		console.error('搜索学校失败:', error)
+  		uni.showToast({
+  			title: '搜索失败，请稍后重试',
+  			icon: 'none'
+  		})
+  	}
+  }
+  
+  // 选择学校
+  const selectSchool = (school) => {
+  	currentSchool.value = school
+  	uni.setStorageSync('schoolId', school.schoolId)
+  	closeSchoolPopup()
+  	uni.showToast({
+  		title: '绑定成功',
+  		icon: 'success'
+  	})
+  }
+  
+  // 获取已绑定的学校
+  const getBoundSchool = async () => {
+  	const schoolId = uni.getStorageSync('schoolId')
+  	if (!schoolId) return
+  	
+  	try {
+  		const res = await request('/delivery/school/getName', {
+  			method: 'GET',
+  			data: {
+  				schoolId: schoolId
+  			}
+  		})
+  		
+  		if (res.code === 200 && res.data) {
+  			currentSchool.value = res.data
+  		}
+  	} catch (error) {
+  		console.error('获取绑定学校失败:', error)
+  	}
+  }
+  
+  // 获取活动广告列表
+  const getActivityList = async () => {
+  	isLoadingActivities.value = true
+  	
+  	try {
+  		const res = await request('/activity/list', {
+  			method: 'GET',
+  			data: {
+  				pageNum: activityPageNum.value
+  			}
+  		})
+  		
+  		if (res.code === 200) {
+  			let list = res.data || []
+  			activityList.value = list
+  		} else {
+  			console.error('获取活动列表失败:', res.msg)
+  		}
+  	} catch (error) {
+  		console.error('获取活动列表失败:', error)
+  	} finally {
+  		isLoadingActivities.value = false
+  	}
+  }
+  
+  // 获取最新商品列表
+  const getLatestGoods = async () => {
+  	isLoadingGoods.value = true
 	
 	try {
 		const res = await request('/shop/list', {
@@ -455,7 +611,148 @@ const navigateToDeliveryOrder = () => {
 	overflow: hidden;
 }
 
-/* 背景装饰元素 */
+.school-section {
+	margin: 0 24rpx 20rpx;
+	padding: 20rpx 30rpx;
+	background: rgba(255, 255, 255, 0.9);
+	border-radius: 16rpx;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+	position: relative;
+	z-index: 1;
+}
+
+.school-info {
+	display: flex;
+	align-items: center;
+}
+
+.school-icon {
+	margin-right: 16rpx;
+	font-size: 32rpx;
+}
+
+.school-name {
+	font-size: 28rpx;
+	color: #333;
+	font-weight: 500;
+}
+
+.school-arrow-icon {
+	width: 32rpx;
+	height: 32rpx;
+	opacity: 0.5;
+}
+
+/* 弹窗动画 */
+.popup-mask {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.5);
+	z-index: 999;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	opacity: 0;
+	transition: opacity 0.3s ease;
+	visibility: hidden;
+}
+
+.popup-mask.popup-show {
+	opacity: 1;
+	visibility: visible;
+}
+
+.popup-content {
+	width: 600rpx;
+	background-color: #fff;
+	border-radius: 24rpx;
+	padding: 30rpx;
+	max-height: 80vh;
+	display: flex;
+	flex-direction: column;
+	transform: scale(0.95);
+	transition: transform 0.3s ease;
+}
+
+.popup-mask.popup-show .popup-content {
+	transform: scale(1);
+}
+
+.popup-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 30rpx;
+}
+
+.popup-title {
+	font-size: 32rpx;
+	font-weight: bold;
+	color: #333;
+}
+
+.close-icon {
+	font-size: 40rpx;
+	color: #999;
+	line-height: 1;
+	padding: 10rpx;
+}
+
+.search-box {
+	display: flex;
+	align-items: center;
+	margin-bottom: 20rpx;
+}
+
+.search-input {
+	flex: 1;
+	height: 72rpx;
+	background-color: #f5f7fa;
+	border-radius: 36rpx;
+	padding: 0 30rpx;
+	font-size: 28rpx;
+	margin-right: 20rpx;
+}
+
+.search-btn {
+	padding: 16rpx 30rpx;
+	background: linear-gradient(135deg, #1abc9c, #16a085);
+	color: #fff;
+	border-radius: 36rpx;
+	font-size: 28rpx;
+}
+
+.school-list {
+	height: 700rpx;
+}
+
+.school-item {
+	padding: 24rpx 0;
+	border-bottom: 1rpx solid #f0f0f0;
+}
+
+.school-item:last-child {
+	border-bottom: none;
+}
+
+.school-item-name {
+	font-size: 28rpx;
+	color: #333;
+}
+
+.empty-result {
+	text-align: center;
+	padding: 40rpx 0;
+	color: #999;
+	font-size: 26rpx;
+}
+
 .bg-decoration {
 	position: absolute;
 	width: 100%;

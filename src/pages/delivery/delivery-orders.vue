@@ -73,7 +73,8 @@
           </view>
           
           <view class="card-footer">
-            <button class="grab-btn" hover-class="btn-hover" @click="handleGrabOrder(item)">立即抢单</button>
+            <button class="detail-btn" hover-class="btn-hover" @click="handleViewDetail(item)">详情</button>
+            <button class="grab-btn" hover-class="btn-hover" style="margin-left: 10px;" @click="handleGrabOrder(item)">立即抢单</button>
           </view>
         </view>
       </view>
@@ -226,6 +227,13 @@ const refreshList = () => {
 // 加载更多
 const loadMore = () => {
   getWaitOrdersList(false)
+}
+
+// 查看详情
+const handleViewDetail = (item) => {
+  uni.navigateTo({
+    url: `/pages/delivery/delivery-detail?id=${item.deliveryOrdersId}`
+  })
 }
 
 // 抢单操作
@@ -469,6 +477,17 @@ const formatDeliveryTime = (timeStr) => {
   line-height: 64rpx;
   border-radius: 32rpx;
   box-shadow: 0 4rpx 12rpx rgba(26, 188, 156, 0.3);
+}
+
+.detail-btn {
+  margin: 0;
+  background-color: #f5f7fa;
+  color: #666;
+  font-size: 28rpx;
+  padding: 0 40rpx;
+  height: 64rpx;
+  line-height: 64rpx;
+  border-radius: 32rpx;
 }
 
 .btn-hover {

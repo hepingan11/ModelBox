@@ -253,6 +253,12 @@
 				"navigationBarTitleText": "发布跑腿",
 				"navigationStyle": "custom"
 			}
+		},
+		{
+			"path": "pages/delivery/delivery-detail",
+			"style": {
+				"navigationBarTitleText": "跑腿详情"
+			}
 		}
 	],
 	"tabBar": {

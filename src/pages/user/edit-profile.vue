@@ -60,6 +60,9 @@
 						maxlength="11"
 						class="input"
 					/>
+					<button v-if="isWechatMp" class="get-phone-btn" open-type="getPhoneNumber" @getphonenumber="onGetPhoneNumber">
+						<text>自动获取</text>
+					</button>
 				</view>
 				
 				
@@ -213,6 +216,46 @@ const onChooseAvatar = (e) => {
 		
 		// 使用相同的上传功能上传微信头像
 		uploadAvatarFile(tempFilePath)
+	}
+}
+
+// 获取微信手机号
+const onGetPhoneNumber = async (e) => {
+	if (e.detail.code) {
+		try {
+			uni.showLoading({ title: '获取中...' })
+			const res = await request('/user/updatePhoneByWechat', {
+				method: 'POST',
+				data: e.detail.code
+				
+			})
+			
+			if (res.code === 200 && res.data) {
+				userInfo.value.phone = res.data
+				uni.showToast({
+					title: '获取成功',
+					icon: 'success'
+				})
+			} else {
+				uni.showToast({
+					title: res.msg || '获取失败',
+					icon: 'none'
+				})
+			}
+		} catch (error) {
+			console.error(error)
+			uni.showToast({
+				title: '网络错误',
+				icon: 'none'
+			})
+		} finally {
+			uni.hideLoading()
+		}
+	} else {
+		uni.showToast({
+			title: '需要授权才能获取手机号',
+			icon: 'none'
+		})
 	}
 }
 
@@ -553,6 +596,22 @@ onMounted(() => {
 
 .wx-avatar-button .edit-text {
 	color: #07C160;
+}
+
+.get-phone-btn {
+	margin: 0 0 0 20rpx;
+	padding: 0 20rpx;
+	height: 60rpx;
+	line-height: 60rpx;
+	background-color: rgba(7, 193, 96, 0.1);
+	color: #07C160;
+	font-size: 24rpx;
+	border-radius: 30rpx;
+	flex-shrink: 0;
+}
+
+.get-phone-btn::after {
+	border: none;
 }
 
 /* 表单样式 */

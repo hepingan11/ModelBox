@@ -15,12 +15,18 @@
     <view :style="{ height: totalNavHeight + 'px' }"></view>
 
     <scroll-view class="content" scroll-y>
+      <!-- 当前学校显示 -->
+      <view class="current-school" v-if="currentSchoolName">
+        <text class="school-label">当前学校：</text>
+        <text class="school-val">{{ currentSchoolName }}</text>
+      </view>
+
       <!-- 取货信息 -->
       <view class="section">
         <view class="section-title">取货信息</view>
         <view class="form-item">
           <text class="label">取货地址</text>
-          <input class="input" v-model="form.startingAddress" placeholder="请输入取货地点（如：快递站/食堂等）" />
+          <input class="input" v-model="form.startingAddress" placeholder="请输入取货地点（如：学校门口外卖柜）" />
         </view>
       </view>
 
@@ -50,7 +56,11 @@
 
         <!-- 宿舍楼选择 (补充信息) -->
         <view class="form-item picker-item">
-          <text class="label">送达宿舍楼</text>
+          <view class="label-box">
+            <image src="/static/icon/report.png" class="field-icon" mode="aspectFit"></image>
+            <text class="label-text">送达宿舍</text>
+            <text class="required-mark">*</text>
+          </view>
           <picker 
             @change="handleDormitoryChange" 
             :value="dormitoryIndex" 
@@ -65,26 +75,68 @@
             </view>
           </picker>
         </view>
+        
+        <view class="warning-tip">
+          <text>温馨提示：请注意您所选择的地址的手机号与外卖信息一致，否则可能无法取件。</text>
+        </view>
       </view>
 
       <!-- 物品及费用 -->
       <view class="section">
         <view class="section-title">物品及费用</view>
+        
+        <!-- 必填/核心信息 -->
         <view class="form-item">
-          <text class="label">外卖单号</text>
-          <input class="input" v-model="form.takeoutNo" placeholder="请输入外卖单号/取货码（方便核对）" />
+          <text class="label">预计到达</text>
+          <picker mode="time" :value="form.takeoutDeliveryTime" @change="handleTimeChange">
+            <view class="picker-view">
+              <text class="picker-text" :class="{ 'placeholder-text': !form.takeoutDeliveryTime }">
+                {{ form.takeoutDeliveryTime || '请选择预计到达时间' }}
+              </text>
+              <text class="picker-arrow">＞</text>
+            </view>
+          </picker>
         </view>
         <view class="form-item">
-          <text class="label">物品价值(元)</text>
-          <input class="input" type="digit" v-model="form.deliveryShopValue" placeholder="预估物品价值（可选）" />
+          <text class="label">是否送上楼</text>
+          <view style="flex: 1; display: flex; align-items: center;">
+             <switch :checked="form.isFloor" @change="handleIsFloorChange" color="#1abc9c" style="transform: scale(0.8);" />
+             <text style="font-size: 24rpx; color: #ff5722; margin-left: 20rpx;">{{ form.isFloor ? '+0.5元' : '' }}</text>
+          </view>
         </view>
         <view class="form-item">
           <text class="label">配送费(元)</text>
-          <input class="input price-input" type="digit" v-model="form.deliveryFee" placeholder="请输入配送费" />
+          <input class="input price-input" type="digit" v-model="form.deliveryFee" placeholder="选择宿舍后自动显示" disabled />
         </view>
-        <view class="form-item vertical">
-          <text class="label">备注</text>
-          <textarea class="textarea" v-model="form.note" placeholder="如有其他要求请填写（可选）" maxlength="100"></textarea>
+        <view class="form-item">
+          <text class="label">最长等待(分)</text>
+          <input class="input" type="number" v-model="form.waitTime" placeholder="请输入最长等待时间(分钟)" />
+        </view>
+
+        <!-- 更多选项开关 -->
+        <view class="more-options-toggle" @click="showMoreInfo = !showMoreInfo">
+          <text>{{ showMoreInfo ? '收起选填信息' : '展开更多选填信息' }}</text>
+          <text class="arrow" :class="{ up: showMoreInfo }">∨</text>
+        </view>
+
+        <!-- 选填信息折叠区域 -->
+        <view v-if="showMoreInfo" class="more-info-area">
+          <view class="form-item">
+            <text class="label">外卖单号</text>
+            <input class="input" v-model="form.takeoutNo" placeholder="请输入外卖单号/取货码（方便核对）" />
+          </view>
+          <view class="form-item">
+            <text class="label">物品价值(元)</text>
+            <input class="input" type="digit" v-model="form.deliveryShopValue" placeholder="预估物品价值（可选）" />
+          </view>
+          <view class="form-item vertical">
+            <text class="label">备注</text>
+            <textarea class="textarea" v-model="form.note" placeholder="如有其他要求请填写（可选）" maxlength="100"></textarea>
+          </view>
+          <view class="form-item">
+            <text class="label">匿名下单</text>
+            <switch :checked="form.isNick" @change="form.isNick = $event.detail.value" color="#1abc9c" style="transform: scale(0.8);" />
+          </view>
         </view>
       </view>
 
@@ -219,17 +271,30 @@ const navContentStyle = computed(() => ({
 const form = ref({
   startingAddress: '',
   takeoutNo: '',
+  takeoutDeliveryTime: (() => {
+    const now = new Date()
+    const hours = String(now.getHours()).padStart(2, '0')
+    const minutes = String(now.getMinutes()).padStart(2, '0')
+    return `${hours}:${minutes}`
+  })(),
   deliveryFee: '',
+  isFloor: false,
   deliveryShopValue: '',
+  waitTime: '',
   note: '',
+  isNick: true,
   dormitoryId: null,
-  schoolId: 1 // 默认学校ID
+  schoolId: null // 默认学校ID
 })
 
+const currentSchoolName = ref('')
 const selectedAddress = ref(null)
 const addressList = ref([])
 const showAddressList = ref(false)
 const isSubmitting = ref(false)
+const showMoreInfo = ref(false) // 是否展开更多信息
+const baseDeliveryFee = ref(0) // 基础配送费
+
 
 // 地址表单相关
 const showAddressForm = ref(false)
@@ -261,8 +326,39 @@ onMounted(() => {
   // #endif
 
   getAddressList()
-  getDormitoryList()
+  
+  // 获取绑定的学校信息
+  const schoolId = uni.getStorageSync('schoolId')
+  if (schoolId) {
+    form.value.schoolId = schoolId
+    getSchoolInfo(schoolId)
+    getDormitoryList() // 获取宿舍列表依赖学校ID
+  } else {
+    uni.showToast({
+      title: '请先在首页绑定学校',
+      icon: 'none',
+      duration: 2000
+    })
+    setTimeout(() => {
+      uni.navigateBack()
+    }, 1500)
+  }
 })
+
+// 获取学校信息
+const getSchoolInfo = async (schoolId) => {
+  try {
+    const res = await request('/delivery/school/getName', {
+      method: 'GET',
+      data: { schoolId }
+    })
+    if (res.code === 200 && res.data) {
+      currentSchoolName.value = res.data.schoolName
+    }
+  } catch (e) {
+    console.error('获取学校信息失败', e)
+  }
+}
 
 const goBack = () => {
   uni.navigateBack()
@@ -273,7 +369,17 @@ const getAddressList = async () => {
   try {
     const res = await request('/address/list', { method: 'GET' })
     if (res.code === 200) {
-      addressList.value = res.data || []
+      const list = res.data || []
+      addressList.value = list
+      
+      // 如果当前有选中的地址，更新其信息
+      if (selectedAddress.value) {
+        const current = list.find(item => item.id === selectedAddress.value.id)
+        if (current) {
+          selectedAddress.value = current
+        }
+      }
+      
       // 默认选中第一个
       if (addressList.value.length > 0 && !selectedAddress.value) {
         selectedAddress.value = addressList.value[0]
@@ -308,7 +414,34 @@ const handleDormitoryChange = (e) => {
     // 优先使用 dormitoryId，如果不存在则使用 id
     form.value.dormitoryId = item.dormitoryId || item.id
     selectedDormitoryName.value = item.dormitoryName
+    
+    // 配送费由宿舍楼决定
+    if (item.deliveryPrice !== undefined && item.deliveryPrice !== null) {
+      baseDeliveryFee.value = item.deliveryPrice
+      calculateFee()
+    }
   }
+}
+
+// 计算配送费
+const calculateFee = () => {
+  let fee = baseDeliveryFee.value
+  if (form.value.isFloor) {
+    fee += 0.5
+  }
+  // 保留两位小数，防止精度问题
+  form.value.deliveryFee = Math.round(fee * 100) / 100
+}
+
+// 是否送上楼改变
+const handleIsFloorChange = (e) => {
+  form.value.isFloor = e.detail.value
+  calculateFee()
+}
+
+// 选择时间
+const handleTimeChange = (e) => {
+  form.value.takeoutDeliveryTime = e.detail.value
 }
 
 // 选择地址
@@ -398,7 +531,7 @@ const deleteAddress = (id) => {
           uni.showLoading({ title: '删除中' })
           const res = await request('/address/delete', {
             method: 'POST',
-            data: { addressId: id }
+            data: id 
           })
           uni.hideLoading()
           if (res.code === 200) {
@@ -427,6 +560,7 @@ const submitOrder = async () => {
   if (!selectedAddress.value) return uni.showToast({ title: '请选择送达地址', icon: 'none' })
   if (!form.value.dormitoryId) return uni.showToast({ title: '请选择送达宿舍楼', icon: 'none' })
   if (!form.value.deliveryFee) return uni.showToast({ title: '请填写配送费', icon: 'none' })
+  if (!form.value.waitTime) return uni.showToast({ title: '请填写等待时间', icon: 'none' })
 
   isSubmitting.value = true
   uni.showLoading({ title: '创建订单中' })
@@ -439,10 +573,23 @@ const submitOrder = async () => {
       schoolId: form.value.schoolId,
       deliveryFee: parseFloat(form.value.deliveryFee),
       deliveryShopValue: form.value.deliveryShopValue ? parseFloat(form.value.deliveryShopValue) : 0,
+      waitTime: parseInt(form.value.waitTime),
       note: form.value.note,
       takeoutNo: form.value.takeoutNo,
-      // 补充其他可能需要的字段，如联系人信息，如果后端需要单独传，可以从 selectedAddress 取
+      isNick: form.value.isNick ? 1 : 0,
+      isFloor: form.value.isFloor
     }
+
+    // 处理预计到达时间
+    if (form.value.takeoutDeliveryTime) {
+      const now = new Date()
+      const year = now.getFullYear()
+      const month = String(now.getMonth() + 1).padStart(2, '0')
+      const day = String(now.getDate()).padStart(2, '0')
+      // 组合成 yyyy-MM-dd HH:mm:ss 格式
+      payload.takeoutDeliveryTime = `${year}-${month}-${day} ${form.value.takeoutDeliveryTime}:00`
+    }
+
     const res = await request('/delivery/orders/create', {
       method: 'POST',
       data: payload
@@ -516,6 +663,27 @@ const requestWechatPay = (payParams) => {
 .content {
   flex: 1;
   padding: 20rpx;
+}
+
+.current-school {
+  background-color: #e8f5e9;
+  padding: 20rpx 30rpx;
+  border-radius: 16rpx;
+  margin-bottom: 20rpx;
+  display: flex;
+  align-items: center;
+}
+
+.school-label {
+  font-size: 28rpx;
+  color: #666;
+}
+
+.school-val {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #1abc9c;
+  margin-left: 10rpx;
 }
 
 .section {
@@ -617,7 +785,25 @@ const requestWechatPay = (payParams) => {
 .placeholder-text { color: #888; }
 .picker-arrow { color: #999; }
 .picker-item { width: 100%; }
-.picker-item .label { width: 180rpx; }
+.picker-item .label-box {
+  width: 180rpx;
+  display: flex;
+  align-items: center;
+}
+.field-icon {
+  width: 32rpx;
+  height: 32rpx;
+  margin-right: 8rpx;
+}
+.label-text {
+  font-size: 28rpx;
+  color: #333;
+}
+.required-mark {
+  color: #ff5722;
+  margin-left: 4rpx;
+  font-weight: bold;
+}
 picker { flex: 1; }
 
 .spacer { height: 120rpx; }
@@ -629,6 +815,13 @@ picker { flex: 1; }
   justify-content: space-between;
   align-items: center;
   box-shadow: 0 -2rpx 10rpx rgba(0,0,0,0.05);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  box-sizing: border-box;
+  z-index: 99;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
 }
 
 .total-price {
@@ -653,6 +846,38 @@ picker { flex: 1; }
 }
 .submit-btn:disabled { opacity: 0.6; }
 
+.warning-tip {
+  margin-top: 20rpx;
+  padding: 16rpx;
+  background-color: #fffbe6;
+  border: 1rpx solid #ffe58f;
+  border-radius: 8rpx;
+  font-size: 24rpx;
+  color: #fa8c16;
+  line-height: 1.4;
+}
+
+/* 更多选项开关 */
+.more-options-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20rpx 0;
+  font-size: 26rpx;
+  color: #1abc9c;
+}
+.more-options-toggle .arrow {
+  margin-left: 8rpx;
+  font-size: 24rpx;
+  transition: transform 0.3s;
+}
+.more-options-toggle .arrow.up {
+  transform: rotate(180deg);
+}
+.more-info-area {
+  border-top: 1rpx solid #f5f5f5;
+}
+
 /* 弹窗样式 */
 .popup-mask {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -660,7 +885,7 @@ picker { flex: 1; }
   display: flex; justify-content: center; align-items: center;
 }
 .popup-content {
-  width: 80%; max-height: 70%;
+  width: 650rpx; max-height: 70%;
   background-color: #fff;
   border-radius: 20rpx;
   display: flex; flex-direction: column;
@@ -731,15 +956,19 @@ picker { flex: 1; }
 .form-input,
 .form-textarea {
   width: 100%;
-  padding: 16rpx;
+  padding: 0 20rpx;
+  height: 80rpx;
+  line-height: 80rpx;
   border: 1rpx solid #e8e8e8;
   border-radius: 8rpx;
-  font-size: 26rpx;
+  font-size: 28rpx;
   color: #333;
   box-sizing: border-box;
 }
 .form-textarea {
-  height: 120rpx;
+  height: 160rpx;
+  line-height: 1.4;
+  padding: 20rpx;
 }
 .form-actions {
   display: flex;
