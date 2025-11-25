@@ -536,7 +536,7 @@ const goToActivityDetail = (activity) => {
 	} else {
 		// 没有URL，跳转到活动详情页
 		uni.navigateTo({
-			url: `/pages/activity/detail?id=${activity.id}`
+			url: activity.url
 		});
 	}
 }

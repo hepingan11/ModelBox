@@ -28,6 +28,24 @@
           <text class="label">取货地址</text>
           <input class="input" v-model="form.startingAddress" placeholder="请输入取货地点（如：学校门口外卖柜）" />
         </view>
+        <view class="form-item">
+          <text class="label">是否已送达</text>
+          <view style="flex: 1; display: flex; align-items: center;">
+             <switch :checked="form.isDelivered" @change="handleIsDeliveredChange" color="#1abc9c" style="transform: scale(0.8);" />
+             <text style="font-size: 24rpx; color: #666; margin-left: 20rpx;">{{ form.isDelivered ? '已送到取货点' : '未送达' }}</text>
+          </view>
+        </view>
+        <view class="form-item" v-if="!form.isDelivered">
+          <text class="label">预计到达</text>
+          <picker mode="time" :value="form.takeoutDeliveryTime" @change="handleTimeChange">
+            <view class="picker-view">
+              <text class="picker-text" :class="{ 'placeholder-text': !form.takeoutDeliveryTime }">
+                {{ form.takeoutDeliveryTime || '请选择预计到达时间' }}
+              </text>
+              <text class="picker-arrow">＞</text>
+            </view>
+          </picker>
+        </view>
       </view>
 
       <!-- 送达信息 -->
@@ -47,35 +65,13 @@
             <text class="phone">{{ selectedAddress.phone }}</text>
           </view>
           <view class="address-row">
-            <text class="address-text">{{ selectedAddress.addressContent }}</text>
+            <text class="address-text">{{ getFullAddress(selectedAddress) }}</text>
           </view>
         </view>
         <view class="no-address" v-else @click="showAddressList = true">
           <text>请选择送达地址</text>
         </view>
 
-        <!-- 宿舍楼选择 (补充信息) -->
-        <view class="form-item picker-item">
-          <view class="label-box">
-            <image src="/static/icon/report.png" class="field-icon" mode="aspectFit"></image>
-            <text class="label-text">送达宿舍</text>
-            <text class="required-mark">*</text>
-          </view>
-          <picker 
-            @change="handleDormitoryChange" 
-            :value="dormitoryIndex" 
-            :range="dormitoryList" 
-            range-key="dormitoryName"
-          >
-            <view class="picker-view">
-              <text class="picker-text" :class="{ 'placeholder-text': !form.dormitoryId }">
-                {{ selectedDormitoryName || '请选择宿舍楼(方便接单员筛选)' }}
-              </text>
-              <text class="picker-arrow">＞</text>
-            </view>
-          </picker>
-        </view>
-        
         <view class="warning-tip">
           <text>温馨提示：请注意您所选择的地址的手机号与外卖信息一致，否则可能无法取件。</text>
         </view>
@@ -86,17 +82,6 @@
         <view class="section-title">物品及费用</view>
         
         <!-- 必填/核心信息 -->
-        <view class="form-item">
-          <text class="label">预计到达</text>
-          <picker mode="time" :value="form.takeoutDeliveryTime" @change="handleTimeChange">
-            <view class="picker-view">
-              <text class="picker-text" :class="{ 'placeholder-text': !form.takeoutDeliveryTime }">
-                {{ form.takeoutDeliveryTime || '请选择预计到达时间' }}
-              </text>
-              <text class="picker-arrow">＞</text>
-            </view>
-          </picker>
-        </view>
         <view class="form-item">
           <text class="label">是否送上楼</text>
           <view style="flex: 1; display: flex; align-items: center;">
@@ -110,7 +95,7 @@
         </view>
         <view class="form-item">
           <text class="label">最长等待(分)</text>
-          <input class="input" type="number" v-model="form.waitTime" placeholder="请输入最长等待时间(分钟)" />
+          <input class="input" type="number" v-model="form.waitTime" placeholder="默认为15分钟，超时无人接单自动取消" />
         </view>
 
         <!-- 更多选项开关 -->
@@ -131,7 +116,7 @@
           </view>
           <view class="form-item vertical">
             <text class="label">备注</text>
-            <textarea class="textarea" v-model="form.note" placeholder="如有其他要求请填写（可选）" maxlength="100"></textarea>
+            <textarea class="textarea" v-model="form.note" placeholder="如有其他要求请填写,如备注下单平台，店铺商品名称等" maxlength="100"></textarea>
           </view>
           <view class="form-item">
             <text class="label">匿名下单</text>
@@ -174,7 +159,7 @@
                 <text class="addr-name">{{ addr.username }}</text>
                 <text class="addr-phone">{{ addr.phone }}</text>
               </view>
-              <text class="addr-detail">{{ addr.addressContent }}</text>
+              <text class="addr-detail">{{ getFullAddress(addr) }}</text>
             </view>
             <view class="addr-actions">
               <view class="action-btn" @click.stop="editAddress(addr)">
@@ -221,11 +206,27 @@
             />
           </view>
           <view class="form-group">
+            <label class="form-label">宿舍楼</label>
+            <picker 
+                @change="handleEditDormitoryChange" 
+                :value="editingDormitoryIndex" 
+                :range="dormitoryList" 
+                range-key="dormitoryName"
+            >
+                <view class="picker-view input-picker" style="border: 1rpx solid #e8e8e8; border-radius: 8rpx; height: 80rpx; padding: 0 20rpx;">
+                    <text class="picker-text" :class="{ 'placeholder-text': !formData.dormitoryId }">
+                    {{ formData.dormitoryId ? (dormitoryList[editingDormitoryIndex]?.dormitoryName) : '请选择宿舍楼' }}
+                    </text>
+                    <text class="picker-arrow">＞</text>
+                </view>
+            </picker>
+          </view>
+          <view class="form-group">
             <label class="form-label">收货地址</label>
             <textarea 
               v-model="formData.addressContent"
               class="form-textarea"
-              placeholder="请输入详细收货地址"
+              placeholder="请输入详细门牌号/房间号"
               maxlength="200"
             ></textarea>
           </view>
@@ -279,6 +280,7 @@ const form = ref({
   })(),
   deliveryFee: '',
   isFloor: false,
+  isDelivered: true, // 是否已送达，默认已送达
   deliveryShopValue: '',
   waitTime: '',
   note: '',
@@ -302,11 +304,14 @@ const editingAddress = ref(null)
 const formData = ref({
   username: '',
   phone: '',
-  addressContent: ''
+  addressContent: '',
+  dormitoryId: null,
+  schoolId: null
 })
 
 const dormitoryList = ref([])
 const dormitoryIndex = ref(0)
+const editingDormitoryIndex = ref(0) // 编辑地址时的宿舍索引
 const selectedDormitoryName = ref('')
 
 onMounted(() => {
@@ -325,14 +330,15 @@ onMounted(() => {
   }
   // #endif
 
-  getAddressList()
-  
   // 获取绑定的学校信息
   const schoolId = uni.getStorageSync('schoolId')
   if (schoolId) {
     form.value.schoolId = schoolId
     getSchoolInfo(schoolId)
-    getDormitoryList() // 获取宿舍列表依赖学校ID
+    // 先获取宿舍列表，再获取地址列表，确保自动选中地址时能匹配到宿舍信息计算费用
+    getDormitoryList().then(() => {
+        getAddressList()
+    })
   } else {
     uni.showToast({
       title: '请先在首页绑定学校',
@@ -372,17 +378,21 @@ const getAddressList = async () => {
       const list = res.data || []
       addressList.value = list
       
-      // 如果当前有选中的地址，更新其信息
-      if (selectedAddress.value) {
-        const current = list.find(item => item.id === selectedAddress.value.id)
-        if (current) {
-          selectedAddress.value = current
-        }
+      // 尝试获取上次使用的地址ID
+      const lastUsedId = uni.getStorageSync('lastSelectedAddressId')
+      let targetAddr = null
+      
+      if (lastUsedId) {
+          targetAddr = list.find(item => item.id === lastUsedId)
       }
       
-      // 默认选中第一个
-      if (addressList.value.length > 0 && !selectedAddress.value) {
-        selectedAddress.value = addressList.value[0]
+      // 如果找到了上次使用的地址，选中它
+      if (targetAddr) {
+          selectAddress(targetAddr)
+      }
+      // 如果没有上次使用的地址（或地址已被删除），但列表不为空，默认选中第一个
+      else if (addressList.value.length > 0) {
+        selectAddress(addressList.value[0])
       }
     }
   } catch (e) {
@@ -439,6 +449,24 @@ const handleIsFloorChange = (e) => {
   calculateFee()
 }
 
+// 是否送达状态改变
+const handleIsDeliveredChange = (e) => {
+  form.value.isDelivered = e.detail.value
+  if (form.value.isDelivered) {
+    // 如果已送达，自动设置时间为当前时间
+    const now = new Date()
+    const hours = String(now.getHours()).padStart(2, '0')
+    const minutes = String(now.getMinutes()).padStart(2, '0')
+    form.value.takeoutDeliveryTime = `${hours}:${minutes}`
+  } else {
+    // 如果未送达，默认选中当前时间，方便用户调整
+    const now = new Date()
+    const hours = String(now.getHours()).padStart(2, '0')
+    const minutes = String(now.getMinutes()).padStart(2, '0')
+    form.value.takeoutDeliveryTime = `${hours}:${minutes}`
+  }
+}
+
 // 选择时间
 const handleTimeChange = (e) => {
   form.value.takeoutDeliveryTime = e.detail.value
@@ -448,6 +476,48 @@ const handleTimeChange = (e) => {
 const selectAddress = (addr) => {
   selectedAddress.value = addr
   showAddressList.value = false
+  
+  // 保存选中的地址ID到本地存储
+  uni.setStorageSync('lastSelectedAddressId', addr.id)
+  
+  // 如果地址关联了宿舍，自动设置
+  if (addr.dormitoryId) {
+    const item = dormitoryList.value.find(d => d.dormitoryId === addr.dormitoryId || d.id === addr.dormitoryId)
+    if (item) {
+        form.value.dormitoryId = item.dormitoryId || item.id
+        
+        // 配送费由宿舍楼决定
+        if (item.deliveryPrice !== undefined && item.deliveryPrice !== null) {
+            baseDeliveryFee.value = item.deliveryPrice
+            calculateFee()
+        }
+    }
+  } else {
+    // 如果地址没有宿舍信息，可能需要提示或者允许手动选择（这里简化处理，假设地址必须有宿舍）
+     form.value.dormitoryId = null
+     baseDeliveryFee.value = 0
+     calculateFee()
+  }
+}
+
+// 获取完整地址显示
+const getFullAddress = (addr) => {
+    let full = addr.addressContent || ''
+    
+    // 优先使用后端返回的宿舍名
+    if (addr.dormitoryName) {
+        full = addr.dormitoryName + ' ' + full
+        return full
+    }
+
+    // 尝试在本地宿舍列表中查找
+    if (addr.dormitoryId && dormitoryList.value.length > 0) {
+        const item = dormitoryList.value.find(d => d.dormitoryId === addr.dormitoryId || d.id === addr.dormitoryId)
+        if (item) {
+            full = item.dormitoryName + ' ' + full
+        }
+    }
+    return full
 }
 
 // 打开新增地址表单
@@ -456,20 +526,43 @@ const openAddAddress = () => {
   formData.value = {
     username: '',
     phone: '',
-    addressContent: ''
+    addressContent: '',
+    dormitoryId: null,
+    schoolId: form.value.schoolId
   }
+  editingDormitoryIndex.value = 0
   showAddressForm.value = true
 }
 
 // 打开编辑地址表单
 const editAddress = (addr) => {
   editingAddress.value = addr
+  
+  let dIndex = 0
+  if (addr.dormitoryId && dormitoryList.value.length > 0) {
+      dIndex = dormitoryList.value.findIndex(d => d.dormitoryId === addr.dormitoryId || d.id === addr.dormitoryId)
+      if (dIndex < 0) dIndex = 0
+  }
+  editingDormitoryIndex.value = dIndex
+  
   formData.value = {
     username: addr.username,
     phone: addr.phone,
-    addressContent: addr.addressContent
+    addressContent: addr.addressContent,
+    dormitoryId: addr.dormitoryId,
+    schoolId: addr.schoolId || form.value.schoolId
   }
   showAddressForm.value = true
+}
+
+// 处理编辑地址时的宿舍选择
+const handleEditDormitoryChange = (e) => {
+    const index = e.detail.value
+    editingDormitoryIndex.value = index
+    const item = dormitoryList.value[index]
+    if (item) {
+        formData.value.dormitoryId = item.dormitoryId || item.id
+    }
 }
 
 // 关闭地址表单
@@ -482,6 +575,10 @@ const saveAddress = async () => {
   // 验证表单
   if (!formData.value.username || !formData.value.phone || !formData.value.addressContent) {
     uni.showToast({ title: '请填写完整信息', icon: 'none' })
+    return
+  }
+  if (!formData.value.dormitoryId) {
+    uni.showToast({ title: '请选择宿舍楼', icon: 'none' })
     return
   }
   // 验证手机号
@@ -588,6 +685,16 @@ const submitOrder = async () => {
       const day = String(now.getDate()).padStart(2, '0')
       // 组合成 yyyy-MM-dd HH:mm:ss 格式
       payload.takeoutDeliveryTime = `${year}-${month}-${day} ${form.value.takeoutDeliveryTime}:00`
+    } else if (form.value.isDelivered) {
+        // 兜底：如果是已送达但没有时间，使用当前时间
+        const now = new Date()
+        const year = now.getFullYear()
+        const month = String(now.getMonth() + 1).padStart(2, '0')
+        const day = String(now.getDate()).padStart(2, '0')
+        const hours = String(now.getHours()).padStart(2, '0')
+        const minutes = String(now.getMinutes()).padStart(2, '0')
+        const seconds = String(now.getSeconds()).padStart(2, '0')
+        payload.takeoutDeliveryTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
     }
 
     const res = await request('/delivery/orders/create', {

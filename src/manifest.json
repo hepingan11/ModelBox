@@ -1,5 +1,5 @@
 {
-    "name" : "SuperPass",
+    "name" : "宅宿送",
     "appid" : "__UNI__6365C3A",
     "description" : "校园/社区二手交易+论坛",
     "versionName" : "1.1.0",
@@ -133,7 +133,7 @@
             "mode" : "hash",
             "base" : ""
         },
-        "title" : "SuperPass",
+        "title" : "宅宿送",
         "devServer" : {
             "https" : false
         }

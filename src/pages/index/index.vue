@@ -231,6 +231,29 @@
 				</scroll-view>
 			</view>
 		</view>
+
+		<!-- 首页海报弹窗 -->
+		<view class="poster-mask" v-if="showHomePoster" @click.stop @touchmove.stop.prevent>
+			<view class="poster-wrapper">
+				<view class="poster-header">
+					<view class="poster-info">
+						<text class="poster-title">{{ homePosterData?.title || '通知' }}</text>
+						<text class="poster-subtitle">{{ homePosterData?.content || '点击查看详情' }}</text>
+					</view>
+					<view class="poster-close" @click="closeHomePoster">×</view>
+				</view>
+				<image 
+					:src="homePosterData?.image" 
+					class="poster-image" 
+					mode="widthFix" 
+					:show-menu-by-longpress="true"
+					@click="onPosterClick"
+				></image>
+				<view class="poster-footer">
+					<text>手机微信页面可长按图片扫一扫</text>
+				</view>
+			</view>
+		</view>
 	</view>
 </template>
 
@@ -264,6 +287,10 @@
   const schoolSearchResults = ref([])
   const hasSearched = ref(false)
   
+  // 首页海报
+  const showHomePoster = ref(false)
+  const homePosterData = ref(null)
+  
   let searchTimer = null
 
   // 获取轮播图数据
@@ -293,6 +320,8 @@
   	getLatestGoods()
 	// 获取已绑定的学校
 	getBoundSchool()
+	// 获取首页海报
+	getHomePoster()
   })
   
   // 打开学校选择弹窗
@@ -396,6 +425,34 @@
   	}
   }
   
+  // 获取首页海报
+  const getHomePoster = async () => {
+  	try {
+  		const res = await request('/activity/hotList', {
+  			method: 'GET'
+  		})
+  		
+  		if (res.code === 200 && res.data && res.data.length > 0) {
+  			// 取第一个作为海报
+  			homePosterData.value = res.data[0]
+  			showHomePoster.value = true
+  		}
+  	} catch (error) {
+  		console.error('获取首页海报失败:', error)
+  	}
+  }
+  
+  const closeHomePoster = () => {
+  	showHomePoster.value = false
+  }
+  
+  const onPosterClick = () => {
+  	if (homePosterData.value) {
+  		closeHomePoster()
+  		goToActivityDetail(homePosterData.value)
+  	}
+  }
+  
   // 获取活动广告列表
   const getActivityList = async () => {
   	isLoadingActivities.value = true
@@ -476,14 +533,14 @@ const goToActivityDetail = (activity) => {
 		} else {
 			// 内部页面，直接导航
 			uni.navigateTo({
-				url: activity.url
+				url: "/pages/forum/detail?id=1"
 			})
 		}
 	} else {
 		// 没有URL，跳转到活动详情页
 		uni.navigateTo({
-			url: `/pages/activity/detail?id=${activity.id}`
-		})
+				url: "/pages/forum/detail?id=1"
+			})
 	}
 }
 
@@ -608,7 +665,6 @@ const navigateToDeliveryOrder = () => {
 	display: flex;
 	flex-direction: column;
 	position: relative;
-	overflow: hidden;
 }
 
 .school-section {
