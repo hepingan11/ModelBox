@@ -259,6 +259,18 @@
 			"style": {
 				"navigationBarTitleText": "跑腿详情"
 			}
+		},
+		{
+			"path": "pages/activity/FreeMealActivity",
+			"style": {
+				"navigationBarTitleText": "免单活动"
+			}
+		},
+		{
+			"path": "pages/user/myCoupon",
+			"style": {
+				"navigationBarTitleText": "我的优惠券"
+			}
 		}
 	],
 	"tabBar": {

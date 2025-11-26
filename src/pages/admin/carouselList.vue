@@ -2,7 +2,7 @@
 	<view class="carousel-container">
 		<!-- 添加轮播图按钮 -->
 		<view class="add-section">
-			<button class="add-btn" @click="chooseImage">添加轮播图</button>
+			<button class="add-btn" @click="openAddModal">添加轮播图</button>
 		</view>
 		
 		<!-- 轮播图列表 -->
@@ -25,6 +25,10 @@
 						mode="aspectFill"
 						@click="previewImage(item.url)"
 					></image>
+					<view class="item-info" v-if="item.navtoUrl">
+						<text class="link-label">跳转：</text>
+						<text class="link-text">{{item.navtoUrl}}</text>
+					</view>
 					<view class="item-actions">
 						<button class="delete-btn" @click="deleteCarousel(item)">删除</button>
 					</view>
@@ -37,6 +41,34 @@
 				<text class="empty-text">暂无轮播图</text>
 			</view>
 		</scroll-view>
+
+		<!-- 添加弹窗 -->
+		<view class="popup-mask" v-if="showAddPopup" @click="closeAddModal">
+			<view class="popup-content" @click.stop>
+				<view class="popup-title">添加轮播图</view>
+				
+				<view class="form-item">
+					<view class="label">图片</view>
+					<view class="upload-box" @click="chooseImage">
+						<image v-if="formData.url" :src="formData.url" mode="aspectFill" class="preview-img"></image>
+						<view v-else class="upload-placeholder">
+							<text class="plus">+</text>
+							<text class="text">点击上传</text>
+						</view>
+					</view>
+				</view>
+				
+				<view class="form-item">
+					<view class="label">跳转链接</view>
+					<input class="input" v-model="formData.navtoUrl" placeholder="请输入跳转链接(可选)" />
+				</view>
+				
+				<view class="popup-btns">
+					<button class="btn cancel" @click="closeAddModal">取消</button>
+					<button class="btn confirm" @click="submitAdd">确定</button>
+				</view>
+			</view>
+		</view>
 	</view>
 </template>
 
@@ -48,6 +80,14 @@ import request from '@/utils/request.js'
 const carouselList = ref([])
 // 刷新状态
 const isRefreshing = ref(false)
+
+// 弹窗状态
+const showAddPopup = ref(false)
+// 表单数据
+const formData = ref({
+	url: '',
+	navtoUrl: ''
+})
 
 // 获取轮播图列表
 const getCarouselList = async () => {
@@ -81,6 +121,46 @@ const refreshList = () => {
 	getCarouselList()
 }
 
+// 打开添加弹窗
+const openAddModal = () => {
+	formData.value = { url: '', navtoUrl: '' }
+	showAddPopup.value = true
+}
+
+// 关闭添加弹窗
+const closeAddModal = () => {
+	showAddPopup.value = false
+}
+
+// 提交添加
+const submitAdd = async () => {
+	if (!formData.value.url) {
+		uni.showToast({ title: '请先上传图片', icon: 'none' })
+		return
+	}
+	
+	try {
+		const res = await request('/admin/carousel/add', {
+			method: 'POST',
+			data: formData.value
+		})
+		
+		if (res.code === 200) {
+			uni.showToast({ title: '添加成功', icon: 'success' })
+			closeAddModal()
+			getCarouselList()
+		} else {
+			uni.showToast({ title: res.msg || '添加失败', icon: 'none' })
+		}
+	} catch (error) {
+		console.error('添加失败:', error)
+		uni.showToast({
+			title: '网络错误，请稍后重试',
+			icon: 'none'
+		})
+	}
+}
+
 // 选择并上传图片
 const chooseImage = () => {
 	uni.chooseImage({
@@ -99,26 +179,7 @@ const chooseImage = () => {
 				// 上传图片
 				const uploadRes = await uploadFile(tempFilePath)
 				if (uploadRes.code === 200) {
-					// 添加轮播图
-					const addRes = await request('/admin/carousel/add', {
-						method: 'POST',
-						data: {
-							url: uploadRes.data
-						}
-					})
-					
-					if (addRes.code === 200) {
-						uni.showToast({
-							title: '添加成功',
-							icon: 'success'
-						})
-						getCarouselList()
-					} else {
-						uni.showToast({
-							title: addRes.msg || '添加失败',
-							icon: 'none'
-						})
-					}
+					formData.value.url = uploadRes.data
 				} else {
 					uni.showToast({
 						title: uploadRes.msg || '图片上传失败',
@@ -144,9 +205,9 @@ const uploadFile = (filePath) => {
 		uni.uploadFile({
 			url: '/system/uploadImg',
 			filePath: filePath,
-            header: {
-                'sa-token': uni.getStorageSync('sa-token')
-            },
+			header: {
+				'sa-token': uni.getStorageSync('sa-token')
+			},
 			name: 'file',
 			success: (uploadFileRes) => {
 				try {
@@ -257,6 +318,27 @@ onMounted(() => {
 	display: block;
 }
 
+.item-info {
+	padding: 10rpx 20rpx 0;
+	display: flex;
+	align-items: center;
+}
+
+.link-label {
+	font-size: 24rpx;
+	color: #999;
+	margin-right: 10rpx;
+}
+
+.link-text {
+	font-size: 24rpx;
+	color: #666;
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
 .item-actions {
 	padding: 20rpx;
 	display: flex;
@@ -290,5 +372,114 @@ onMounted(() => {
 .empty-text {
 	font-size: 28rpx;
 	color: #999;
+}
+
+/* 弹窗样式 */
+.popup-mask {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0,0,0,0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 999;
+}
+
+.popup-content {
+	width: 600rpx;
+	background: #fff;
+	border-radius: 20rpx;
+	padding: 40rpx;
+}
+
+.popup-title {
+	font-size: 32rpx;
+	font-weight: bold;
+	text-align: center;
+	margin-bottom: 40rpx;
+}
+
+.form-item {
+	margin-bottom: 30rpx;
+}
+
+.label {
+	font-size: 28rpx;
+	color: #333;
+	margin-bottom: 16rpx;
+}
+
+.upload-box {
+	width: 200rpx;
+	height: 200rpx;
+	background: #f5f7fa;
+	border-radius: 8rpx;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+	position: relative;
+}
+
+.upload-placeholder {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.plus {
+	font-size: 60rpx;
+	color: #999;
+	line-height: 1;
+}
+
+.text {
+	font-size: 24rpx;
+	color: #999;
+	margin-top: 10rpx;
+}
+
+.preview-img {
+	width: 100%;
+	height: 100%;
+}
+
+.input {
+	height: 80rpx;
+	background: #f5f7fa;
+	border-radius: 8rpx;
+	padding: 0 20rpx;
+	font-size: 28rpx;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.popup-btns {
+	display: flex;
+	gap: 20rpx;
+	margin-top: 40rpx;
+}
+
+.btn {
+	flex: 1;
+	height: 80rpx;
+	line-height: 80rpx;
+	text-align: center;
+	border-radius: 8rpx;
+	font-size: 28rpx;
+	border: none;
+}
+
+.btn.cancel {
+	background: #f5f7fa;
+	color: #666;
+}
+
+.btn.confirm {
+	background: #1abc9c;
+	color: #fff;
 }
 </style>

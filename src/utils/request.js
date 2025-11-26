@@ -34,11 +34,11 @@ const request = (url, options = {}) => {
 					}, 1500);
 				} else {
 					uni.showToast({
-						title: res.data?.msg || '未知错误',
+						title: res.data.msg || '未知错误',
 						icon: 'none',
 						duration: 2000
 					});
-					reject(res);
+					resolve(res.data);
 				}
 			},
 			fail: (error) => {

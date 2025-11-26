@@ -24,7 +24,7 @@
 		<view class="login-form">
 			<view class="input-group">
 				<text class="iconfont icon-user">👤</text>
-				<input type="text" v-model="formData.username" placeholder="请输入管理员账号" class="input-field" />
+				<input type="text" v-model="formData.userName" placeholder="请输入管理员账号" class="input-field" />
 			</view>
 			
 			<view class="input-group">
@@ -62,7 +62,7 @@ const baseUrl = apiBaseUrl
 
 // 表单数据
 const formData = ref({
-	username: '',
+	userName: '',
 	password: '',
 	adminKey: '' // 管理员密钥
 })
@@ -78,7 +78,7 @@ const goBack = () => {
 // 管理员登录
 const handleAdminLogin = () => {
 	// 表单验证
-	if (!formData.value.username || !formData.value.password || !formData.value.adminKey) {
+	if (!formData.value.userName || !formData.value.password || !formData.value.adminKey) {
 		uni.showToast({
 			title: '请填写完整登录信息',
 			icon: 'none'
