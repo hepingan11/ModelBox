@@ -104,6 +104,20 @@
           <text class="arrow" :class="{ up: showMoreInfo }">∨</text>
         </view>
 
+        <!-- 优惠券 -->
+        <view class="form-item" @click="openCouponPopup">
+          <text class="label">优惠券</text>
+          <view style="flex: 1; display: flex; justify-content: flex-end; align-items: center;">
+             <text v-if="selectedCoupon" style="font-size: 28rpx; color: #ff5722; margin-right: 10rpx;">
+                {{ selectedCoupon.type === 0 ? '-¥' + selectedCoupon.discount : (selectedCoupon.discount === 0 ? '免单券' : selectedCoupon.discount + '折') }}
+             </text>
+             <text v-else style="font-size: 28rpx; color: #999; margin-right: 10rpx;">
+                {{ couponList.length > 0 ? '有可用优惠券' : '无可用优惠券' }}
+             </text>
+             <text class="arrow" style="color: #999;">＞</text>
+          </view>
+        </view>
+
         <!-- 选填信息折叠区域 -->
         <view v-if="showMoreInfo" class="more-info-area">
           <view class="form-item">
@@ -132,9 +146,48 @@
     <view class="bottom-bar">
       <view class="total-price">
         <text>待支付：</text>
-        <text class="price">¥{{ form.deliveryFee || '0' }}</text>
+        <text class="price">¥{{ finalPrice }}</text>
+        <text v-if="discountAmount > 0" style="font-size: 24rpx; color: #999; text-decoration: line-through; margin-left: 10rpx;">¥{{ form.deliveryFee }}</text>
       </view>
       <button class="submit-btn" @click="submitOrder" :disabled="isSubmitting">立即下单</button>
+    </view>
+
+    <!-- 优惠券选择弹窗 -->
+    <view class="popup-mask" v-if="showCouponPopup" @click="showCouponPopup = false">
+      <view class="popup-content" @click.stop>
+        <view class="popup-header">
+          <text class="popup-title">选择优惠券</text>
+          <text class="close-icon" @click="showCouponPopup = false">×</text>
+        </view>
+        <scroll-view scroll-y class="address-scroll">
+          <view 
+            class="address-item" 
+            v-for="coupon in couponList" 
+            :key="coupon.couponId"
+            @click="selectCoupon(coupon)"
+          >
+            <view class="addr-info">
+              <view class="addr-user">
+                <text class="addr-name" style="color: #ff5722;">{{ coupon.type === 0 ? '¥' + coupon.discount : (coupon.discount === 0 ? '免单券' : coupon.discount + '折') }}</text>
+                <text class="addr-name">{{ coupon.couponName }}</text>
+              </view>
+              <text class="addr-detail">满{{ coupon.goalPrice }}可用</text>
+            </view>
+            <view class="addr-check" v-if="selectedCoupon && selectedCoupon.couponId === coupon.couponId">✓</view>
+          </view>
+          <!-- 不使用优惠券选项 -->
+          <view class="address-item" @click="selectCoupon(null)">
+             <view class="addr-info">
+                <text class="addr-name">不使用优惠券</text>
+             </view>
+             <view class="addr-check" v-if="!selectedCoupon">✓</view>
+          </view>
+          <!-- 空状态 -->
+          <view v-if="couponList.length === 0" class="empty-address">
+            <text>暂无可用优惠券</text>
+          </view>
+        </scroll-view>
+      </view>
     </view>
 
     <!-- 地址选择弹窗 -->
@@ -242,7 +295,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import request from '@/utils/request.js'
 
 // 导航栏相关
@@ -297,6 +350,124 @@ const isSubmitting = ref(false)
 const showMoreInfo = ref(false) // 是否展开更多信息
 const baseDeliveryFee = ref(0) // 基础配送费
 
+// 优惠券相关
+const couponList = ref([])
+const selectedCoupon = ref(null)
+const showCouponPopup = ref(false)
+const discountAmount = ref(0)
+const finalPrice = computed(() => {
+  const fee = parseFloat(form.value.deliveryFee) || 0
+  const discount = parseFloat(discountAmount.value) || 0
+  const final = fee - discount
+  return final > 0 ? final.toFixed(2) : '0.00'
+})
+
+// 获取优惠券列表
+const getCouponList = async () => {
+  try {
+    const res = await request('/coupon/myList', {
+      method: 'GET',
+      data: { pageNum: 1, pageSize: 100 }
+    })
+    if (res.code === 200) {
+      couponList.value = res.data || []
+    }
+  } catch (e) {
+    console.error('获取优惠券失败', e)
+  }
+}
+
+// 打开优惠券弹窗
+const openCouponPopup = () => {
+  if (!form.value.deliveryFee) {
+      return uni.showToast({ title: '请先确定配送费', icon: 'none' })
+  }
+  getCouponList()
+  showCouponPopup.value = true
+}
+
+// 选择优惠券
+const selectCoupon = (coupon) => {
+  if (coupon) {
+      const fee = parseFloat(form.value.deliveryFee) || 0
+      if (fee < coupon.goalPrice) {
+          uni.showToast({ title: `满${coupon.goalPrice}元可用`, icon: 'none' })
+          return
+      }
+  }
+  selectedCoupon.value = coupon
+  showCouponPopup.value = false
+  calculateDiscount()
+}
+
+// 计算优惠金额
+const calculateDiscount = () => {
+  if (!selectedCoupon.value) {
+    discountAmount.value = 0
+    return
+  }
+  const fee = parseFloat(form.value.deliveryFee) || 0
+  const coupon = selectedCoupon.value
+  
+  if (fee < coupon.goalPrice) {
+    selectedCoupon.value = null
+    discountAmount.value = 0
+    return
+  }
+
+  if (coupon.type === 1) {
+    // 折扣券
+    let multiplier = coupon.discount
+    if (multiplier > 1) multiplier = multiplier / 10
+    const dis = fee * (1 - multiplier)
+    discountAmount.value = Math.round(dis * 100) / 100
+  } else if (coupon.type === 0) {
+    // 满减券
+    discountAmount.value = coupon.discount
+  }
+  
+  if (discountAmount.value > fee) {
+      discountAmount.value = fee
+  }
+}
+
+// 获取最优优惠券
+const fetchBestCoupon = async () => {
+    const fee = parseFloat(form.value.deliveryFee)
+    if (!fee || fee <= 0) return
+
+    try {
+        const res = await request('/coupon/chooseCoupon', {
+            method: 'GET',
+            data: { price: fee }
+        })
+        if (res.code === 200 && res.data) {
+             const bestId = res.data
+             if (couponList.value.length === 0) {
+                 await getCouponList()
+             }
+             const best = couponList.value.find(c => c.couponId == bestId)
+             if (best) {
+                 selectedCoupon.value = best
+                 calculateDiscount()
+             }
+        }
+    } catch (e) {}
+}
+
+// 监听配送费变化
+watch(() => form.value.deliveryFee, (newVal) => {
+    if (newVal && newVal > 0) {
+        calculateDiscount()
+        // 如果当前没有选中优惠券，尝试自动获取最优
+        if (!selectedCoupon.value) {
+             fetchBestCoupon()
+        }
+    } else {
+        selectedCoupon.value = null
+        discountAmount.value = 0
+    }
+})
 
 // 地址表单相关
 const showAddressForm = ref(false)
@@ -657,7 +828,6 @@ const submitOrder = async () => {
   if (!selectedAddress.value) return uni.showToast({ title: '请选择送达地址', icon: 'none' })
   if (!form.value.dormitoryId) return uni.showToast({ title: '请选择送达宿舍楼', icon: 'none' })
   if (!form.value.deliveryFee) return uni.showToast({ title: '请填写配送费', icon: 'none' })
-  if (!form.value.waitTime) return uni.showToast({ title: '请填写等待时间', icon: 'none' })
 
   isSubmitting.value = true
   uni.showLoading({ title: '创建订单中' })
@@ -666,15 +836,17 @@ const submitOrder = async () => {
     const payload = {
       startingAddress: form.value.startingAddress,
       addressContent: selectedAddress.value.addressContent, // 从选中地址获取
+      addressId: selectedAddress.value.id,
       dormitoryId: form.value.dormitoryId,
       schoolId: form.value.schoolId,
-      deliveryFee: parseFloat(form.value.deliveryFee),
+      deliveryFee: parseFloat(finalPrice.value), // 使用优惠后的最终价格
       deliveryShopValue: form.value.deliveryShopValue ? parseFloat(form.value.deliveryShopValue) : 0,
-      waitTime: parseInt(form.value.waitTime),
+      waitTime: form.value.waitTime ? parseInt(form.value.waitTime) : 15, // 默认为15分钟
       note: form.value.note,
       takeoutNo: form.value.takeoutNo,
       isNick: form.value.isNick ? 1 : 0,
-      isFloor: form.value.isFloor
+      isFloor: form.value.isFloor,
+      couponId: selectedCoupon.value ? selectedCoupon.value.couponId : null // 添加优惠券ID
     }
 
     // 处理预计到达时间

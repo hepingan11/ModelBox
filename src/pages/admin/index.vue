@@ -86,6 +86,24 @@
           <text class="card-desc">管理头像框信息</text>
         </view>
       </view>
+
+      <!-- 优惠券管理 -->
+      <view class="grid-card" @click="navigateToSection('coupon')">
+        <image src="/static/icon/coupon.png" class="card-icon"></image>
+        <view class="card-content">
+          <text class="card-title">优惠券管理</text>
+          <text class="card-desc">管理平台优惠券</text>
+        </view>
+      </view>
+
+      <!-- 配送订单管理 -->
+      <view class="grid-card" @click="navigateToSection('delivery')">
+        <image src="/static/icon/orders-manager.png" class="card-icon"></image>
+        <view class="card-content">
+          <text class="card-title">配送订单管理</text>
+          <text class="card-desc">管理配送订单信息</text>
+        </view>
+      </view>
     </view>
   </view>
 </template>
@@ -158,7 +176,9 @@ const navigateToSection = (section) => {
     chat: '/pages/admin/messageList',
     carousel: '/pages/admin/carouselList',
     report: '/pages/admin/reportList',
-    avatar: '/pages/admin/avatarList'
+    avatar: '/pages/admin/avatarList',
+    coupon: '/pages/admin/coupon/coupon',
+    delivery: '/pages/admin/deliveryOrderList'
   }
   
   if (routes[section]) {

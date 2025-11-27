@@ -20,19 +20,29 @@
 				<view class="coupon-item" v-for="(item, index) in couponList" :key="item.couponId || index">
 					<view class="coupon-left">
 						<view class="coupon-amount">
-							<text class="symbol" v-if="item.type === 1">¥</text>
-							<text class="amount">{{ item.discount }}</text>
-							<text class="unit" v-if="item.type === 2">折</text>
+							<!-- 满减券 -->
+							<block v-if="item.type === 0">
+								<text class="symbol">¥</text>
+								<text class="amount">{{ item.discount }}</text>
+							</block>
+							<!-- 折扣券/免单券 -->
+							<block v-else-if="item.type === 1">
+								<text class="amount" v-if="item.discount === 0" style="font-size: 48rpx;">免单券</text>
+								<block v-else>
+									<text class="amount">{{ item.discount }}</text>
+									<text class="unit">折</text>
+								</block>
+							</block>
 						</view>
 						<view class="coupon-condition">满{{ item.goalPrice }}可用</view>
 					</view>
 					<view class="coupon-right">
 						<view class="coupon-info">
 							<text class="coupon-name">{{ item.couponName }}</text>
-							<text class="coupon-type-tag">{{ item.type === 1 ? '满减券' : '折扣券' }}</text>
+							<text class="coupon-type-tag">{{ item.type === 0 ? '满减券' : (item.discount === 0 ? '免单券' : '折扣券') }}</text>
 							<text class="coupon-time">领取时间：{{ formatDate(item.createdTime) }}</text>
 						</view>
-						<view class="coupon-btn">去使用</view>
+						<view class="coupon-btn" @click="useCoupon">去使用</view>
 					</view>
 				</view>
 				
@@ -115,6 +125,12 @@ const loadMore = () => {
 const onRefresh = () => {
 	isRefreshing.value = true
 	getCouponList(true)
+}
+
+const useCoupon = () => {
+	uni.navigateTo({
+		url: '/pages/delivery/delivery-create'
+	})
 }
 
 const formatDate = (dateStr) => {

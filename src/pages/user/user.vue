@@ -54,11 +54,26 @@
 		<!-- 账号管理 - 网格布局 -->
 		<view class="section-card">
 			<view class="menu-grid">
+				
 				<view class="grid-item" @click="editUserInfo">
 					<view class="grid-icon-wrapper">
 						<image src="/static/icon/info.png" class="grid-icon"></image>
 					</view>
 					<text class="grid-text">修改信息</text>
+				</view>
+
+				<view class="grid-item" @click="goToMyCoupon">
+					<view class="grid-icon-wrapper" >
+						<image src="/static/icon/coupon.png" class="grid-icon"></image>
+					</view>
+					<text class="grid-text">优惠券</text>
+				</view>
+
+				<view class="grid-item" @click="goToCustomerService">
+					<view class="grid-icon-wrapper">
+						<image src="/static/icon/messageList.png" class="grid-icon"></image>
+					</view>
+					<text class="grid-text">联系客服</text>
 				</view>
 
 				<view class="grid-item" @click="goToReport">
@@ -219,6 +234,13 @@ const checkSignStatus = () => {
 	}
 }
 
+// 跳转到优惠券列表
+const goToMyCoupon = () => {
+	uni.navigateTo({
+		url: '/pages/user/myCoupon'
+	})
+}
+
 // 修改用户信息
 const editUserInfo = () => {
 	uni.navigateTo({
@@ -244,6 +266,13 @@ const goToAdminPanel = () => {
 const aboutApp = () => {
 	uni.navigateTo({
 		url: '/pages/user/about'
+	})
+}
+
+// 联系客服
+const goToCustomerService = () => {
+	uni.navigateTo({
+		url: '/pages/user/customer-service'
 	})
 }
 
@@ -750,12 +779,12 @@ onMounted(() => {
 .grid-icon-wrapper {
 	width: 70rpx;
 	height: 70rpx;
-	border-radius: 50%;
+	border-radius: 80%;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	margin-bottom: 16rpx;
-	box-shadow: 0 4rpx 12rpx rgba(26, 188, 156, 0.3);
+	box-shadow: 0 4rpx 8rpx rgba(26, 188, 156, 0.3);
 }
 
 .grid-icon {
