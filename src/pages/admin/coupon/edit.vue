@@ -17,31 +17,45 @@
         <text class="label">优惠券名称</text>
         <input 
           class="input" 
-          v-model="form.name" 
+          v-model="form.couponName" 
           placeholder="请输入优惠券名称"
           maxlength="50"
         />
       </view>
       
       <view class="form-item">
-        <text class="label">优惠金额(元)</text>
+        <text class="label">优惠券类型</text>
+        <radio-group @change="handleTypeChange" style="display: flex; gap: 40rpx;">
+           <label style="display: flex; align-items: center;">
+             <radio value="0" :checked="form.type === 0" color="#ff9800" style="transform: scale(0.8);"/>
+             <text>满减券</text>
+           </label>
+           <label style="display: flex; align-items: center;">
+             <radio value="1" :checked="form.type === 1" color="#ff9800" style="transform: scale(0.8);"/>
+             <text>折扣券</text>
+           </label>
+        </radio-group>
+      </view>
+
+      <view class="form-item">
+        <text class="label">{{ form.type === 1 ? '折扣(折)' : '优惠金额(元)' }}</text>
         <input 
           class="input" 
           type="digit" 
           v-model="form.discount" 
-          placeholder="请输入优惠金额"
+          :placeholder="form.type === 1 ? '请输入折扣，如8.8折' : '请输入优惠金额'"
         />
+        <text v-if="form.type === 1" style="font-size: 24rpx; color: #999; margin-left: 20rpx;">填0为免单券</text>
       </view>
-      
-      <view class="form-item form-item--column">
-        <text class="label">优惠券描述</text>
-        <textarea 
-          class="textarea" 
-          v-model="form.description" 
-          placeholder="选填，请输入优惠券使用说明或描述"
-          maxlength="200"
-        />
-        <view class="char-count">{{ (form.description || '').length }}/200</view>
+
+      <view class="form-item">
+         <text class="label">使用门槛(元)</text>
+         <input 
+           class="input" 
+           type="digit" 
+           v-model="form.goalPrice" 
+           placeholder="满多少元可用"
+         />
       </view>
       
       <!-- 预览卡片 -->
@@ -53,10 +67,23 @@
       <view class="preview-card">
         <view class="preview-left">
           <view class="amount-box">
-            <text class="currency">¥</text>
-            <text class="amount">{{ form.discount ? Number(form.discount).toFixed(0) : '0' }}</text>
+            <!-- 满减券 -->
+            <block v-if="form.type === 0">
+              <text class="currency">¥</text>
+              <text class="amount">{{ form.discount ? Number(form.discount).toFixed(0) : '0' }}</text>
+            </block>
+            <!-- 折扣券 -->
+            <block v-else>
+              <block v-if="Number(form.discount) === 0 && form.discount !== ''">
+                 <text class="amount" style="font-size: 40rpx;">免单</text>
+              </block>
+              <block v-else>
+                 <text class="amount">{{ formatDiscount(form.discount) || '0' }}</text>
+                 <text class="currency" style="margin-left: 2rpx;">折</text>
+              </block>
+            </block>
           </view>
-          <text class="coupon-type">优惠券</text>
+          <text class="coupon-type">{{ form.type === 0 ? '满减券' : (Number(form.discount) === 0 && form.discount !== '' ? '免单券' : '折扣券') }}</text>
         </view>
         
         <view class="preview-divider">
@@ -66,8 +93,8 @@
         </view>
         
         <view class="preview-right">
-          <text class="preview-name">{{ form.name || '优惠券名称' }}</text>
-          <text class="preview-desc">{{ form.description || '优惠券描述信息' }}</text>
+          <text class="preview-name">{{ form.couponName || '优惠券名称' }}</text>
+          <text class="preview-desc">满{{ form.goalPrice || 0 }}元可用</text>
         </view>
       </view>
       
@@ -89,27 +116,61 @@ const API_BASE = '/admin/coupon'
 
 const form = ref({
   couponId: undefined,
-  name: '',
+  couponName: '', // 之前是 name
+  type: 0, // 0:满减券 1:折扣券
   discount: '',
-  description: ''
+  goalPrice: ''
+  // description 已移除
 })
 
 const isEdit = computed(() => !!form.value.couponId)
 
+// 格式化折扣
+const formatDiscount = (val) => {
+  const num = Number(val)
+  if (isNaN(num)) return val
+  // 如果是0-1之间的小数，乘以10
+  if (num > 0 && num <= 1) {
+    return parseFloat((num * 10).toFixed(1))
+  }
+  return num
+}
+
+const handleTypeChange = (e) => {
+    form.value.type = parseInt(e.detail.value)
+    form.value.discount = '' // 切换类型清空金额
+}
+
 // 表单验证
 const validate = () => {
-  if (!form.value.name || !form.value.name.trim()) {
+  if (!form.value.couponName || !form.value.couponName.trim()) {
     return '请输入优惠券名称'
   }
-  if (!form.value.discount) {
-    return '请输入优惠金额'
+  if (form.value.discount === '' || form.value.discount === null) {
+     return form.value.type === 1 ? '请输入折扣' : '请输入优惠金额'
   }
+  
   const amount = Number(form.value.discount)
-  if (isNaN(amount) || amount <= 0) {
-    return '请输入有效的优惠金额'
+  if (isNaN(amount) || amount < 0) {
+    return '请输入有效的数值'
   }
+
+  // 如果是满减券，金额必须大于0
+  if (form.value.type === 0 && amount <= 0) {
+      return '满减金额必须大于0'
+  }
+  
+  // 如果是折扣券，折扣不能超过10（10折即原价，无意义，但可以允许）
+  if (form.value.type === 1 && amount > 10) {
+      return '折扣不能超过10折'
+  }
+  
+  if (!form.value.goalPrice) {
+      return '请输入使用门槛'
+  }
+
   if (amount > 9999) {
-    return '优惠金额不能超过9999元'
+    return '数值过大'
   }
   return ''
 }
@@ -125,9 +186,10 @@ const submit = async () => {
     uni.showLoading({ title: '保存中...' })
     
     const data = {
-      name: form.value.name.trim(),
-      discount: Number(form.value.discount),
-      description: form.value.description ? form.value.description.trim() : ''
+      couponName: form.value.couponName.trim(),
+      type: form.value.type,
+      goalPrice: Number(form.value.goalPrice),
+      discount: Number(form.value.discount)
     }
     
     // 如果是编辑模式，添加 couponId
@@ -172,9 +234,10 @@ const loadDetail = async (id) => {
     const data = res.data || res
     form.value = {
       couponId: data.couponId,
-      name: data.name || '',
-      discount: data.discount || '',
-      description: data.description || ''
+      couponName: data.couponName || data.name || '',
+      type: data.type !== undefined ? data.type : 0,
+      goalPrice: data.goalPrice || '',
+      discount: data.discount !== undefined ? data.discount : ''
     }
     uni.hideLoading()
   } catch (e) {

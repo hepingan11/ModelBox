@@ -58,10 +58,28 @@
           <view class="card" v-for="item in couponList" :key="item.couponId">
             <view class="card-left">
               <view class="amount-box">
-                <text class="currency">¥</text>
-                <text class="amount">{{ Number(item.discount).toFixed(0) }}</text>
+                <!-- 满减券 -->
+                <block v-if="item.type === 0">
+                  <text class="currency">¥</text>
+                  <text class="amount">{{ Number(item.discount).toFixed(0) }}</text>
+                </block>
+                <!-- 折扣券 -->
+                <block v-else-if="item.type === 1">
+                  <block v-if="item.discount === 0">
+                     <text class="amount" style="font-size: 36rpx;">免单</text>
+                  </block>
+                  <block v-else>
+                     <text class="amount">{{ formatDiscount(item.discount) }}</text>
+                     <text class="currency" style="margin-left: 2rpx;">折</text>
+                  </block>
+                </block>
+                <!-- 默认显示 -->
+                <block v-else>
+                  <text class="currency">¥</text>
+                  <text class="amount">{{ Number(item.discount).toFixed(0) }}</text>
+                </block>
               </view>
-              <text class="coupon-type">优惠券</text>
+              <text class="coupon-type">{{ item.type === 0 ? '满减券' : (item.discount === 0 ? '免单券' : '折扣券') }}</text>
             </view>
             
             <view class="card-divider">
@@ -126,6 +144,17 @@ const totalPages = ref(0)
 
 // 是否还有更多数据
 const hasMore = computed(() => pageNum.value < totalPages.value)
+
+// 格式化折扣
+const formatDiscount = (val) => {
+  const num = Number(val)
+  if (isNaN(num)) return val
+  // 如果是0-1之间的小数，乘以10
+  if (num > 0 && num <= 1) {
+    return parseFloat((num * 10).toFixed(1))
+  }
+  return num
+}
 
 // 格式化日期
 const formatDate = (dateStr) => {

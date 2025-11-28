@@ -51,7 +51,7 @@
           <text class="empty-hint">请搜索用户进行添加</text>
         </view>
         <view v-else class="list-content">
-          <view class="user-card" v-for="item in userList" :key="item.userId">
+          <view class="user-card" v-for="item in userList" :key="item.id">
             <view class="user-avatar">
               <image 
                 :src="item.avatar || '/static/user.png'" 
@@ -61,16 +61,23 @@
             </view>
             
             <view class="user-info">
-              <text class="user-name">{{ item.username }}</text>
+              <view class="user-header">
+                <text class="user-name">{{ item.username }}</text>
+                <text class="user-level" v-if="item.level">Lv.{{ item.level }}</text>
+              </view>
               <view class="user-meta">
                 <text class="meta-label">用户ID：</text>
-                <text class="meta-value">{{ item.userId }}</text>
+                <text class="meta-value">{{ item.id }}</text>
+              </view>
+              <view class="user-meta">
+                <text class="meta-label">手机号：</text>
+                <text class="meta-value">{{ item.phone || '未绑定' }}</text>
               </view>
             </view>
             
             <view class="action-buttons">
               <button class="btn-add-coupon" @click="addCouponToUser(item)">
-                <text class="btn-text">给予优惠券</text>
+                <text class="btn-text">添加</text>
               </button>
             </view>
           </view>
@@ -119,11 +126,11 @@ const fetchUserList = async (isLoadMore = false) => {
   }
   
   try {
-    const res = await request(`${API_BASE}/user/list`, {
+    const res = await request(`${API_BASE}/user/page`, {
       method: 'GET',
       data: {
         pageNum: pageNum.value,
-        username: searchUsername.value || ''
+        keyword: searchUsername.value || ''
       }
     })
     
@@ -187,7 +194,7 @@ const addCouponToUser = async (user) => {
           const res = await request(`/admin/coupon/userCoupon/add`, {
             method: 'GET',
             data: {
-              userId: user.userId,
+              userId: user.id,
               couponId: couponId.value,
               day: day
             }
@@ -444,12 +451,26 @@ onShow(() => {
   flex: 1;
 }
 
+.user-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
 .user-name {
-  display: block;
   font-size: 32rpx;
   color: #2c3e50;
   font-weight: bold;
-  margin-bottom: 12rpx;
+  margin-right: 16rpx;
+}
+
+.user-level {
+  font-size: 22rpx;
+  color: #ff9800;
+  background: rgba(255, 152, 0, 0.1);
+  padding: 2rpx 12rpx;
+  border-radius: 20rpx;
+  border: 1rpx solid rgba(255, 152, 0, 0.3);
 }
 
 .user-meta {

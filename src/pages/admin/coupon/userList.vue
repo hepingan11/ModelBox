@@ -65,19 +65,32 @@
             </view>
             
             <view class="user-info">
-              <text class="user-name">{{ item.username }}</text>
+              <view class="name-row">
+                <text class="user-name">{{ item.userName }}</text>
+                <view class="coupon-tag" :class="item.type === 1 ? 'discount' : 'reduce'">
+                  <text>{{ item.type === 0 ? '满减' : (item.discount === 0 ? '免单' : '折扣') }}</text>
+                  <text v-if="item.discount > 0" style="margin-left: 4rpx;">
+                    {{ item.type === 0 ? '¥' + Number(item.discount).toFixed(0) : formatDiscount(item.discount) + '折' }}
+                  </text>
+                </view>
+              </view>
+              
               <view class="user-meta">
                 <text class="meta-label">领取时间：</text>
-                <text class="meta-value">{{ formatDate(item.getTime) }}</text>
+                <text class="meta-value">{{ formatDate(item.gettingTime) }}</text>
+              </view>
+              <view class="user-meta" v-if="item.usedTime">
+                <text class="meta-label">使用时间：</text>
+                <text class="meta-value">{{ formatDate(item.usedTime) }}</text>
               </view>
               <view class="user-meta">
-                <text class="meta-label">到期时间：</text>
-                <text class="meta-value">{{ formatDate(item.expirationTime) }}</text>
+                <text class="meta-label">失效时间：</text>
+                <text class="meta-value">{{ formatDate(item.expireTime) }}</text>
               </view>
             </view>
             
-            <view class="status-badge" :class="{ expired: isExpired(item.expirationTime) }">
-              <text class="status-text">{{ isExpired(item.expirationTime) ? '已过期' : '有效' }}</text>
+            <view class="status-badge" :class="getStatusClass(item.status)">
+              <text class="status-text">{{ item.status }}</text>
             </view>
           </view>
         </view>
@@ -117,6 +130,26 @@ const hasMore = computed(() => pageNum.value < totalPages.value)
 const isExpired = (expirationTime) => {
   if (!expirationTime) return false
   return new Date(expirationTime) < new Date()
+}
+
+// 格式化折扣
+const formatDiscount = (val) => {
+  const num = Number(val)
+  if (isNaN(num)) return val
+  // 如果是0-1之间的小数，乘以10
+  if (num > 0 && num <= 1) {
+    return parseFloat((num * 10).toFixed(1))
+  }
+  return num
+}
+
+// 获取状态样式类
+const getStatusClass = (status) => {
+  if (!status) return ''
+  if (status === '已过期' || status === '已失效') return 'expired'
+  if (status === '已使用') return 'used'
+  if (status === '未使用') return 'active'
+  return ''
 }
 
 // 格式化日期
@@ -451,12 +484,38 @@ onShow(() => {
   flex: 1;
 }
 
+.name-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
 .user-name {
-  display: block;
   font-size: 32rpx;
   color: #2c3e50;
   font-weight: bold;
-  margin-bottom: 12rpx;
+  margin-bottom: 0;
+  margin-right: 16rpx;
+}
+
+.coupon-tag {
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+  font-size: 22rpx;
+  display: flex;
+  align-items: center;
+}
+
+.coupon-tag.reduce {
+  background: rgba(255, 152, 0, 0.1);
+  color: #ff9800;
+  border: 1rpx solid rgba(255, 152, 0, 0.3);
+}
+
+.coupon-tag.discount {
+  background: rgba(26, 188, 156, 0.1);
+  color: #1abc9c;
+  border: 1rpx solid rgba(26, 188, 156, 0.3);
 }
 
 .user-meta {
@@ -485,8 +544,16 @@ onShow(() => {
   border-radius: 20rpx;
   font-size: 22rpx;
   font-weight: 500;
-  background: linear-gradient(135deg, #4caf50, #66bb6a);
+  background: #ccc; /* 默认 */
   color: #fff;
+}
+
+.status-badge.active {
+  background: linear-gradient(135deg, #4caf50, #66bb6a);
+}
+
+.status-badge.used {
+  background: linear-gradient(135deg, #42a5f5, #64b5f6);
 }
 
 .status-badge.expired {
