@@ -3,7 +3,9 @@
         <!-- 顶部导航栏 -->
         <view class="nav-bar">
             <text class="nav-title">{{ chatTarget.username || '聊天' }}</text>
-            <view class="placeholder"></view>
+            <view class="nav-right" @click="goToUserSpace">
+                <text class="user-icon">👤</text>
+            </view>
         </view>
         
         <!-- 聊天内容区域 -->
@@ -108,8 +110,9 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed, nextTick } from 'vue'
+import { ref, reactive, onMounted, onUnmounted, computed, nextTick } from 'vue'
 import request from '@/utils/request.js'
+import { apiBaseUrl } from '@/store/index.js'
 
 // 聊天参数
 const conversationId = ref('')
@@ -135,7 +138,6 @@ const messageText = ref('')
 const isLoading = ref(true)
 const isLoadingMore = ref(false)
 const currentPage = ref(1)
-const pageSize = ref(20)
 const hasMoreMessages = ref(true)
 const scrollTop = ref(0)
 const scrollToMessageId = ref('')
@@ -144,12 +146,27 @@ const chatScrollView = ref(null)
 // 上传图片相关
 const isUploadingImage = ref(false)
 
+// 定时器
+let messageRefreshTimer = null
+
 // 消息操作相关
 const currentMessage = ref(null);
 
 // 返回上一页
 const goBack = () => {
     uni.navigateBack()
+}
+
+// 跳转到对方的个人中心
+const goToUserSpace = () => {
+    if (!chatTarget.userId) {
+        uni.showToast({ title: '用户信息不存在', icon: 'none' })
+        return
+    }
+    
+    uni.navigateTo({
+        url: `/pages/user/personal-center?userId=${chatTarget.userId}`
+    })
 }
 
 // 获取当前用户信息
@@ -162,7 +179,6 @@ const getCurrentUserInfo = async () => {
         if (res.code === 200 && res.data) {
             userInfo.userId = res.data.id;
             userInfo.avatar = res.data.avatar || defaultAvatar;
-            console.log('获取到当前用户信息:', userInfo);
         } else {
             console.error('获取当前用户信息失败:', res.msg);
         }
@@ -179,46 +195,32 @@ const getRouteParams = () => {
         const currentPage = pages[pages.length - 1];
         
         // 兼容App和小程序的参数获取方式
-        let id = '';
         let userId = '';
-        let username = '';
         
         // 小程序环境
         if (currentPage.options) {
-            id = currentPage.options.id;
             userId = currentPage.options.userId;
-            username = currentPage.options.username;
-            console.log('从options获取参数:', id, userId, username);
         } 
         // App环境
         else if (currentPage.$page && currentPage.$page.options) {
-            id = currentPage.$page.options.id;
             userId = currentPage.$page.options.userId;
-            username = currentPage.$page.options.username;
-            console.log('从$page.options获取参数:', id, userId, username);
         }
         // 尝试从$route中获取
         else if (currentPage.$route && currentPage.$route.query) {
-            id = currentPage.$route.query.id;
             userId = currentPage.$route.query.userId;
-            username = currentPage.$route.query.username;
-            console.log('从$route.query获取参数:', id, userId, username);
         }
         
-        conversationId.value = id;
         chatTarget.userId = userId;
-        chatTarget.username = username || '用户';
-        
-        console.log('对话ID:', conversationId.value);
-        console.log('聊天对象ID:', chatTarget.userId);
-        console.log('聊天对象名称:', chatTarget.username);
+        console.log('获取到目标用户ID:', userId);
         
         // 获取当前用户信息
         getCurrentUserInfo();
         
-        // 获取对方用户信息
+        // 获取对方用户信息并创建对话
         if (chatTarget.userId) {
             getUserInfo(chatTarget.userId);
+        } else {
+            uni.showToast({ title: '缺少用户ID参数', icon: 'none' });
         }
     } catch (error) {
         console.error('获取路由参数失败:', error);
@@ -236,7 +238,11 @@ const getUserInfo = async (id) => {
         if (res.code === 200 && res.data) {
             chatTarget.username = res.data.username || res.data.nickname || '用户'
             chatTarget.avatar = res.data.avatar || defaultAvatar
-            console.log('获取到对方信息:', chatTarget)
+            
+            // 如果没有conversationId，则创建对话
+            if (!conversationId.value) {
+                await initiateConversation(id)
+            }
         } else {
             console.error('获取用户信息失败:', res.msg)
         }
@@ -245,12 +251,38 @@ const getUserInfo = async (id) => {
     }
 }
 
+// 创建对话
+const initiateConversation = async (targetUserId) => {
+    try {
+        
+        const res = await request(`/chat/initiate?userId=${targetUserId}`, {
+            method: 'GET'
+        })
+        
+        if (res.code === 200 && res.data) {
+            conversationId.value = res.data.id
+            
+            // 创建对话后加载消息
+            loadMessages()
+        } else {
+            console.error('创建对话失败:', res.msg)
+            uni.showToast({ title: res.msg || '创建对话失败', icon: 'none' })
+        }
+    } catch (error) {
+        console.error('创建对话出错:', error)
+        uni.showToast({ title: '创建对话失败', icon: 'none' })
+    }
+}
+
 // 加载消息
-const loadMessages = async (page = 1) => {
-    if (page === 1) {
-        isLoading.value = true
-    } else {
-        isLoadingMore.value = true
+// silent: 静默刷新，不显示加载提示
+const loadMessages = async (page = 1, silent = false) => {
+    if (!silent) {
+        if (page === 1) {
+            isLoading.value = true
+        } else {
+            isLoadingMore.value = true
+        }
     }
     
     try {
@@ -282,15 +314,12 @@ const loadMessages = async (page = 1) => {
                 // 确保isUser字段正确，这是判断消息归属的关键
                 // isUser为true表示是自己发送的消息
                 if (msg.isUser === undefined) {
-                    console.log('消息没有isUser字段，根据userId判断:', msg.userId, userInfo.userId);
                     msg.isUser = (msg.userId == userInfo.userId);
                 }
                 
                 return msg;
             })
-            
-            console.log('处理后的消息列表:', messageList);
-            
+                        
             if (page === 1) {
                 messages.value = messageList
                 // 滚动到最新消息
@@ -359,7 +388,6 @@ const chooseImage = () => {
             try {
                 // 上传图片
                 await uploadAndSendImage(tempFilePath)
-                console.log('图片发送成功')
             } catch (error) {
                 console.error('图片上传失败:', error)
                 uni.showToast({
@@ -383,7 +411,6 @@ const uploadAndSendImage = async (filePath) => {
     try {
         // 上传图片到服务器，参考publish.vue的实现
         const imageUrl = await uploadImage(filePath);
-        console.log('图片上传成功，准备发送图片消息，URL:', imageUrl);
         
         // 发送图片消息
         if (imageUrl) {
@@ -397,27 +424,7 @@ const uploadAndSendImage = async (filePath) => {
 
 // 获取基础URL
 const getBaseUrl = () => {
-    // 从request.js中获取baseUrl，或者使用默认值
-    let baseUrl = '';
-    try {
-        baseUrl = request.baseUrl || '';
-        if (!baseUrl) {
-            // 尝试从环境变量或其他配置获取
-            const serverConfig = uni.getStorageSync('serverConfig');
-            if (serverConfig) {
-                baseUrl = JSON.parse(serverConfig).baseUrl || '';
-            }
-        }
-    } catch (e) {
-        console.error('获取baseUrl失败:', e);
-    }
-    
-    // 如果还是没有，使用默认值
-    if (!baseUrl) {
-        baseUrl = 'https://yourserver.com'; // 替换为您的服务器地址
-    }
-    
-    return baseUrl;
+    return apiBaseUrl;
 };
 
 // 上传单张图片，参考publish.vue的实现
@@ -790,18 +797,34 @@ const reportMessage = () => {
     });
 };
 
+// 启动定时刷新消息
+const startMessageRefresh = () => {
+    // 清除旧的定时器
+    if (messageRefreshTimer) {
+        clearInterval(messageRefreshTimer)
+    }
+    
+    // 每15秒自动刷新消息
+    messageRefreshTimer = setInterval(() => {
+        if (conversationId.value) {
+            console.log('定时刷新消息...')
+            loadMessages(1, true) // 静默刷新，不显示加载提示
+        }
+    }, 15000) // 15秒
+}
+
+// 停止定时刷新
+const stopMessageRefresh = () => {
+    if (messageRefreshTimer) {
+        clearInterval(messageRefreshTimer)
+        messageRefreshTimer = null
+        console.log('已停止消息定时刷新')
+    }
+}
+
 // 页面加载时获取参数和消息
 onMounted(() => {
     getRouteParams()
-    if (conversationId.value) {
-        loadMessages()
-    } else {
-        isLoading.value = false
-        uni.showToast({
-            title: '对话ID不存在',
-            icon: 'none'
-        })
-    }
     
     // 获取滚动视图高度
     try {
@@ -815,34 +838,16 @@ onMounted(() => {
         // 降级方案：使用默认高度
         scrollViewHeight.value = 600;
     }
+    
+    // 启动定时刷新
+    startMessageRefresh()
 })
 
-// 使用defineExpose导出方法供页面实例调用
-defineExpose({
-    onLoad(options) {
-        console.log('页面onLoad被调用，参数:', options)
-        if (options) {
-            if (options.id) conversationId.value = options.id
-            if (options.userId) chatTarget.userId = options.userId
-            if (options.username) chatTarget.username = options.username
-            
-            console.log('onLoad设置参数:', conversationId.value, chatTarget.userId, chatTarget.username)
-            
-            // 获取当前用户信息
-            getCurrentUserInfo()
-            
-            // 获取对方用户信息
-            if (chatTarget.userId) {
-                getUserInfo(chatTarget.userId)
-            }
-            
-            // 加载消息
-            if (conversationId.value) {
-                loadMessages()
-            }
-        }
-    }
+// 页面卸载时清除定时器
+onUnmounted(() => {
+    stopMessageRefresh()
 })
+
 
 
 </script>
@@ -886,14 +891,32 @@ defineExpose({
     font-size: 34rpx;
     font-weight: bold;
     color: #333;
-    max-width: 400rpx;
+    flex: 1;
+    text-align: center;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.placeholder {
+.nav-right {
     width: 60rpx;
+    height: 60rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #00A872 0%, #00C896 100%);
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.nav-right:active {
+    transform: scale(0.95);
+    opacity: 0.8;
+}
+
+.user-icon {
+    font-size: 32rpx;
+    line-height: 1;
 }
 
 /* 聊天内容区域 */

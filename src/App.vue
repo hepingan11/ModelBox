@@ -14,8 +14,8 @@
 
 <style>
 	.root {
-	--theme-color: #cced71;
-	--theme-color-light: #43f75b;
+	--theme-color: #7bed71;
+	--theme-color-light: #00A872;
 	--theme-color-shadow: rgba(94, 169, 87, 0.4);
 	}
 	/*每个页面公共css */

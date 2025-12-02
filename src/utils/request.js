@@ -23,7 +23,7 @@ const request = (url, options = {}) => {
 					resolve(res.data);
 				} else if (res.data.code === 401) {
 					uni.showToast({
-						title: '登录过期',
+						title: '请先登录',
 						icon: 'none',
 						duration: 2000
 					});

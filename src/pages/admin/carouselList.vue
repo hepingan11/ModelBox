@@ -30,6 +30,7 @@
 						<text class="link-text">{{item.navtoUrl}}</text>
 					</view>
 					<view class="item-actions">
+						<button class="edit-btn" @click="openEditModal(item)">编辑</button>
 						<button class="delete-btn" @click="deleteCarousel(item)">删除</button>
 					</view>
 				</view>
@@ -42,10 +43,10 @@
 			</view>
 		</scroll-view>
 
-		<!-- 添加弹窗 -->
+		<!-- 添加/编辑弹窗 -->
 		<view class="popup-mask" v-if="showAddPopup" @click="closeAddModal">
 			<view class="popup-content" @click.stop>
-				<view class="popup-title">添加轮播图</view>
+				<view class="popup-title">{{ isEditMode ? '编辑轮播图' : '添加轮播图' }}</view>
 				
 				<view class="form-item">
 					<view class="label">图片</view>
@@ -65,7 +66,7 @@
 				
 				<view class="popup-btns">
 					<button class="btn cancel" @click="closeAddModal">取消</button>
-					<button class="btn confirm" @click="submitAdd">确定</button>
+					<button class="btn confirm" @click="submitForm">{{ isEditMode ? '保存' : '确定' }}</button>
 				</view>
 			</view>
 		</view>
@@ -83,6 +84,10 @@ const isRefreshing = ref(false)
 
 // 弹窗状态
 const showAddPopup = ref(false)
+// 编辑模式
+const isEditMode = ref(false)
+// 当前编辑的轮播图ID
+const currentEditId = ref(null)
 // 表单数据
 const formData = ref({
 	url: '',
@@ -123,6 +128,8 @@ const refreshList = () => {
 
 // 打开添加弹窗
 const openAddModal = () => {
+	isEditMode.value = false
+	currentEditId.value = null
 	formData.value = { url: '', navtoUrl: '' }
 	showAddPopup.value = true
 }
@@ -130,30 +137,54 @@ const openAddModal = () => {
 // 关闭添加弹窗
 const closeAddModal = () => {
 	showAddPopup.value = false
+	isEditMode.value = false
+	currentEditId.value = null
 }
 
-// 提交添加
-const submitAdd = async () => {
+// 打开编辑弹窗
+const openEditModal = (item) => {
+	isEditMode.value = true
+	currentEditId.value = item.id
+	formData.value = {
+		url: item.url,
+		navtoUrl: item.navtoUrl || ''
+	}
+	showAddPopup.value = true
+}
+
+// 提交表单（添加或编辑）
+const submitForm = async () => {
 	if (!formData.value.url) {
 		uni.showToast({ title: '请先上传图片', icon: 'none' })
 		return
 	}
 	
 	try {
-		const res = await request('/admin/carousel/add', {
+		const url = isEditMode.value ? '/admin/carousel/update' : '/admin/carousel/add'
+		const data = isEditMode.value 
+			? { ...formData.value, id: currentEditId.value }
+			: formData.value
+		
+		const res = await request(url, {
 			method: 'POST',
-			data: formData.value
+			data: data
 		})
 		
 		if (res.code === 200) {
-			uni.showToast({ title: '添加成功', icon: 'success' })
+			uni.showToast({ 
+				title: isEditMode.value ? '修改成功' : '添加成功', 
+				icon: 'success' 
+			})
 			closeAddModal()
 			getCarouselList()
 		} else {
-			uni.showToast({ title: res.msg || '添加失败', icon: 'none' })
+			uni.showToast({ 
+				title: res.msg || (isEditMode.value ? '修改失败' : '添加失败'), 
+				icon: 'none' 
+			})
 		}
 	} catch (error) {
-		console.error('添加失败:', error)
+		console.error(isEditMode.value ? '修改失败:' : '添加失败:', error)
 		uni.showToast({
 			title: '网络错误，请稍后重试',
 			icon: 'none'
@@ -343,6 +374,16 @@ onMounted(() => {
 	padding: 20rpx;
 	display: flex;
 	justify-content: flex-end;
+	gap: 16rpx;
+}
+
+.edit-btn {
+	background: linear-gradient(135deg, #00A872 0%, #00C896 100%);
+	color: #fff;
+	font-size: 26rpx;
+	padding: 10rpx 20rpx;
+	border-radius: 6rpx;
+	border: none;
 }
 
 .delete-btn {

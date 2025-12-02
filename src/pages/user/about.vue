@@ -4,14 +4,14 @@
         <!-- 应用信息 -->
         <view class="about-header">
             <image src="/static/logo.jpg" class="logo" mode="aspectFit"></image>
-            <text class="app-name">宅宿送</text>
+            <text class="app-name">众创搭</text>
             <text class="app-version">版本 1.0.0</text>
         </view>
         
         <!-- 信息卡片 -->
         <view class="info-cards">
             <!-- 项目开源地址 -->
-            <view class="info-card" @click="copyToClipboard('https://github.com/hepingan11/宅宿送-app')">
+            <view class="info-card" @click="copyToClipboard('https://github.com/hepingan11/众创搭-app')">
                 <view class="card-left">
                     <text class="card-icon">🔗</text>
                     <text class="card-title">项目开源地址</text>
@@ -61,13 +61,13 @@
         <view class="app-intro">
             <text class="intro-title">应用简介</text>
             <text class="intro-content">
-                宅宿送是一款集社交、商城、论坛于一体的综合性应用。我们致力于为用户提供便捷、安全的社交购物体验。应用采用前沿技术开发，支持多平台运行，界面简洁美观，功能丰富实用。
+                众创搭是一款集社交、商城、论坛于一体的综合性应用。我们致力于为用户提供便捷、安全的社交购物体验。应用采用前沿技术开发，支持多平台运行，界面简洁美观，功能丰富实用。
             </text>
         </view>
         
         <!-- 版权信息 -->
         <view class="copyright">
-            <text class="copyright-text">© 2023-2024 宅宿送 团队 版权所有</text>
+            <text class="copyright-text">© 2023-2024 众创搭 团队 版权所有</text>
         </view>
     </view>
 </template>
@@ -107,7 +107,7 @@ const showTeamInfo = () => {
 const showBusinessInfo = () => {
     uni.showModal({
         title: '商家合作',
-        content: '如果您是商家并希望在宅宿送上展示您的产品，请联系我们的团队：1973016127@qq.com，或添加微信：hepinganheliuyi进行洽谈，我们将为您提供流量支持。',
+        content: '如果您是商家并希望在众创搭上展示您的产品，请联系我们的团队：1973016127@qq.com，或添加微信：hepinganheliuyi进行洽谈，我们将为您提供流量支持。',
         showCancel: false,
         confirmText: '我知道了'
     })

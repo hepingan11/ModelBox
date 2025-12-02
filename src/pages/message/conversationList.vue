@@ -1,10 +1,6 @@
 <template>
     <view class="message-container">
-        <!-- 顶部标题栏 -->
-        <view class="header">
-            <text class="title">消息列表</text>
-        </view>
-        
+    
         <!-- 会话列表 -->
         <scroll-view 
             class="conversation-list" 
@@ -12,6 +8,8 @@
             :refresher-enabled="true"
             :refresher-triggered="isRefreshing"
             @refresherrefresh="onRefresh"
+            @scrolltolower="loadMore"
+            :lower-threshold="100"
         >
             <!-- 空数据状态 -->
             <view class="empty-state" v-if="conversations.length === 0 && !isLoading">
@@ -51,28 +49,50 @@
 </template>
 <script setup>
 import { ref, onMounted } from 'vue';
+import { onShow } from '@dcloudio/uni-app';
 import request from '@/utils/request';
 
 // 状态变量
 const conversations = ref([]);
 const isLoading = ref(false);
 const isRefreshing = ref(false);
+const currentPage = ref(1);
+const hasMore = ref(true);
 
 // 页面加载时获取会话列表
 onMounted(() => {
     getConversationList();
 });
 
+// 页面显示时刷新数据（从聊天页面返回时会触发）
+onShow(() => {
+    console.log('页面显示，刷新会话列表');
+    currentPage.value = 1;
+    getConversationList(1);
+});
+
 // 获取会话列表
-const getConversationList = async () => {
+const getConversationList = async (page = 1) => {
     isLoading.value = true;
     try {
         const res = await request('/chat/list', {
-            method: 'GET'
+            method: 'GET',
+            data: {
+                pageNum: page
+            }
         });
         
         if (res.code === 200) {
-            conversations.value = res.data || [];
+            const pageData = res.data;
+            
+            if (page === 1) {
+                conversations.value = pageData.records || [];
+            } else {
+                conversations.value = [...conversations.value, ...(pageData.records || [])];
+            }
+            
+            currentPage.value = page;
+            hasMore.value = pageData.records && pageData.records.length >= 10;
             // 打印会话列表，检查时间格式
             console.log('会话列表:', conversations.value);
             if (conversations.value.length > 0) {
@@ -99,14 +119,22 @@ const getConversationList = async () => {
 // 下拉刷新
 const onRefresh = () => {
     isRefreshing.value = true;
-    getConversationList();
+    currentPage.value = 1;
+    getConversationList(1);
+};
+
+// 加载更多
+const loadMore = () => {
+    if (hasMore.value && !isLoading.value) {
+        getConversationList(currentPage.value + 1);
+    }
 };
 
 // 导航到聊天详情页
 const navigateToChat = (conversation) => {
     console.log('导航到聊天页面，会话信息:', conversation);
     uni.navigateTo({
-        url: `/pages/chat/chat?id=${conversation.id}&userId=${conversation.targetId || conversation.targetUserId}&username=${encodeURIComponent(conversation.targetUserName || '用户' + conversation.targetUserId)}`
+        url: `/pages/message/chat?userId=${conversation.targetId || conversation.targetUserId}`
     });
 };
 
@@ -170,23 +198,9 @@ const formatTime = (timeStr) => {
 };
 
 // 获取未读消息数量
-const getUnreadCount = async (conversation) => {
-    // 根据当前用户ID判断未读消息数量
-    // 假设当前用户ID存储在全局状态或本地存储中
-    const res = await request('/user/getUserInfo', {
-        method: 'GET',
-    }).then(res => {
-        console.log('获取用户信息:', res);
-    })
-    const currentUserId = res.data.id;
-    
-    if (currentUserId == conversation.initiateUserId) {
-        // 当前用户是会话发起者，查看目标用户的未读消息数
-        return conversation.targetMessage || 0;
-    } else {
-        // 当前用户是会话目标者，查看发起用户的未读消息数
-        return conversation.initiateMessage || 0;
-    }
+const getUnreadCount = (conversation) => {
+    // 直接返回initiateMessage字段
+    return conversation.initiateMessage || 0;
 };
 </script>
 

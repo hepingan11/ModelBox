@@ -25,21 +25,21 @@
         </view>
       </view>
 
+      <!-- 项目管理 -->
+      <view class="grid-card" @click="navigateToSection('project')">
+        <image src="/static/icon/project.png" class="card-icon"></image>
+        <view class="card-content">
+          <text class="card-title">项目管理</text>
+          <text class="card-desc">管理项目信息</text>
+        </view>
+      </view>
+
       <!-- 帖子管理 -->
       <view class="grid-card" @click="navigateToSection('post')">
         <image src="/static/admin/post.png" class="card-icon"></image>
         <view class="card-content">
           <text class="card-title">帖子管理</text>
           <text class="card-desc">管理论坛帖子和评论</text>
-        </view>
-      </view>
-
-      <!-- 商品管理 -->
-      <view class="grid-card" @click="navigateToSection('product')">
-        <image src="/static/admin/shop.png" class="card-icon"></image>
-        <view class="card-content">
-          <text class="card-title">商品管理</text>
-          <text class="card-desc">管理商品信息和库存</text>
         </view>
       </view>
 
@@ -95,15 +95,7 @@
           <text class="card-desc">管理平台优惠券</text>
         </view>
       </view>
-
-      <!-- 配送订单管理 -->
-      <view class="grid-card" @click="navigateToSection('delivery')">
-        <image src="/static/icon/orders-manager.png" class="card-icon"></image>
-        <view class="card-content">
-          <text class="card-title">配送订单管理</text>
-          <text class="card-desc">管理配送订单信息</text>
-        </view>
-      </view>
+  
     </view>
   </view>
 </template>
@@ -171,14 +163,13 @@ const navigateToSection = (section) => {
   const routes = {
     user: '/pages/admin/userList',
     post: '/pages/admin/forumList',
-    product: '/pages/admin/shopList',
     activity: '/pages/admin/activityList',
     chat: '/pages/admin/messageList',
     carousel: '/pages/admin/carouselList',
     report: '/pages/admin/reportList',
     avatar: '/pages/admin/avatarList',
+    project: '/pages/admin/project/projectList',
     coupon: '/pages/admin/coupon/coupon',
-    delivery: '/pages/admin/deliveryOrderList'
   }
   
   if (routes[section]) {

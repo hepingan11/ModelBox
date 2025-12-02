@@ -1,6 +1,13 @@
 <template>
 	<view class="page-container">
-		<scroll-view scroll-y class="page-scroll" :show-scrollbar="false">
+		<scroll-view 
+			scroll-y 
+			class="page-scroll" 
+			:show-scrollbar="false"
+			refresher-enabled
+			:refresher-triggered="refreshing"
+			@refresherrefresh="onRefresh"
+		>
 			<!-- 顶部大轮播图 -->
 			<view class="swiper-container">
 				<swiper
@@ -23,71 +30,11 @@
 
 			<!-- 悬浮内容区域 -->
 			<view class="overlap-content">
-				<!-- 主要功能卡片 -->
-				<view class="main-card">
-					<!-- 学校定位 -->
-					<view class="location-header" @click="openSchoolPopup">
-						<view class="location-left">
-							<text class="location-icon">📍</text>
-							<text class="location-text">{{ currentSchool ? currentSchool.schoolName : '点击绑定学校' }}</text>
-						</view>
-						<text class="location-arrow">切换</text>
-					</view>
-
-					<!-- 核心业务入口 (接单/下单) -->
-					<view class="core-actions">
-						<view class="action-item" @click="navigateToDeliveryTake">
-							<view class="icon-box take-bg">
-								<image src="/static/shop.png" class="action-icon"></image>
-							</view>
-							<view class="action-info">
-								<text class="action-title">我要接单</text>
-								<text class="action-desc">赚取配送费</text>
-							</view>
-						</view>
-						
-						<view class="divider"></view>
-						
-						<view class="action-item" @click="navigateToDeliveryOrder">
-							<view class="icon-box place-bg">
-								<image src="/static/shop-selected.png" class="action-icon"></image>
-							</view>
-							<view class="action-info">
-								<text class="action-title">我要下单</text>
-								<text class="action-desc">帮我送东西</text>
-							</view>
-						</view>
-					</view>
-
-					<!-- 工具栏网格 -->
-					<view class="tools-grid-section">
-						<view class="tool-item" @click="navigateToTool('aiChat')">
-							<image src="/static/icon/ai-chat.png" class="tool-img"></image>
-							<text class="tool-text">AI问答</text>
-						</view>
-						<view class="tool-item" @click="navigateToTool('campusPickup')">
-							<image src="/static/icon/campus-pickup.png" class="tool-img"></image>
-							<text class="tool-text">校园代取</text>
-						</view>
-						<view class="tool-item" @click="navigateToTool('findPartner')">
-							<image src="/static/icon/find-partner.png" class="tool-img"></image>
-							<text class="tool-text">寻找搭子</text>
-						</view>
-						<view class="tool-item" @click="navigateToTool('classSub')">
-							<image src="/static/icon/class-sub.png" class="tool-img"></image>
-							<text class="tool-text">代课代会</text>
-						</view>
-					</view>
-				</view>
-
 				<!-- 最新活动广告区域 -->
 				<view class="content-section latest-activities">
 					<view class="section-header">
 						<text class="section-title">最新活动</text>
-						<view class="view-more" @click="viewMoreActivities">
-							<text>查看更多</text>
-							<text class="arrow-icon">→</text>
-						</view>
+						
 					</view>
 					
 					<view class="activities-loading" v-if="isLoadingActivities">
@@ -118,51 +65,76 @@
 					</view>
 				</view>
 
-				<!-- 最新商品展示 -->
-				<view class="content-section latest-goods">
+				<!-- 最新项目展示 -->
+				<view class="content-section latest-projects">
 					<view class="section-header">
-						<text class="section-title">最新商品</text>
-						<view class="view-more" @click="viewMoreGoods">
-							<text>查看更多</text>
-							<text class="arrow-icon">→</text>
-						</view>
+						<text class="section-title">最新项目</text>
+						
 					</view>
 					
-					<view class="goods-loading" v-if="isLoadingGoods">
+					<view class="projects-loading" v-if="isLoadingProjects">
 						<view class="loading-animation"></view>
 						<text class="loading-text">加载中...</text>
 					</view>
 					
-					<view v-else class="latest-goods-content">
-						<!-- 商品列表 -->
-						<view class="goods-list" v-if="latestGoodsList.length > 0">
-							<view class="goods-row">
-								<view 
-									class="goods-item" 
-									v-for="(item, index) in latestGoodsList.slice(0, 4)" 
-									:key="item.id"
-									@click="navigateToGoodsDetail(item.id)"
-								>
+					<view v-else class="latest-projects-content">
+						<view class="projects-list" v-if="projectList.length > 0">
+							<view 
+								class="project-item" 
+								v-for="project in projectList" 
+								:key="project.projectId"
+								@click="goToProjectDetail(project.projectId)"
+							>
+								<!-- 项目图片区域 -->
+								<view class="project-images" v-if="project.imageUrlList && project.imageUrlList.length > 0">
 									<image 
-										:src="item.imageUrl && item.imageUrl.length > 0 ? item.imageUrl[0] : '/static/default-goods.png'" 
-										class="goods-image" 
+										v-for="(img, imgIdx) in project.imageUrlList.slice(0, 3)" 
+										:key="imgIdx"
+										:src="img" 
+										class="project-image" 
 										mode="aspectFill"
 									></image>
-									<view class="goods-info">
-										<text class="goods-name">{{ item.shopName }}</text>
-										<text class="goods-intro" v-if="item.introduce">{{ item.introduce }}</text>
-										<view class="goods-price-row">
-											<text class="goods-price">¥{{ item.price }}</text>
+								</view>
+								<image 
+									v-else
+									src="/static/default-project.png" 
+									class="project-image project-image-single" 
+									mode="aspectFill"
+								></image>
+								
+								<!-- 项目信息 -->
+								<view class="project-info">
+									<text class="project-name">{{ project.projectName }}</text>
+									<text class="project-intro" v-if="project.introduce">{{ project.introduce }}</text>
+									
+									<!-- 项目元信息 -->
+									<view class="project-meta">
+										<view class="project-city" v-if="project.city">
+											<image src="/static/icon/local.png" class="meta-icon"></image>
+											<text>{{ project.city }}</text>
 										</view>
+										<text class="project-age" v-if="project.ageRequirement"> {{ project.ageRequirement }}</text>
+									</view>
+									
+									<!-- 成员头像 -->
+									<view v-if="project.memberList && project.memberList.length > 0" class="project-members">
+										<image 
+											v-for="(member, idx) in project.memberList.slice(0, 3)" 
+											:key="idx"
+											:src="member.avatar || '/static/default-avatar.png'" 
+											class="member-avatar"
+										></image>
+										<text v-if="project.memberList.length > 3" class="member-count">
+											+{{ project.memberList.length - 3 }}
+										</text>
 									</view>
 								</view>
 							</view>
 						</view>
 						
 						<!-- 空数据状态 -->
-						<view class="empty-state" v-if="latestGoodsList.length === 0">
-							<image src="/static/empty.png" class="empty-icon"></image>
-							<text class="empty-text">暂无商品</text>
+						<view class="empty-projects" v-if="projectList.length === 0">
+							<text class="empty-text">暂无项目</text>
 						</view>
 					</view>
 				</view>
@@ -218,14 +190,17 @@
   const activityPageNum = ref(1)
   // 活动加载状态
   const isLoadingActivities = ref(true)
-
-  // 最新商品列表
-  const latestGoodsList = ref([])
-  // 商品加载状态
-  const isLoadingGoods = ref(true)
+  
+  // 下拉刷新状态
+  const refreshing = ref(false)
   
   // 活动通知控制
   const showActivity = ref(true)
+  
+  // 项目列表
+  const projectList = ref([])
+  // 项目加载状态
+  const isLoadingProjects = ref(true)
   
   // 学校相关状态
   const currentSchool = ref(null)
@@ -258,14 +233,35 @@
   	}
   }
   
+  // 下拉刷新
+  const onRefresh = async () => {
+  	refreshing.value = true
+  	
+  	try {
+  		// 重新获取所有数据
+  		await Promise.all([
+  			getCarouselList(),
+  			getActivityList(),
+  			getProjectList(),
+  			getBoundSchool(),
+  			getHomePoster()
+  		])
+  		
+  	} catch (error) {
+  		console.error('刷新失败:', error)
+  	} finally {
+  		refreshing.value = false
+  	}
+  }
+  
   // 页面加载时的动画效果和数据获取
   onMounted(() => {
   	// 获取轮播图数据
   	getCarouselList()
   	// 获取活动广告数据
   	getActivityList()
-  	// 获取最新商品数据
-  	getLatestGoods()
+  	// 获取项目列表数据
+  	getProjectList()
 	// 获取已绑定的学校
 	getBoundSchool()
 	// 获取首页海报
@@ -434,31 +430,48 @@
   		isLoadingActivities.value = false
   	}
   }
-  
-  // 获取最新商品列表
-  const getLatestGoods = async () => {
-  	isLoadingGoods.value = true
+
+// 获取项目列表
+const getProjectList = async () => {
+	isLoadingProjects.value = true
 	
 	try {
-		const res = await request('/shop/list', {
+		const res = await request('/project/list', {
 			method: 'GET',
 			data: {
 				pageNum: 1,
-				shopName: '',
-				category: ''
+				projectName: '',
+				city: '',
+				projectFieldId: 0,
+				ageRequirement: ''
 			}
 		})
 		
 		if (res.code === 200) {
-			latestGoodsList.value = res.data || []
+			// 只显示前6个项目
+			projectList.value = (res.data.records || []).slice(0, 6)
 		} else {
-			console.error('获取最新商品失败:', res.msg)
+			console.error('获取项目列表失败:', res.msg)
 		}
 	} catch (error) {
-		console.error('获取最新商品失败:', error)
+		console.error('获取项目列表失败:', error)
 	} finally {
-		isLoadingGoods.value = false
+		isLoadingProjects.value = false
 	}
+}
+
+// 跳转到项目详情
+const goToProjectDetail = (projectId) => {
+	uni.navigateTo({
+		url: `/pages/project/detail?id=${projectId}`
+	})
+}
+
+// 查看更多项目
+const viewMoreProjects = () => {
+	uni.navigateTo({
+		url: '/pages/project/list'
+	})
 }
 
 // 跳转到活动详情
@@ -563,18 +576,6 @@ const navigateToTool = (tool) => {
 	})
 }
 
-// 跳转到商品详情
-const navigateToGoodsDetail = (id) => {
-	uni.navigateTo({
-		url: `/pages/shop/detail?id=${id}`
-	})
-}
-
-// 查看更多商品
-const viewMoreGoods = () => {
-	uni.switchTab({ url: '/pages/shop/index' })
-}
-
 // 跳转到接单页面
 const navigateToDeliveryTake = () => {
 	uni.navigateTo({
@@ -595,7 +596,7 @@ const navigateToDeliveryOrder = () => {
 .page-container {
 	width: 100%;
 	min-height: 100vh;
-	background-color: #f5f7fa;
+	background: linear-gradient(180deg, #e8f5f1 0%, #f5f7fa 40%, #ffffff 100%);
 }
 
 .page-scroll {
@@ -612,12 +613,26 @@ const navigateToDeliveryOrder = () => {
 .main-swiper {
 	width: 100%;
 	height: 100%;
+	border-radius: 0 0 40rpx 40rpx;
+	overflow: hidden;
 }
 
 .swiper-img {
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
+	animation: zoomIn 0.6s ease-out;
+}
+
+@keyframes zoomIn {
+	from {
+		transform: scale(1.1);
+		opacity: 0.8;
+	}
+	to {
+		transform: scale(1);
+		opacity: 1;
+	}
 }
 
 .swiper-gradient-mask {
@@ -625,15 +640,16 @@ const navigateToDeliveryOrder = () => {
 	bottom: 0;
 	left: 0;
 	width: 100%;
-	height: 120rpx;
-	background: linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,0.1));
+	height: 150rpx;
+	background: linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,0.3));
 	pointer-events: none;
+	border-radius: 0 0 40rpx 40rpx;
 }
 
 /* 内容悬浮区域 */
 .overlap-content {
 	position: relative;
-	margin-top: -80rpx;
+	margin-top: -60rpx;
 	z-index: 10;
 	padding: 0 24rpx 40rpx;
 }
@@ -664,7 +680,8 @@ const navigateToDeliveryOrder = () => {
 }
 
 .location-icon {
-	font-size: 32rpx;
+	width: 32rpx;
+	height: 32rpx;
 	margin-right: 10rpx;
 }
 
@@ -782,9 +799,23 @@ const navigateToDeliveryOrder = () => {
 
 /* 内容区块 */
 .content-section {
-	margin-bottom: 24rpx;
+	margin-bottom: 32rpx;
 	background-color: #fff;
-	border-radius: 16rpx;
+	border-radius: 24rpx;
+	box-shadow: 0 8rpx 24rpx rgba(0, 168, 114, 0.08);
+	padding: 30rpx;
+	position: relative;
+	overflow: hidden;
+}
+
+.content-section::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 4rpx;
+	background: linear-gradient(90deg, #00A872 0%, #4CAF50 50%, #8BC34A 100%);
 }
 
 /* 公共头部样式 */
@@ -797,21 +828,23 @@ const navigateToDeliveryOrder = () => {
 }
 
 .section-title {
-	font-size: 32rpx;
+	font-size: 36rpx;
 	font-weight: bold;
-	color: #333;
+	color: #1a1a1a;
 	position: relative;
+	padding-left: 20rpx;
 }
 
-.section-title::after {
+.section-title::before {
 	content: '';
 	position: absolute;
-	bottom: -8rpx;
 	left: 0;
-	width: 60rpx;
-	height: 6rpx;
-	background: linear-gradient(90deg, #baeb34, #1abc9c);
-	border-radius: 3rpx;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 8rpx;
+	height: 32rpx;
+	background: linear-gradient(180deg, #00A872 0%, #4CAF50 100%);
+	border-radius: 4rpx;
 }
 
 .view-more {
@@ -825,76 +858,140 @@ const navigateToDeliveryOrder = () => {
 	margin-left: 6rpx;
 }
 
-/* 商品列表样式 */
-.latest-goods-content {
-	background-color: #fff;
-	border-radius: 16rpx;
-	padding: 20rpx;
-	box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+/* 项目样式 */
+.latest-projects-content {
+	margin-top: 20rpx;
 }
 
-.goods-list {
-	width: 100%;
-}
-
-.goods-row {
+.projects-list {
 	display: flex;
-	flex-wrap: wrap;
-	justify-content: space-between;
+	flex-direction: column;
+	gap: 24rpx;
 }
 
-.goods-item {
-	width: 48%;
-	background-color: #fff;
-	border-radius: 12rpx;
-	overflow: hidden;
-	box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
-	margin-bottom: 20rpx;
-}
-
-.goods-image {
+.project-item {
+	display: flex;
+	flex-direction: column;
 	width: 100%;
+	background: linear-gradient(135deg, #ffffff 0%, #fafffe 100%);
+	border-radius: 20rpx;
+	overflow: hidden;
+	box-shadow: 0 8rpx 24rpx rgba(76, 175, 80, 0.12);
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	border: 1rpx solid rgba(76, 175, 80, 0.1);
+}
+
+.project-item:active {
+	transform: translateY(-4rpx);
+	box-shadow: 0 12rpx 32rpx rgba(76, 175, 80, 0.18);
+}
+
+.project-images {
+	display: flex;
+	gap: 4rpx;
+	width: 100%;
+	height: 200rpx;
+	position: relative;
+}
+
+.project-image {
+	flex: 1;
 	height: 200rpx;
 	object-fit: cover;
 }
 
-.goods-info {
-	padding: 16rpx;
+.project-image-single {
+	width: 100%;
+	height: 200rpx;
 }
 
-.goods-name {
-	font-size: 26rpx;
-	color: #333;
-	line-height: 1.4;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	display: -webkit-box;
-	-webkit-line-clamp: 1;
-	-webkit-box-orient: vertical;
-	margin-bottom: 8rpx;
-}
-
-.goods-intro {
-	font-size: 22rpx;
-	color: #666;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	display: -webkit-box;
-	-webkit-line-clamp: 1;
-	-webkit-box-orient: vertical;
-	margin-bottom: 8rpx;
-}
-
-.goods-price-row {
+.more-images {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 66.66%;
+	background: rgba(0, 0, 0, 0.5);
 	display: flex;
-	justify-content: space-between;
 	align-items: center;
+	justify-content: center;
+	backdrop-filter: blur(4rpx);
 }
 
-.goods-price {
-	font-size: 28rpx;
-	color: #58d3ac;
+.more-text {
+	font-size: 24rpx;
+	color: #fff;
 	font-weight: bold;
+}
+
+.project-info {
+	padding: 24rpx;
+	display: flex;
+	flex-direction: column;
+	gap: 12rpx;
+	background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, #ffffff 100%);
+}
+
+.project-name {
+	font-size: 32rpx;
+	font-weight: bold;
+	color: #1a1a1a;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	line-height: 1.4;
+}
+
+.project-intro {
+	font-size: 26rpx;
+	color: #666;
+	line-height: 1.5;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	min-height: 78rpx;
+}
+
+.project-meta {
+	display: flex;
+	align-items: center;
+	gap: 20rpx;
+	font-size: 24rpx;
+	color: #999;
+}
+
+.project-city,
+.project-age {
+	display: flex;
+	align-items: center;
+	gap: 6rpx;
+}
+
+.meta-icon {
+	width: 24rpx;
+	height: 24rpx;
+}
+
+.project-members {
+	display: flex;
+	align-items: center;
+	gap: -12rpx;
+	margin-top: 8rpx;
+}
+
+.member-avatar {
+	width: 48rpx;
+	height: 48rpx;
+	border-radius: 50%;
+	border: 3rpx solid #fff;
+}
+
+.member-count {
+	margin-left: 20rpx;
+	font-size: 24rpx;
+	color: #999;
 }
 
 /* 活动样式 */
@@ -903,36 +1000,47 @@ const navigateToDeliveryOrder = () => {
 	width: 480rpx;
 	margin-right: 24rpx;
 	vertical-align: top;
+	background: linear-gradient(135deg, #ffffff 0%, #f8fffe 100%);
+	border-radius: 20rpx;
+	overflow: hidden;
+	box-shadow: 0 8rpx 24rpx rgba(0, 168, 114, 0.12);
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	border: 1rpx solid rgba(0, 168, 114, 0.08);
+}
+
+.activity-item:active {
+	transform: translateY(-4rpx);
+	box-shadow: 0 12rpx 32rpx rgba(0, 168, 114, 0.18);
 }
 
 .activity-image {
 	width: 100%;
 	height: 280rpx;
-	border-radius: 20rpx;
 	object-fit: cover;
-	box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.08);
 }
 
 .activity-content {
-	padding: 16rpx 4rpx;
+	padding: 24rpx;
 	white-space: normal;
+	background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, #ffffff 100%);
 }
 
 .activity-title {
-	font-size: 30rpx;
-	color: #333;
+	font-size: 32rpx;
+	color: #1a1a1a;
 	font-weight: bold;
 	display: block;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	margin-bottom: 8rpx;
+	margin-bottom: 10rpx;
+	line-height: 1.4;
 }
 
 .activity-desc {
-	font-size: 24rpx;
-	color: #999;
-	line-height: 1.4;
+	font-size: 26rpx;
+	color: #666;
+	line-height: 1.5;
 	display: block;
 	white-space: nowrap;
 	overflow: hidden;
@@ -946,10 +1054,10 @@ const navigateToDeliveryOrder = () => {
 
 /* 加载/空状态 */
 .loading-animation {
-	width: 40rpx;
-	height: 40rpx;
-	border: 4rpx solid #f3f3f3;
-	border-top: 4rpx solid #1abc9c;
+	width: 50rpx;
+	height: 50rpx;
+	border: 5rpx solid rgba(0, 168, 114, 0.1);
+	border-top: 5rpx solid #00A872;
 	border-radius: 50%;
 	animation: spin 1s linear infinite;
 	margin-bottom: 20rpx;
@@ -961,11 +1069,12 @@ const navigateToDeliveryOrder = () => {
 }
 
 .loading-text, .empty-text {
-	font-size: 24rpx;
+	font-size: 26rpx;
 	color: #999;
+	font-weight: 500;
 }
 
-.empty-state, .empty-activity, .goods-loading, .activities-loading {
+.empty-state, .empty-activity, .empty-projects, .activities-loading, .projects-loading {
 	display: flex;
 	flex-direction: column;
 	align-items: center;

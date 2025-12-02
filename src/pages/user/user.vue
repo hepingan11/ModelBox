@@ -62,6 +62,20 @@
 					<text class="grid-text">修改信息</text>
 				</view>
 
+				<view class="grid-item" @click="goToMyProject">
+					<view class="grid-icon-wrapper">
+						<image src="/static/icon/project.png" class="grid-icon"></image>
+					</view>
+					<text class="grid-text">我的项目</text>
+				</view>
+
+				<view class="grid-item" @click="goToMessage">
+					<view class="grid-icon-wrapper">
+						<image src="/static/admin/message.png" class="grid-icon"></image>
+					</view>
+					<text class="grid-text">我的消息</text>
+				</view>
+
 				<view class="grid-item" @click="goToMyCoupon">
 					<view class="grid-icon-wrapper" >
 						<image src="/static/icon/coupon.png" class="grid-icon"></image>
@@ -71,7 +85,7 @@
 
 				<view class="grid-item" @click="goToCustomerService">
 					<view class="grid-icon-wrapper">
-						<image src="/static/icon/messageList.png" class="grid-icon"></image>
+						<image src="/static/admin/customer-service.png" class="grid-icon"></image>
 					</view>
 					<text class="grid-text">联系客服</text>
 				</view>
@@ -110,7 +124,7 @@
 					<view class="activity-text">
 						<view class="activity-tag">活动</view>
 						<text class="activity-title">社区开荒激励</text>
-						<text class="activity-desc">发布帖子 点赞数过10获取纪念头像框</text>
+						<text class="activity-desc">发布帖子 点赞数每月前三赢现金激励</text>
 					</view>
 				</view>
 			</view>
@@ -234,6 +248,19 @@ const checkSignStatus = () => {
 	}
 }
 
+// 跳转到我的项目
+const goToMyProject = () => {
+	uni.navigateTo({
+		url: '/pages/project/myProject'
+	})
+}
+
+const goToMessage = () => {
+	uni.navigateTo({
+		url: '/pages/message/conversationList'
+	})
+}
+
 // 跳转到优惠券列表
 const goToMyCoupon = () => {
 	uni.navigateTo({
@@ -293,6 +320,7 @@ const confirmLogout = () => {
 const loginout = () => {
 	uni.removeStorageSync("sa-token")
 	uni.removeStorageSync("is-admin") // 清除管理员状态
+	uni.removeStorageSync("userId")
 	uni.showToast({
 		title: '退出登录',
 		icon: 'success'
@@ -316,11 +344,11 @@ const goToPersonalCenter = () => {
 const goActivity = (type) => {
 	if (type === 'community') {
 		uni.navigateTo({
-			url: '/pages/activity/community-event'
+			url: '/pages/forum/detail?id=3'
 		})
 	} else if (type === 'join') {
 		uni.navigateTo({
-			url: '/pages/activity/join-us'
+			url: '/pages/project/detail?id=1'
 		})
 	}
 }

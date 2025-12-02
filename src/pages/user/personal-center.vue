@@ -30,6 +30,10 @@
 							<text class="level-text">Lv.{{ userInfo.level || 1 }}</text>
 						</view>
 					</view>
+					<!-- 聊天按钮（只在查看他人主页时显示） -->
+					<view v-if="props.userId && props.userId != currentUserId" class="chat-btn" @click.stop="goToChat">
+						<text class="chat-icon">💬</text>
+					</view>
 				</view>
 			</view>
 			
@@ -37,11 +41,11 @@
 			<view class="content-tabs">
 				<view 
 					class="tab-item" 
-					:class="{ active: activeTab === 'goods' }" 
-					@click="activeTab = 'goods'"
+					:class="{ active: activeTab === 'projects' }" 
+					@click="activeTab = 'projects'"
 				>
-					<text>我的商品</text>
-					<view class="tab-line" v-if="activeTab === 'goods'"></view>
+					<text>我的项目</text>
+					<view class="tab-line" v-if="activeTab === 'projects'"></view>
 				</view>
 				<view 
 					class="tab-item" 
@@ -53,37 +57,39 @@
 				</view>
 			</view>
 			
-			<!-- 商品列表 -->
-			<view class="content-section" v-if="activeTab === 'goods'">
-				<view class="empty-state" v-if="goodsList.length === 0 && !goodsLoadingMore">
+			<!-- 项目列表 -->
+			<view class="content-section" v-if="activeTab === 'projects'">
+				<view class="empty-state" v-if="projectsList.length === 0 && !projectsLoadingMore">
 					<image src="/static/empty.png" class="empty-icon"></image>
-					<text class="empty-text">暂无发布商品</text>
+					<text class="empty-text">暂无发起项目</text>
 					<view class="empty-buttons">
-						<button class="empty-btn" @click="goToShop">去逛逛</button>
-						<button class="empty-btn primary" @click="goToPublish">发布商品</button>
+						<button class="empty-btn" @click="goToProjectList">去看看</button>
+						<button class="empty-btn primary" @click="goToCreateProject">发起项目</button>
 					</view>
 				</view>
 				
-				<view class="goods-list" v-else>
-					<view class="goods-item" v-for="(item, index) in goodsList" :key="index" @click="goToGoodsDetail(item.id)">
-						<image :src="item.imageUrl && item.imageUrl.length > 0 ? item.imageUrl[0] : '/static/default-goods.png'" mode="aspectFill" class="goods-image"></image>
-						<view class="goods-info">
-							<text class="goods-title">{{ item.shopName }}</text>
-							<text class="goods-intro" v-if="item.introduce">{{ item.introduce }}</text>
-							<text class="goods-price">¥{{ item.price }}</text>
-							<view class="goods-status">
-								<text :class="['status-tag', item.isOnline ? 'online' : 'offline']">{{ item.isOnline ? '出售中' : '已下架' }}</text>
-								<text class="goods-date">{{ formatDate(item.createTime) }}</text>
+				<view class="projects-list" v-else>
+					<view class="project-item" v-for="(item, index) in projectsList" :key="index" @click="goToProjectDetail(item.projectId)">
+						<image :src="item.imageUrlList && item.imageUrlList.length > 0 ? item.imageUrlList[0] : '/static/default-project.png'" mode="aspectFill" class="project-image"></image>
+						<view class="project-info">
+							<text class="project-title">{{ item.projectName }}</text>
+							<text class="project-intro" v-if="item.introduce">{{ item.introduce }}</text>
+							<view class="project-tags">
+								<text class="tag" v-if="item.projectFieldName">🏷️ {{ item.projectFieldName }}</text>
+								<text class="tag" v-if="item.city">📍 {{ item.city }}</text>
+							</view>
+							<view class="project-status">
+								<text class="project-date">{{ formatDate(item.createdTime) }}</text>
 							</view>
 						</view>
 					</view>
 					
 					<!-- 加载更多 -->
-					<view class="load-more" @click="loadMoreGoods" v-if="goodsList.length > 0 && goodsHasMore">
-						<text class="load-text">{{ goodsLoadingMore ? '加载中...' : '加载更多' }}</text>
+					<view class="load-more" @click="loadMoreProjects" v-if="projectsList.length > 0 && projectsHasMore">
+						<text class="load-text">{{ projectsLoadingMore ? '加载中...' : '加载更多' }}</text>
 					</view>
 					
-					<view class="no-more" v-if="goodsList.length > 0 && !goodsHasMore">
+					<view class="no-more" v-if="projectsList.length > 0 && !projectsHasMore">
 						<text class="no-more-text">没有更多数据了</text>
 					</view>
 				</view>
@@ -165,20 +171,23 @@ const userInfo = ref({
 	level: 1
 })
 
-// 活动标签页
-const activeTab = ref('goods')
+// 当前登录用户ID
+const currentUserId = ref(uni.getStorageSync('userId'))
 
-// 商品列表和帖子列表
-const goodsList = ref([])
+// 活动标签页
+const activeTab = ref('projects')
+
+// 项目列表和帖子列表
+const projectsList = ref([])
 const postsList = ref([])
 
 // 分页参数
-const goodsPage = ref(1)
+const projectsPage = ref(1)
 const postsPage = ref(1)
 const pageSize = 10
-const goodsLoadingMore = ref(false)
+const projectsLoadingMore = ref(false)
 const postsLoadingMore = ref(false)
-const goodsHasMore = ref(true)
+const projectsHasMore = ref(true)
 const postsHasMore = ref(true)
 const refreshing = ref(false)
 
@@ -195,9 +204,9 @@ const getUserInfo = () => {
 		if (res.code === 200) {
 			userInfo.value = res.data
 			console.log('获取到用户信息:', userInfo.value)
-			// 获取到用户信息后加载商品和帖子
-			if (activeTab.value === 'goods') {
-				getUserGoods()
+			// 获取到用户信息后加载项目和帖子
+			if (activeTab.value === 'projects') {
+				getUserProjects()
 			} else {
 				getUserPosts()
 			}
@@ -216,50 +225,50 @@ const getUserInfo = () => {
 	})
 }
 
-// 获取用户发布的商品
-const getUserGoods = () => {
-	if (!userInfo.value.id || !goodsHasMore.value) return
+// 获取用户发起的项目
+const getUserProjects = () => {
+	if (!userInfo.value.id || !projectsHasMore.value) return
 	
-	goodsLoadingMore.value = true
+	projectsLoadingMore.value = true
 	uni.showLoading({
 		title: '加载中...'
 	})
 	
-	request('/shop/getShopByUserId', {
+	request('/project/projectListByUserId', {
 		method: 'GET',
 		data: {
-			pageNum: goodsPage.value,
+			pageNum: projectsPage.value,
 			userId: userInfo.value.id
 		}
 	}).then(res => {
 		uni.hideLoading()
-		goodsLoadingMore.value = false
+		projectsLoadingMore.value = false
 		
 		if (res.code === 200) {
-			const records = res.data || []
+			const records = res.data.records || []
 			
-			if (goodsPage.value === 1) {
-				goodsList.value = records
+			if (projectsPage.value === 1) {
+				projectsList.value = records
 			} else {
-				goodsList.value = [...goodsList.value, ...records]
+				projectsList.value = [...projectsList.value, ...records]
 			}
 			
 			// 判断是否还有更多数据
 			if (records.length < pageSize) {
-				goodsHasMore.value = false
+				projectsHasMore.value = false
 			}
 			
-			console.log('获取商品成功:', goodsList.value)
+			console.log('获取项目成功:', projectsList.value)
 		} else {
 			uni.showToast({
-				title: res.msg || '获取商品失败',
+				title: res.msg || '获取项目失败',
 				icon: 'none'
 			})
 		}
 	}).catch((err) => {
-		console.error('获取商品失败:', err)
+		console.error('获取项目失败:', err)
 		uni.hideLoading()
-		goodsLoadingMore.value = false
+		projectsLoadingMore.value = false
 	})
 }
 
@@ -309,11 +318,11 @@ const getUserPosts = () => {
 	})
 }
 
-// 加载更多商品
-const loadMoreGoods = () => {
-	if (goodsLoadingMore.value || !goodsHasMore.value) return
-	goodsPage.value++
-	getUserGoods()
+// 加载更多项目
+const loadMoreProjects = () => {
+	if (projectsLoadingMore.value || !projectsHasMore.value) return
+	projectsPage.value++
+	getUserProjects()
 }
 
 // 加载更多帖子
@@ -323,26 +332,39 @@ const loadMorePosts = () => {
 	getUserPosts()
 }
 
-// 跳转到商品详情
-const goToGoodsDetail = (id) => {
+// 跳转到项目详情
+const goToProjectDetail = (id) => {
 	uni.navigateTo({
-		url: `/pages/shop/detail?id=${id}`
+		url: `/pages/project/detail?id=${id}`
 	})
 }
 
-// 跳转到商城首页
-const goToShop = () => {
+// 跳转到聊天页面
+const goToChat = () => {
+	if (!props.userId) {
+		uni.showToast({ title: '用户ID为空', icon: 'none' })
+		return
+	}
+	
+	uni.navigateTo({
+		url: `/pages/message/chat?userId=${props.userId}`
+	})
+}
+
+// 跳转到项目列表
+const goToProjectList = () => {
 	uni.switchTab({
-		url: '/pages/shop/index'
+		url: '/pages/project/projectList'
 	})
 }
 
-// 跳转到发布商品页面
-const goToPublish = () => {
+// 跳转到发起项目页面
+const goToCreateProject = () => {
 	uni.navigateTo({
-		url: '/pages/shop/publish'
+		url: '/pages/project/createProject'
 	})
 }
+
 
 // 跳转到帖子详情
 const goToPostDetail = (id) => {
@@ -408,9 +430,9 @@ const onRefresh = () => {
 	refreshing.value = true
 	
 	// 重置分页参数
-	goodsPage.value = 1
+	projectsPage.value = 1
 	postsPage.value = 1
-	goodsHasMore.value = true
+	projectsHasMore.value = true
 	postsHasMore.value = true
 	
 	// 重新获取数据
@@ -423,8 +445,8 @@ const onRefresh = () => {
 
 // 触底加载更多
 const onReachBottom = () => {
-	if (activeTab.value === 'goods') {
-		loadMoreGoods()
+	if (activeTab.value === 'projects') {
+		loadMoreProjects()
 	} else {
 		loadMorePosts()
 	}
@@ -433,11 +455,11 @@ const onReachBottom = () => {
 // 监听标签页切换
 watch(activeTab, (newVal) => {
 	// 每次切换标签都重置一下数据，避免看到旧数据
-	if (newVal === 'goods') {
-		if (goodsList.value.length === 0) {
-			goodsPage.value = 1
-			goodsHasMore.value = true
-			getUserGoods()
+	if (newVal === 'projects') {
+		if (projectsList.value.length === 0) {
+			projectsPage.value = 1
+			projectsHasMore.value = true
+			getUserProjects()
 		}
 	} else if (newVal === 'posts') {
 		if (postsList.value.length === 0) {
@@ -584,6 +606,29 @@ onMounted(() => {
 	text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
+/* 聊天按钮 */
+.chat-btn {
+	width: 88rpx;
+	height: 88rpx;
+	background: linear-gradient(135deg, #00A872 0%, #00C896 100%);
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 4rpx 12rpx rgba(0, 168, 114, 0.3);
+	transition: all 0.3s ease;
+}
+
+.chat-btn:active {
+	transform: scale(0.95);
+	opacity: 0.8;
+}
+
+.chat-icon {
+	font-size: 40rpx;
+	line-height: 1;
+}
+
 /* 内容标签页 */
 .content-tabs {
 	display: flex;
@@ -671,12 +716,12 @@ onMounted(() => {
 	color: #fff;
 }
 
-/* 商品列表 */
-.goods-list {
+/* 项目列表 */
+.projects-list {
 	padding: 10rpx 0;
 }
 
-.goods-item {
+.project-item {
 	display: flex;
 	padding: 20rpx;
 	background-color: #fff;
@@ -685,7 +730,7 @@ onMounted(() => {
 	box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.04);
 }
 
-.goods-image {
+.project-image {
 	width: 160rpx;
 	height: 160rpx;
 	border-radius: 8rpx;
@@ -693,14 +738,14 @@ onMounted(() => {
 	object-fit: cover;
 }
 
-.goods-info {
+.project-info {
 	flex: 1;
 	display: flex;
 	flex-direction: column;
 	justify-content: space-between;
 }
 
-.goods-title {
+.project-title {
 	font-size: 30rpx;
 	font-weight: 500;
 	color: #333;
@@ -711,24 +756,32 @@ onMounted(() => {
 	overflow: hidden;
 }
 
-.goods-intro {
+.project-intro {
 	font-size: 26rpx;
 	color: #666;
-	margin-bottom: 6rpx;
+	margin-bottom: 8rpx;
 	display: -webkit-box;
 	-webkit-box-orient: vertical;
 	-webkit-line-clamp: 1;
 	overflow: hidden;
 }
 
-.goods-price {
-	font-size: 32rpx;
-	font-weight: bold;
-	color: #58d3ac;
-	margin-bottom: 6rpx;
+.project-tags {
+	display: flex;
+	gap: 8rpx;
+	margin-bottom: 8rpx;
+	flex-wrap: wrap;
 }
 
-.goods-status {
+.project-tags .tag {
+	font-size: 22rpx;
+	color: #999;
+	background-color: #f5f5f5;
+	padding: 4rpx 8rpx;
+	border-radius: 4rpx;
+}
+
+.project-status {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
@@ -740,17 +793,28 @@ onMounted(() => {
 	border-radius: 6rpx;
 }
 
-.status-tag.online {
-	background-color: rgba(88, 211, 172, 0.1);
-	color: #58d3ac;
+.status-PENDING {
+	background-color: #fff3e0;
+	color: #f57c00;
 }
 
-.status-tag.offline {
-	background-color: rgba(0, 0, 0, 0.05);
-	color: #999;
+.status-APPROVED,
+.status-ACTIVE {
+	background-color: rgba(0, 168, 114, 0.1);
+	color: #00A872;
 }
 
-.goods-date {
+.status-REJECTED {
+	background-color: #ffebee;
+	color: #f44336;
+}
+
+.status-COMPLETED {
+	background-color: #e3f2fd;
+	color: #2196f3;
+}
+
+.project-date {
 	font-size: 24rpx;
 	color: #999;
 }

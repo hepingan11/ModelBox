@@ -30,3 +30,5 @@ npm run build:h5
 
 输出文件目录：dist/build/h5
 
+主题色：#00A872
+配色  ：#FEFEFC

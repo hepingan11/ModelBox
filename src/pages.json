@@ -13,12 +13,6 @@
 			}
 		},
 		{
-			"path": "pages/login/register",
-			"style": {
-				"navigationBarTitleText": "注册"
-			}
-		},
-		{
 			"path": "pages/user/user",
 			"style": {
 				"navigationBarTitleText": "我的"
@@ -66,62 +60,7 @@
 				"navigationBarTitleText" : "详情"
 			}
 		},
-		{
-			"path" : "pages/shop/index",
-			"style" : 
-			{
-				"navigationBarTitleText" : "二手交易"
-			}
-		},
-		{
-			"path" : "pages/shop/publish",
-			"style" : 
-			{
-				"navigationBarTitleText" : "发布商品"
-			}
-		},
-		{
-			"path" : "pages/shop/order",
-			"style" : 
-			{
-				"navigationBarTitleText" : "订单"
-			}
-		},
-		{
-			"path" : "pages/login/admin-login",
-			"style" : 
-			{
-				"navigationBarTitleText" : "管理员登录"
-			}
-		},
-		{
-			"path" : "pages/shop/detail",
-			"style" : 
-			{
-				"navigationBarTitleText" : "商品详情"
-			}
-		},
-		{
-			"path" : "pages/chat/chat",
-			"style" : 
-			{
-				"navigationBarTitleText" : "聊天"
-			}
-		},
-		{
-			"path" : "pages/shop/myshop",
-			"style" : 
-			{
-				"navigationBarTitleText" : "我的店铺"
-			}
-		},
-		{
-			"path" : "pages/shop/favorite",
-			"style" : 
-			{
-				"navigationBarTitleText" : "收藏商品"
-			}
-		},
+		
 		{
 			"path": "pages/user/about",
 			"style" : 
@@ -134,13 +73,6 @@
 			"style" : 
 			{
 				"navigationBarTitleText" : "管理员界面"
-			}
-		},
-		{
-			"path": "pages/shop/message",
-			"style" : 
-			{
-				"navigationBarTitleText" : "消息列表"
 			}
 		},
 		{
@@ -174,12 +106,6 @@
 			}
 		},
 		{
-			"path": "pages/admin/shopList",
-			"style": {
-				"navigationBarTitleText": "商品列表"
-			}
-		},
-		{
 			"path": "pages/admin/forumList",
 			"style": {
 				"navigationBarTitleText": "帖子列表"
@@ -208,12 +134,6 @@
 			"path": "pages/index/report",
 			"style": {
 				"navigationBarTitleText": "举报"
-			}
-		},
-		{
-			"path": "pages/index/welfare-group",
-			"style": {
-				"navigationBarTitleText": "福利群"
 			}
 		},
 		{
@@ -253,32 +173,6 @@
 			}
 		},
 		{
-			"path": "pages/delivery/delivery-orders",
-			"style": {
-				"navigationBarTitleText": "跑腿抢单",
-				"enablePullDownRefresh": true
-			}
-		},
-		{
-			"path": "pages/delivery/delivery-create",
-			"style": {
-				"navigationBarTitleText": "发布跑腿",
-				"navigationStyle": "custom"
-			}
-		},
-		{
-			"path": "pages/delivery/delivery-detail",
-			"style": {
-				"navigationBarTitleText": "跑腿详情"
-			}
-		},
-		{
-			"path": "pages/activity/FreeMealActivity",
-			"style": {
-				"navigationBarTitleText": "免单活动"
-			}
-		},
-		{
 			"path": "pages/user/myCoupon",
 			"style": {
 				"navigationBarTitleText": "我的优惠券"
@@ -307,6 +201,48 @@
 			"style": {
 				"navigationBarTitleText": "用户列表"
 			}
+		},
+		{
+			"path": "pages/admin/project/projectList",
+			"style": {
+				"navigationBarTitleText": "项目列表"
+			}
+		},
+		{
+			"path": "pages/project/projectList",
+			"style": {
+				"navigationBarTitleText": "项目列表"
+			}
+		},
+		{
+			"path": "pages/project/createProject",
+			"style": {
+				"navigationBarTitleText": "发起项目"
+			}
+		},
+		{
+			"path": "pages/project/detail",
+			"style": {
+				"navigationBarTitleText": "项目详情"
+			}
+		},
+		{
+			"path": "pages/project/myProject",
+			"style": {
+				"navigationBarTitleText": "我的项目"
+			}
+		},
+		{
+			"path": "pages/message/conversationList",
+			"style": {
+				"navigationBarTitleText": "消息列表"
+			}
+		},
+		{
+			"path": "pages/message/chat",
+			"style": {
+				"navigationBarTitleText": "聊天"
+			}
 		}
 	],
 	"tabBar": {
@@ -322,10 +258,10 @@
 				"selectedIconPath": "static/home-selected.png"
 			},
 			{
-				"pagePath": "pages/shop/index",
-				"text": "二手交易",
-				"iconPath": "static/shop.png",
-				"selectedIconPath": "static/shop-selected.png"
+				"pagePath": "pages/project/projectList",
+				"text": "项目列表",
+				"iconPath": "static/project-selected.png",
+				"selectedIconPath": "static/icon/project.png"
 			},
 			{
 				"pagePath": "pages/forum/forum",

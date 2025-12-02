@@ -73,15 +73,6 @@
 				
 				<!-- 添加密码修改部分 -->
 				<view class="form-item">
-					<text class="label">原密码</text>
-					<input type="password" 
-						v-model="passwordForm.oldPassword" 
-						placeholder="请输入原密码"
-						class="input"
-					/>
-				</view>
-				
-				<view class="form-item">
 					<text class="label">新密码</text>
 					<input type="password" 
 						v-model="passwordForm.newPassword" 
@@ -137,7 +128,6 @@ const defaultBackgroundImage = ''
 
 // 密码表单
 const passwordForm = ref({
-	oldPassword: '',
 	newPassword: '',
 	confirmPassword: ''
 })
@@ -236,6 +226,7 @@ const onGetPhoneNumber = async (e) => {
 					title: '获取成功',
 					icon: 'success'
 				})
+				await getUserInfo()
 			} else {
 				uni.showToast({
 					title: res.msg || '获取失败',
@@ -407,26 +398,18 @@ const saveChanges = async () => {
 		})
 		return
 	}
-	
-	if (!userInfo.value.phone || !/^1[3-9]\d{9}$/.test(userInfo.value.phone)) {
-		uni.showToast({
-			title: '请输入正确的手机号码',
-			icon: 'none'
-		})
-		return
-	}
+
 	
 	// 密码验证
-	if (passwordForm.value.oldPassword || passwordForm.value.newPassword || passwordForm.value.confirmPassword) {
-		// 如果有任何一个密码字段被填写，则所有密码字段都必须填写
-		if (!passwordForm.value.oldPassword || !passwordForm.value.newPassword || !passwordForm.value.confirmPassword) {
+	if (passwordForm.value.newPassword || passwordForm.value.confirmPassword) {
+		// 如果填写了密码，则新密码和确认密码都必须填写
+		if (!passwordForm.value.newPassword || !passwordForm.value.confirmPassword) {
 			uni.showToast({
-				title: '请完整填写密码信息',
+				title: '请完整填写新密码和确认密码',
 				icon: 'none'
 			})
 			return
 		}
-		
 		
 		// 验证两次密码是否一致
 		if (passwordForm.value.newPassword !== passwordForm.value.confirmPassword) {
@@ -451,16 +434,8 @@ const saveChanges = async () => {
 		}
 		
 		// 如果有修改密码，添加密码相关数据
-		if (passwordForm.value.oldPassword) {
-			if(passwordForm.value.oldPassword !== userInfo.value.password){
-				uni.showToast({
-					title: '原密码错误',
-					icon: 'none'
-				})
-				return
-			}else{
-				updateData.password = passwordForm.value.newPassword
-			}
+		if (passwordForm.value.newPassword) {
+			updateData.password = passwordForm.value.newPassword
 		}
 		
 		// 调用接口更新用户信息

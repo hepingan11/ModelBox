@@ -71,10 +71,6 @@
 				<text class="wechat-text">微信快捷登录</text>
 			</button>
 			
-			<view class="options-box">
-				<navigator url="/pages/login/register" class="register-link">注册新账号</navigator>
-				<text class="forget-pwd">忘记密码？</text>
-			</view>
 		</view>
 		
 		<!-- 社区合约弹窗 -->
@@ -146,18 +142,6 @@ const addDebugLog = (message) => {
 	const timestamp = new Date().toLocaleTimeString()
 	debugLogs.value.push(`[${timestamp}] ${message}`)
 	console.log(`[DEBUG] ${message}`)
-}
-
-// 清除调试日志
-const clearDebugLogs = () => {
-	debugLogs.value = []
-}
-
-// 跳转到管理员登录页面
-const goToAdminLogin = () => {
-	uni.navigateTo({
-		url: '/pages/login/admin-login'
-	})
 }
 
 // 切换协议同意状态
@@ -239,6 +223,7 @@ const handleLogin = () => {
 				// 存储token
 				console.log(res.data)
 				uni.setStorageSync('sa-token', res.data.data.tokenValue)
+				uni.setStorageSync('userId', res.data.data.loginId)
 				uni.showToast({
 					title: '登录成功',
 					icon: 'success'
@@ -291,6 +276,7 @@ const handleWxLoginDirectly= () => {
 					console.log(res)
 					if(res.data.code === 200){
 						uni.setStorageSync('sa-token', res.data.data.tokenValue)
+						uni.setStorageSync('userId', res.data.data.loginId)
 						uni.showToast({
 							title: '登录成功',
 							icon: 'success'
