@@ -26,7 +26,7 @@ export function PutSdModel(data) {
  */
 export function DeleteSdModel(data) {
     return request({
-        url: '/admin/sd/delete/'+data,
+        url: '/admin/sd/delete/' + data,
         method: 'POST'
     })
 }
@@ -467,7 +467,7 @@ export function getUserDraw(page) {
 
 export function DeleteImgByurl(data) {
     return request({
-        url: '/draw/deleteDraw/'+data,
+        url: '/draw/deleteDraw/' + data,
         method: 'POST',
     })
 }
@@ -482,7 +482,7 @@ export function toggleDrawPublic(drawId) {
 
 export function updateUserName(data) {
     return request({
-        url: '/user/upload/username?userName=' +data,
+        url: '/user/upload/username?userName=' + data,
         method: 'POST'
     })
 }
@@ -506,7 +506,7 @@ export function getLinkList(data) {
     return request({
         url: '/link/getList?linkName=' + data,
         method: 'GET',
-        
+
     })
 }
 
@@ -528,86 +528,86 @@ export function ApplyLink(data) {
     })
 }
 
-export function allowUserLink(data){
+export function allowUserLink(data) {
     return request({
         url: '/link/allowLink/' + data,
         method: 'POST',
     })
 }
 
-export function deleteLinkById(data){
+export function deleteLinkById(data) {
     return request({
         url: '/link/deleteLink/' + data,
         method: 'POST',
     })
 }
 
-export function refuseLinkById(data){
+export function refuseLinkById(data) {
     return request({
         url: '/link/refuseLink/' + data,
         method: 'POST',
     })
 }
 
-export function setLinkHotById(data){
+export function setLinkHotById(data) {
     return request({
         url: '/link/setLinkHot/' + data,
         method: 'POST',
     })
 }
 
-export function deleteLinkHotById(data){
+export function deleteLinkHotById(data) {
     return request({
         url: '/link/deleteLinkHot/' + data,
         method: 'POST',
     })
 }
 
-export function selectStatLink(){
+export function selectStatLink() {
     return request({
         url: '/link/selectStatLink',
         method: 'GET',
     })
 }
 
-export function addLinkStatById(data){
+export function addLinkStatById(data) {
     return request({
         url: '/link/addStatLink/' + data,
         method: 'POST',
     })
 }
 
-export function getPriceData(){
+export function getPriceData() {
     return request({
         url: '/data/getPrice',
         method: 'GET'
     })
 }
 
-export function getNumData(){
+export function getNumData() {
     return request({
         url: '/data/numSort',
         method: 'GET'
     })
 }
 
-export function cancelLinkStatById(data){
+export function cancelLinkStatById(data) {
     return request({
-        url: '/link/cancelStatLink/'+ data,
+        url: '/link/cancelStatLink/' + data,
         method: 'POST'
     })
 }
 
-export function getAllNum(){
+export function getAllNum() {
     return request({
         url: '/pass/getAllNum',
         method: 'GET'
     })
 }
 
-export function passLogin(account,password){
+export function passLogin(account, password) {
     return request({
-        url: '/pass/login/student?account='+ account +"&password="+ password,
+        url: '/pass/login/student?account=' + account + "&password=" + password,
         method: 'POST'
     })
 }
@@ -619,7 +619,7 @@ export function getShopInfo() {
     })
 }
 
-export function UploadFile(data){
+export function UploadFile(data) {
     return request({
         url: '/photo/upload',
         method: 'POST',
@@ -627,49 +627,49 @@ export function UploadFile(data){
     })
 }
 
-export function GetUserImgList(){
+export function GetUserImgList() {
     return request({
         url: '/photo/getUserList',
         method: 'GET'
     })
 }
 
-export function DeleteImgById(data){
+export function DeleteImgById(data) {
     return request({
         url: '/photo/delete/' + data,
         method: 'POST'
     })
 }
 
-export function TogglePhotoPublic(photoId){
+export function TogglePhotoPublic(photoId) {
     return request({
         url: '/photo/setPhotoPublic/' + photoId,
         method: 'POST'
     })
 }
 
-export function GetAllImgList(){
+export function GetAllImgList() {
     return request({
         url: '/photo/getAllImgList',
         method: 'GET'
     })
 }
 
-export function GetWorkList(){
+export function GetWorkList() {
     return request({
         url: '/funny/work/get',
         method: 'GET'
     })
 }
 
-export function AddWork(name,url,sort){
+export function AddWork(name, url, sort) {
     return request({
-        url: '/funny/work/add?name='+ name +'&sort='+sort +'&url='+ url,
+        url: '/funny/work/add?name=' + name + '&sort=' + sort + '&url=' + url,
         method: 'POST'
     })
 }
 
-export function UpdateWork(data){
+export function UpdateWork(data) {
     return request({
         url: '/funny/work/update',
         method: 'POST',
@@ -677,49 +677,49 @@ export function UpdateWork(data){
     })
 }
 
-export function DeleteWork(id){
+export function DeleteWork(id) {
     return request({
-        url: '/funny/work/delete/'+id,
+        url: '/funny/work/delete/' + id,
         method: 'POST',
     })
 }
 
-export function GetDigitalData(no,size){
+export function GetDigitalData(no, size) {
     return request({
-        url: '/data/getDialogueData/page?no='+no+'&size='+size,
+        url: '/data/getDialogueData/page?no=' + no + '&size=' + size,
         method: 'GET'
     })
 }
 
-export function GetContentCloud(){
+export function GetContentCloud() {
     return request({
         url: '/data/getContentCloud',
         method: 'GET'
     })
 }
 
-export function GetMessageCloud(){
+export function GetMessageCloud() {
     return request({
         url: '/data/getMessageCloud',
         method: 'GET'
     })
 }
 
-export function GetTimeFrequency(type){
+export function GetTimeFrequency(type) {
     return request({
-        url: '/data/getTimeFrequency/'+type,
+        url: '/data/getTimeFrequency/' + type,
         method: 'GET'
     })
 }
 
-export function GetModelFrequency(){
+export function GetModelFrequency() {
     return request({
         url: '/data/getModelFrequency',
         method: 'GET'
     })
 }
 
-export function SubmitEmail(data){
+export function SubmitEmail(data) {
     return request({
         url: '/admin/submitEmail',
         method: 'POST',
@@ -727,14 +727,14 @@ export function SubmitEmail(data){
     })
 }
 
-export function GetCodeList(data,language){
+export function GetCodeList(data, language) {
     return request({
-        url: '/code/codeList?name='+data+"&language="+language,
+        url: '/code/codeList?name=' + data + "&language=" + language,
         method: 'GET',
     })
 }
 
-export function AddCode(data){
+export function AddCode(data) {
     return request({
         url: '/code/code/add',
         method: 'POST',
@@ -742,9 +742,9 @@ export function AddCode(data){
     })
 }
 
-export function AddLook(data){
+export function AddLook(data) {
     return request({
-        url: '/code/addLook?codeId='+data,
+        url: '/code/addLook?codeId=' + data,
         method: 'GET',
     })
 }
@@ -822,11 +822,11 @@ export function ZhipuImageChat(data) {
 
 // 更新已发布的代码项目
 export function updateMyPublishCode(codeData) {
-  return request({
-    url: "/code/myPublish/update",
-    method: "post",
-    data: codeData,
-  });
+    return request({
+        url: "/code/myPublish/update",
+        method: "post",
+        data: codeData,
+    });
 }
 
 /**
@@ -835,14 +835,14 @@ export function updateMyPublishCode(codeData) {
  * @returns {*} 返回添加结果
  */
 export function addCodeImage(data) {
-  return request({
-    url: "/code/myPublish/update/image",
-    method: "post",
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    },
-    data
-  });
+    return request({
+        url: "/code/myPublish/update/image",
+        method: "post",
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        },
+        data
+    });
 }
 
 /**
@@ -851,11 +851,11 @@ export function addCodeImage(data) {
  * @returns {*} 返回删除结果
  */
 export function deleteCodeImage(imageUrl) {
-  return request({
-    url: "/code/myPublish/update/image/delete",
-    method: "post",
-    params: { imageUrl }
-  });
+    return request({
+        url: "/code/myPublish/update/image/delete",
+        method: "post",
+        params: { imageUrl }
+    });
 }
 
 /**
@@ -864,20 +864,20 @@ export function deleteCodeImage(imageUrl) {
  * @returns {*} 返回智谱AI的绘画结果
  */
 export function addZhipuDrawingTask(data) {
-  const config = {
-    url: "/draw/zhipu/image",
-    method: "post",
-    data
-  };
-  
-  // 如果是FormData，设置正确的Content-Type
-  if (data instanceof FormData) {
-    config.headers = {
-      'Content-Type': 'multipart/form-data'
+    const config = {
+        url: "/draw/zhipu/image",
+        method: "post",
+        data
     };
-  }
-  
-  return request(config);
+
+    // 如果是FormData，设置正确的Content-Type
+    if (data instanceof FormData) {
+        config.headers = {
+            'Content-Type': 'multipart/form-data'
+        };
+    }
+
+    return request(config);
 }
 
 /**
@@ -885,10 +885,10 @@ export function addZhipuDrawingTask(data) {
  * @returns {*} 返回所有源码列表
  */
 export function getAdminCodeList() {
-  return request({
-    url: "/admin/code/list",
-    method: "GET"
-  });
+    return request({
+        url: "/admin/code/list",
+        method: "GET"
+    });
 }
 
 /**
@@ -896,10 +896,10 @@ export function getAdminCodeList() {
  * @returns {*} 返回交易列表
  */
 export function getCodeExchangeList() {
-  return request({
-    url: "/admin/code/exchange",
-    method: "GET"
-  });
+    return request({
+        url: "/admin/code/exchange",
+        method: "GET"
+    });
 }
 
 /**
@@ -908,10 +908,10 @@ export function getCodeExchangeList() {
  * @returns {*} 返回操作结果
  */
 export function rejectCode(data) {
-  return request({
-    url: "/admin/code/reject/"+data,
-    method: "POST",
-  });
+    return request({
+        url: "/admin/code/reject/" + data,
+        method: "POST",
+    });
 }
 
 /**
@@ -920,13 +920,13 @@ export function rejectCode(data) {
  * @returns {*} 返回操作结果
  */
 export function passCode(data) {
-  return request({
-    url: "/admin/code/pass/"+data,
-    method: "POST",
-  });
+    return request({
+        url: "/admin/code/pass/" + data,
+        method: "POST",
+    });
 }
 
-export function getBilibiliData(){
+export function getBilibiliData() {
     return request({
         url: '/public/bilibili/fan',
         method: 'GET'
@@ -934,7 +934,7 @@ export function getBilibiliData(){
 }
 
 
-export function aiChat(data){
+export function aiChat(data) {
     return request({
         url: '/chat/chat',
         method: 'POST',
@@ -942,19 +942,19 @@ export function aiChat(data){
     })
 }
 
-export function getChatHistory(chatId) {
-  return request({
-    url: '/chat/history/'+chatId,
-    method: 'GET',
-  });
+export function getChatHistory(chatId, pageNum) {
+    return request({
+        url: '/chat/history?chatId=' + chatId + '&pageNum=' + pageNum,
+        method: 'GET',
+    });
 }
 
 export function addConversation(messageDto) {
-  return request({
-    url: '/chat/conversation/add',
-    method: 'POST',
-    data: messageDto
-  });
+    return request({
+        url: '/chat/conversation/add',
+        method: 'POST',
+        data: messageDto
+    });
 }
 
 export function getConversationList() {
@@ -964,7 +964,7 @@ export function getConversationList() {
     })
 }
 
-export function updateConversation(data){
+export function updateConversation(data) {
     return request({
         url: '/chat/conversation/update',
         method: 'POST',
@@ -972,7 +972,7 @@ export function updateConversation(data){
     })
 }
 
-export function deleteConversation(data){
+export function deleteConversation(data) {
     return request({
         url: '/chat/delete',
         method: 'POST',
@@ -986,10 +986,10 @@ export function deleteConversation(data){
  * 获取RAG知识库文件列表
  */
 export function getRagKnowledgeList() {
-  return request({
-    url: '/chat/rag/list',
-    method: 'GET'
-  });
+    return request({
+        url: '/chat/rag/list',
+        method: 'GET'
+    });
 }
 
 /**
@@ -997,14 +997,14 @@ export function getRagKnowledgeList() {
  * @param {FormData} formData 包含文件的表单数据
  */
 export function uploadRagKnowledge(formData) {
-  return request({
-    url: '/chat/rag/upload',
-    method: 'POST',
-    data: formData,
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    }
-  });
+    return request({
+        url: '/chat/rag/upload',
+        method: 'POST',
+        data: formData,
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    });
 }
 
 /**
@@ -1012,10 +1012,10 @@ export function uploadRagKnowledge(formData) {
  * @param {string|number} ragId RAG文件ID
  */
 export function deleteRagKnowledge(ragId) {
-  return request({
-    url: '/chat/rag/delete/' + ragId,
-    method: 'GET'
-  });
+    return request({
+        url: '/chat/rag/delete/' + ragId,
+        method: 'GET'
+    });
 }
 
 /**
@@ -1023,10 +1023,10 @@ export function deleteRagKnowledge(ragId) {
  * @param {string|number} ragId RAG文件ID
  */
 export function toggleRagKnowledgeStatus(ragId) {
-  return request({
-    url: '/chat/rag/toggle/' + ragId,
-    method: 'POST'
-  });
+    return request({
+        url: '/chat/rag/toggle/' + ragId,
+        method: 'POST'
+    });
 }
 
 /**
@@ -1034,10 +1034,10 @@ export function toggleRagKnowledgeStatus(ragId) {
  * @param {string} fileId 文件ID
  */
 export function getRagKnowledgeDetail(fileId) {
-  return request({
-    url: '/chat/rag/detail/' + fileId,
-    method: 'GET'
-  });
+    return request({
+        url: '/chat/rag/detail/' + fileId,
+        method: 'GET'
+    });
 }
 
 /**
@@ -1045,10 +1045,10 @@ export function getRagKnowledgeDetail(fileId) {
  * @param {string} fileId 文件ID
  */
 export function reprocessRagKnowledge(fileId) {
-  return request({
-    url: '/chat/rag/knowledge/reprocess/' + fileId,
-    method: 'POST'
-  });
+    return request({
+        url: '/chat/rag/knowledge/reprocess/' + fileId,
+        method: 'POST'
+    });
 }
 
 // ========================= MCP服务管理相关API =========================
@@ -1057,10 +1057,10 @@ export function reprocessRagKnowledge(fileId) {
  * 获取MCP服务列表
  */
 export function getMcpServiceList() {
-  return request({
-    url: '/chat/mcp/list',
-    method: 'GET'
-  });
+    return request({
+        url: '/chat/mcp/list',
+        method: 'GET'
+    });
 }
 
 /**
@@ -1068,11 +1068,11 @@ export function getMcpServiceList() {
  * @param {Object} serviceData 服务数据 {name, url, description}
  */
 export function addMcpService(serviceData) {
-  return request({
-    url: '/mcp/service/add',
-    method: 'POST',
-    data: serviceData
-  });
+    return request({
+        url: '/mcp/service/add',
+        method: 'POST',
+        data: serviceData
+    });
 }
 
 /**
@@ -1081,11 +1081,11 @@ export function addMcpService(serviceData) {
  * @param {Object} serviceData 服务数据
  */
 export function updateMcpService(serviceId, serviceData) {
-  return request({
-    url: '/mcp/service/update/' + serviceId,
-    method: 'PUT',
-    data: serviceData
-  });
+    return request({
+        url: '/mcp/service/update/' + serviceId,
+        method: 'PUT',
+        data: serviceData
+    });
 }
 
 /**
@@ -1093,10 +1093,10 @@ export function updateMcpService(serviceId, serviceData) {
  * @param {string} serviceId 服务ID
  */
 export function deleteMcpService(serviceId) {
-  return request({
-    url: '/mcp/service/delete/' + serviceId,
-    method: 'DELETE'
-  });
+    return request({
+        url: '/mcp/service/delete/' + serviceId,
+        method: 'DELETE'
+    });
 }
 
 /**
@@ -1104,10 +1104,10 @@ export function deleteMcpService(serviceId) {
  * @param {string} serviceId 服务ID
  */
 export function connectMcpService(serviceId) {
-  return request({
-    url: '/mcp/service/connect/' + serviceId,
-    method: 'POST'
-  });
+    return request({
+        url: '/mcp/service/connect/' + serviceId,
+        method: 'POST'
+    });
 }
 
 /**
@@ -1115,10 +1115,10 @@ export function connectMcpService(serviceId) {
  * @param {string} serviceId 服务ID
  */
 export function disconnectMcpService(serviceId) {
-  return request({
-    url: '/mcp/service/disconnect/' + serviceId,
-    method: 'POST'
-  });
+    return request({
+        url: '/mcp/service/disconnect/' + serviceId,
+        method: 'POST'
+    });
 }
 
 /**
@@ -1126,10 +1126,10 @@ export function disconnectMcpService(serviceId) {
  * @param {string} serviceId 服务ID
  */
 export function getMcpServiceStatus(serviceId) {
-  return request({
-    url: '/mcp/service/status/' + serviceId,
-    method: 'GET'
-  });
+    return request({
+        url: '/mcp/service/status/' + serviceId,
+        method: 'GET'
+    });
 }
 
 /**
@@ -1137,10 +1137,10 @@ export function getMcpServiceStatus(serviceId) {
  * @param {string} serviceId 服务ID
  */
 export function getMcpServiceTools(serviceId) {
-  return request({
-    url: '/mcp/service/tools/' + serviceId,
-    method: 'GET'
-  });
+    return request({
+        url: '/mcp/service/tools/' + serviceId,
+        method: 'GET'
+    });
 }
 
 /**
@@ -1148,11 +1148,11 @@ export function getMcpServiceTools(serviceId) {
  * @param {Object} serviceData 服务数据 {name, url}
  */
 export function testMcpServiceConnection(serviceData) {
-  return request({
-    url: '/mcp/service/test',
-    method: 'POST',
-    data: serviceData
-  });
+    return request({
+        url: '/mcp/service/test',
+        method: 'POST',
+        data: serviceData
+    });
 }
 
 /**
@@ -1161,10 +1161,10 @@ export function testMcpServiceConnection(serviceData) {
  * @returns {*} 返回公共图片列表
  */
 export function getPublicDrawingList(page) {
-  return request({
-    url: '/draw/list/public?page=' + page,
-    method: 'GET'
-  });
+    return request({
+        url: '/draw/list/public?page=' + page,
+        method: 'GET'
+    });
 }
 
 /**
@@ -1173,10 +1173,10 @@ export function getPublicDrawingList(page) {
  * @returns {*} 返回视频列表
  */
 export function getPrivatetVideoList(page) {
-  return request({
-    url: '/video/list/private?page=' + page,
-    method: 'GET'
-  });
+    return request({
+        url: '/video/list/private?page=' + page,
+        method: 'GET'
+    });
 }
 
 /**
@@ -1185,10 +1185,10 @@ export function getPrivatetVideoList(page) {
  * @returns {*} 删除结果
  */
 export function deleteVideo(videoId) {
-  return request({
-    url: '/video/delete/' + videoId,
-    method: 'DELETE'
-  });
+    return request({
+        url: '/video/delete/' + videoId,
+        method: 'DELETE'
+    });
 }
 
 /**
@@ -1197,10 +1197,10 @@ export function deleteVideo(videoId) {
  * @returns {*} 重新生成结果
  */
 export function retryVideoGenerate(videoId) {
-  return request({
-    url: '/video/retry/' + videoId,
-    method: 'POST'
-  });
+    return request({
+        url: '/video/retry/' + videoId,
+        method: 'POST'
+    });
 }
 
 /**
@@ -1210,20 +1210,20 @@ export function retryVideoGenerate(videoId) {
  * @returns {*} 返回任务ID
  */
 export function createVideoTask(prompt, file) {
-  const formData = new FormData();
-  formData.append('prompt', prompt);
-  if (file) {
-    formData.append('file', file);
-  }
-  
-  return request({
-    url: '/video/createTask',
-    method: 'POST',
-    data: formData,
-    headers: {
-      'Content-Type': 'multipart/form-data'
+    const formData = new FormData();
+    formData.append('prompt', prompt);
+    if (file) {
+        formData.append('file', file);
     }
-  });
+
+    return request({
+        url: '/video/createTask',
+        method: 'POST',
+        data: formData,
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    });
 }
 
 /**
@@ -1232,11 +1232,11 @@ export function createVideoTask(prompt, file) {
  * @returns {*} 视频详细信息
  */
 export function getVideoDetail(videoId) {
-  return request({
-    url: '/video/detail',
-    method: 'GET',
-    params: { videoId }
-  });
+    return request({
+        url: '/video/detail',
+        method: 'GET',
+        params: { videoId }
+    });
 }
 
 /**
@@ -1245,10 +1245,10 @@ export function getVideoDetail(videoId) {
  * @returns {*} 返回公共视频列表
  */
 export function getPublicVideoList(page) {
-  return request({
-    url: '/video/list/public?page=' + page,
-    method: 'GET'
-  });
+    return request({
+        url: '/video/list/public?page=' + page,
+        method: 'GET'
+    });
 }
 
 /**
@@ -1257,8 +1257,8 @@ export function getPublicVideoList(page) {
  * @returns {*} 切换结果
  */
 export function toggleVideoPublic(videoId) {
-  return request({
-    url: '/video/toggle?videoId=' + videoId,
-    method: 'GET'
-  });
+    return request({
+        url: '/video/toggle?videoId=' + videoId,
+        method: 'GET'
+    });
 }

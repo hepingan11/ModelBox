@@ -167,7 +167,7 @@
         </el-icon>
       </div>
       
-      <div class="body" ref="scrollRef">
+      <div class="body" ref="scrollRef" @scroll="handleScroll">
         <!-- 欢迎页面 -->
         <div v-if="!conversationList.length" class="explain">
 
@@ -185,6 +185,10 @@
 
         <!-- 对话列表 -->
     <div v-else class="questions" style="margin: 20px 0">
+      <div v-if="historyLoading && currentPage > 1" class="history-loading" style="text-align: center; padding: 10px; color: #999; font-size: 12px;">
+        <el-icon class="is-loading" style="vertical-align: middle; margin-right: 5px;"><Loading /></el-icon>
+        <span>加载历史记录...</span>
+      </div>
       <div
           v-for="(item, index) in conversationList"
           :key="index"
@@ -833,6 +837,7 @@ import {
   ChatDotRound,
   Calendar,
   Operation,
+  Loading,
 } from '@element-plus/icons-vue';
 import { 
   FavoritesAdd, 
@@ -875,6 +880,9 @@ const isMobile = ref(false); // 是否为移动设备
 const resizeTimer = ref(null); // 防抖定时器
 const isRag = ref(false); // RAG知识库检索开关
 const isMcp = ref(false); // MCP协议开关
+const currentPage = ref(1);
+const historyHasMore = ref(true); // 是否还有更多历史记录
+const historyLoading = ref(false); // 历史记录加载中状态
 
 // RAG管理相关数据
 const ragManagementVisible = ref(false); // RAG管理弹窗显示状态
@@ -1682,162 +1690,372 @@ function calculateWidth(textLength) {
 }
 
     async function onSubmit() {
-  if (!storeInstance.getters.userinfo) {
+      if (!storeInstance.getters.userinfo) {
         loginVisible.value = true;
         return;
       }
 
-  if (input.value.trim() === "" && currentFiles.value.length === 0) return;
+      if (input.value.trim() === "" && currentFiles.value.length === 0) return;
 
       let index = conversationList.value.length;
       let content = input.value;
       inputRef.value.resetInputValue();
       
-  // 构建展示数据（仅文本 + 可选文件）
-  if (currentFiles.value.length > 0) {
-    const firstFile = currentFiles.value[0];
-    conversationList.value.push({
-      user: content || `上传了文件: ${firstFile.name}`,
-      hasImage: false,
-      hasFile: true,
-      files: [{ name: firstFile.name, size: firstFile.size }],
-      model: model.value, // 添加当前选择的模型
-      media: '' // 初始化媒体字段，实际媒体URL会在服务器响应后更新
-    });
+      // 保存当前文件列表的快照，因为异步过程中 currentFiles 可能会被清空或修改
+      const filesSnapshot = [...currentFiles.value];
+
+      // 构建展示数据（仅文本 + 可选文件）
+      if (filesSnapshot.length > 0) {
+        const firstFile = filesSnapshot[0];
+        conversationList.value.push({
+          user: content || `上传了文件: ${firstFile.name}`,
+          hasImage: false,
+          hasFile: true,
+          files: [{ name: firstFile.name, size: firstFile.size }],
+          model: model.value, // 添加当前选择的模型
+          media: '', // 初始化媒体字段，实际媒体URL会在服务器响应后更新
+          assistant: '' // 初始化 assistant 字段
+        });
       } else {
         conversationList.value.push({
           user: content,
-      hasImage: false,
-      hasFile: false,
-      model: model.value, // 添加当前选择的模型
-      media: '' // 初始化媒体字段
+          hasImage: false,
+          hasFile: false,
+          model: model.value, // 添加当前选择的模型
+          media: '', // 初始化媒体字段
+          assistant: '' // 初始化 assistant 字段
         });
       }
       
       aiLoading.value = true;
-  nextTick(() => {
-      scrollToTheBottom();
-  });
+      nextTick(() => {
+          scrollToTheBottom();
+      });
+  
+      try {
+        const chatId = getOrCreateChatId(); // 获取或创建chatId
+        const baseURL = process.env.VUE_APP_BASE_API
+        const token = localStorage.getItem('token');
+        
+        // 1. 调用 /chat/transit 接口判断意图
+        console.log('正在请求意图识别接口 /chat/transit, 内容:', content);
+        const transitResponse = await fetch(baseURL + '/chat/transit', {
+          method: 'POST',
+          headers: {
+            "Content-Type": "application/json",
+            "token": token
+          },
+          body: JSON.stringify({ message: content })
+        });
+        
+        if (!transitResponse.ok) {
+          throw new Error('意图识别请求失败');
+        }
+        
+        const res = await transitResponse.json();
+        console.log('意图识别接口原始返回:', res);
+        
+        // 根据截图结构，数据在 res.data 中：{ code: 200, msg: "ok", data: { type: "DRAW", content: "..." } }
+        // 兼容处理：有些接口可能直接返回数据，有些返回 { code, data } 结构
+        const transitData = res.data || res;
+        
+        const intentType = (transitData.type || 'TEXT').trim().toUpperCase();
+        console.log('识别到的意图类型:', intentType);
+        
+        if (intentType === 'DRAW') {
+          console.log('进入绘画流程');
+          // =============== 绘画流程 ===============
+          const lastMsgIndex = conversationList.value.length - 1;
+          
+          // 显示正在绘制的提示文本
+          conversationList.value[lastMsgIndex].assistant = transitData.content || '正在为您绘制图片...';
+          
+          // 2. 发送绘画请求 /draw/zhipu/image
+          const drawFormData = new FormData();
+          drawFormData.append('prompt', content);
+          if (filesSnapshot.length > 0) {
+            drawFormData.append('file', filesSnapshot[0]);
+          }
+          
+          const drawResponse = await fetch(baseURL + '/draw/zhipu/image', {
+            method: 'POST',
+            headers: {
+              "token": token
+            },
+            body: drawFormData
+          });
+          
+          if (!drawResponse.ok) {
+             throw new Error('绘图请求失败');
+          }
+          
+          // 返回数据直接是生成的图片URL
+          // const imageUrl = await drawResponse.text();
+          
+          // 根据截图，绘图接口返回的是 JSON: { code: 200, data: "https://...", msg: "ok" }
+          const drawRes = await drawResponse.json();
+          console.log('绘图接口返回:', drawRes);
+          
+          const imageUrl = drawRes.data || drawRes;
+          
+          if (!imageUrl || typeof imageUrl !== 'string' || !imageUrl.startsWith('http')) {
+             console.error('无效的图片URL:', imageUrl);
+             // 如果获取图片失败，也要继续或者报错
+             throw new Error('生成的图片URL无效');
+          }
+          
+          // 将图片显示在回答中 (使用Markdown图片语法)
+          conversationList.value[lastMsgIndex].assistant = `![生成的图片](${imageUrl})\n\n`;
+          
+          // 3. 发送回调请求 /chat/draw/callback 获取文字总结
+          const callbackResponse = await fetch(baseURL + '/chat/draw/callback', {
+            method: 'POST',
+            headers: {
+              "Content-Type": "application/json",
+              "token": token
+            },
+            body: JSON.stringify({
+              imageUrl: imageUrl, // 传入生成的图片URL
+              message: content,   // 传入原始消息? (虽然MessageDto通常包含message)
+              chatId: chatId,
+              model: model.value
+            })
+          });
+          
+          //流式输出总结
+          if (callbackResponse.body) {
+            const reader = callbackResponse.body.getReader();
+            const decoder = new TextDecoder();
+            
+            while (true) {
+              const {done, value} = await reader.read();
+              if (done) break;
+              
+              const chunk = decoder.decode(value, { stream: true });
+              // 追加到图片后面
+              conversationList.value[lastMsgIndex].assistant += chunk;
+              
+              nextTick(() => {
+                scrollToTheBottom();
+              });
+            }
+          }
+          
+          conversationList.value[lastMsgIndex].isError = false;
+          writeDialogue();
+          
+        } else {
+          // =============== 原有文本对话流程 (TEXT) ===============
+          
+          // 获取当前对话的role信息
+          const currentConversation = conversations.value.find(c => c.conversationId === currentConversationId.value);
+          const currentRole = currentConversation ? currentConversation.role : '';
+
+          // 准备请求数据
+          // 始终使用 FormData，支持单个文件
+          const formData = new FormData();
+          formData.append('message', content);
+          formData.append('chatId', chatId);
+          formData.append('model', model.value);
+          formData.append('isRag', isRag.value.toString()); // 转换为字符串
+          formData.append('isMcp', isMcp.value.toString()); // 转换为字符串
+          formData.append('role', currentRole || ''); // 添加角色信息
+          formData.append('mcpList', JSON.stringify(selectedMcpIds.value)); // 添加MCP服务ID列表
+          
+          // 只添加第一个文件（一次对话只能上传一个文件）
+          if (filesSnapshot.length > 0) {
+            formData.append('file', filesSnapshot[0]);
+          }
+          
+          const response = await fetch(baseURL + '/chat/chat', {
+            method: 'POST',
+            headers: {
+              "token": token
+            },
+            body: formData
+          });
+          
+          if (response.body) {
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let receivedText = '';
+            
+            while (true) {
+              const {done, value} = await reader.read();
+              if (done) break;
+              
+              const chunk = decoder.decode(value, { stream: true });
+              receivedText += chunk;
+              
+              conversationList.value[conversationList.value.length - 1].assistant = receivedText;
+              nextTick(() => {
+                scrollToTheBottom();
+              });
+            }
+            
+            conversationList.value[conversationList.value.length - 1].isError = false;
+            
+            writeDialogue();
+          }
+        }
+      } catch (error) {
+        console.error('Submit error:', error);
+        conversationList.value[conversationList.value.length - 1].assistant = '请求失败，请稍后重试: ' + (error.message || 'Error');
+        conversationList.value[conversationList.value.length - 1].isError = true;
+      } finally {
+        aiLoading.value = false;
+        nextTick(() => {
+            scrollToTheBottom();
+        });
+
+        // 清空已选择的文件
+        currentFiles.value = [];
+      }
+    }
+
+async function loadHistory(chatId, isLoadMore = false) {
+  if (historyLoading.value) return;
   
   try {
-      const chatId = getOrCreateChatId(); // 获取或创建chatId
-      const baseURL = process.env.VUE_APP_BASE_API
-
-      // 获取当前对话的role信息
-      const currentConversation = conversations.value.find(c => c.conversationId === currentConversationId.value);
-      const currentRole = currentConversation ? currentConversation.role : '';
-
-      // 准备请求数据
-      const requestData = {
-        message: content,
-        chatId: chatId,
-        model: model.value,
-        isRag: isRag.value,
-        isMcp: isMcp.value,
-        role: currentRole,
-        mcpList: selectedMcpIds.value // 添加选中的MCP服务ID列表
-      };
-
-      let response;
-      
-      // 始终使用 FormData，支持单个文件
-      const formData = new FormData();
-      formData.append('message', content);
-      formData.append('chatId', chatId);
-      formData.append('model', model.value);
-      formData.append('isRag', isRag.value.toString()); // 转换为字符串
-      formData.append('isMcp', isMcp.value.toString()); // 转换为字符串
-      formData.append('role', currentRole || ''); // 添加角色信息
-      formData.append('mcpList', JSON.stringify(selectedMcpIds.value)); // 添加MCP服务ID列表
-      
-      // 只添加第一个文件（一次对话只能上传一个文件）
-      if (currentFiles.value.length > 0) {
-        formData.append('file', currentFiles.value[0]);
-      }
-      // 如果没有文件，不添加空的file字段
-      
-      response = await fetch(baseURL + '/chat/chat', {
-        method: 'POST',
-        headers: {
-          "token": localStorage.getItem('token')
-        },
-        body: formData
-      });
-      
-      if (response.body) {
-        const reader = response.body.getReader();
-        let receivedText = '';
-        
-        while (true) {
-          const {done, value} = await reader.read();
-          if (done) break;
-          
-          const chunk = new TextDecoder().decode(value);
-          receivedText += chunk;
-          
-          conversationList.value[conversationList.value.length - 1].assistant = receivedText;
-          nextTick(() => {
-          scrollToTheBottom();
-          });
-        }
-        
-        conversationList.value[conversationList.value.length - 1].isError = false;
-        
-            writeDialogue();
-        // 只在必要时更新用户信息，避免触发对话列表刷新
-        // getUser();
-      }
-    } catch (error) {
-      conversationList.value[conversationList.value.length - 1].assistant = '请求失败，请稍后重试';
-      conversationList.value[conversationList.value.length - 1].isError = true;
-    } finally {
-            aiLoading.value = false;
-      nextTick(() => {
-            scrollToTheBottom();
-      });
-
-      // 清空已选择的文件
-      currentFiles.value = [];
-    }
-}
-
-async function loadHistory(chatId) {
-  try {
-    const result = await getChatHistory(chatId);
-    console.log('获取到的历史记录:', result);
+    historyLoading.value = true;
     
-    if (Array.isArray(result)) {
-      // 将交替的用户消息和AI回答转换为对话格式
-      const formattedConversations = [];
-      
-      for (let i = 0; i < result.length; i += 2) {
-        const userMessage = result[i];
-        const aiResponse = result[i + 1];
-        
-        if (userMessage && userMessage.type === 'USER') {
-          const conversationItem = {
-            user: userMessage.content || '',
-            assistant: aiResponse && aiResponse.type === 'ASSISTANT' ? aiResponse.content : '',
-            timestamp: userMessage.timestamp,
-            hasImage: false,
-            model: aiResponse && aiResponse.model ? aiResponse.model : null, // 添加模型信息
-            media: userMessage.media || '' // 添加媒体字段
-          };
+    if (!isLoadMore) {
+      currentPage.value = 1;
+      historyHasMore.value = true;
+      conversationList.value = []; // 初始加载清空列表
+    }
+
+    // 传入 pageNum 参数
+    const response = await getChatHistory(chatId, currentPage.value);
+    console.log('获取到的历史记录 (page ' + currentPage.value + '):', response);
+    
+    let result = [];
+    if (response && Array.isArray(response.records)) {
+        result = response.records;
+        // 判断是否还有更多: 当前页 * 每页大小 < 总数
+        historyHasMore.value = (response.current * response.size) < response.total;
+    } else if (Array.isArray(response)) {
+        result = response;
+    }
+
+    if (result.length > 0) {
+      // 1. 确保按时间升序排序 (Old -> New)
+      const sortedResult = [...result].sort((a, b) => {
+          const t1 = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+          const t2 = b.timestamp ? new Date(b.timestamp).getTime() : 0;
           
-          formattedConversations.push(conversationItem);
-        }
+          // 如果时间戳不同，按时间排序
+          if (!isNaN(t1) && !isNaN(t2) && t1 !== t2) {
+              return t1 - t2;
+          }
+          
+          // 如果时间戳相同（或都无效），使用类型进行二级排序
+          // 确保 USER 在 ASSISTANT 前面，以便正确配对
+          const typeA = (a.type || a.role || '').toUpperCase();
+          const typeB = (b.type || b.role || '').toUpperCase();
+          
+          if (typeA === 'USER' && typeB !== 'USER') return -1;
+          if (typeB === 'USER' && typeA !== 'USER') return 1;
+          
+          return 0;
+      });
+
+      console.log('排序后的消息列表:', sortedResult);
+
+      // 2. 转换逻辑：遍历并配对
+      const formattedConversations = [];
+      let currentPair = null;
+
+      for (const msg of sortedResult) {
+          // 规范化类型和内容
+          const type = (msg.type || msg.role || '').toUpperCase();
+          const content = msg.content || msg.message || msg.text || '';
+          
+          if (type === 'USER') {
+              // 如果之前有未完成的配对，推入
+              if (currentPair) {
+                  formattedConversations.push(currentPair);
+              }
+              
+              currentPair = {
+                  user: content,
+                  assistant: '',
+                  timestamp: msg.timestamp,
+                  hasImage: false,
+                  model: null,
+                  media: msg.media || ''
+              };
+          } else if (type === 'ASSISTANT' || type === 'MODEL' || type === 'AI') {
+              // 处理 AI 回复中的媒体内容 (例如生成的图片)
+              let displayContent = content;
+              if (msg.media && typeof msg.media === 'string' && msg.media.startsWith('http')) {
+                  // 如果 media 字段有图片URL，追加到 content 中以便显示
+                  // 检查 content 是否已经包含了该图片链接，避免重复
+                  if (!displayContent.includes(msg.media)) {
+                      displayContent = `![生成的图片](${msg.media})\n\n${displayContent}`;
+                  }
+              }
+
+              if (currentPair) {
+                  currentPair.assistant = displayContent;
+                  currentPair.model = msg.model;
+                  formattedConversations.push(currentPair);
+                  currentPair = null;
+              } else {
+                  // 如果没有User对应，可能是历史遗留或顺序问题
+                  // 创建隐式配对
+                  formattedConversations.push({
+                      user: '',
+                      assistant: displayContent,
+                      timestamp: msg.timestamp,
+                      hasImage: false,
+                      model: msg.model,
+                      media: ''
+                  });
+              }
+          }
+      }
+
+      // 处理最后遗留的 currentPair
+      if (currentPair) {
+          formattedConversations.push(currentPair);
       }
       
       console.log('格式化后的对话列表:', formattedConversations);
-      conversationList.value = formattedConversations;
       
-      // 滚动到底部
-      nextTick(() => {
-        scrollToTheBottom();
-      });
+      if (formattedConversations.length === 0) {
+          // 如果格式化后为空，可能是数据类型不匹配
+          console.warn('格式化后数据为空，请检查 msg.type 是否为 USER/ASSISTANT');
+          if (!isLoadMore) conversationList.value = [];
+          if (isLoadMore) historyHasMore.value = false;
+      } else {
+          // ... (Existing scroll logic) ...
+          if (isLoadMore) {
+              if (scrollRef.value) {
+                  const oldHeight = scrollRef.value.scrollHeight;
+                  const oldTop = scrollRef.value.scrollTop;
+                  conversationList.value = [...formattedConversations, ...conversationList.value];
+                  nextTick(() => {
+                      const newHeight = scrollRef.value.scrollHeight;
+                      scrollRef.value.scrollTop = newHeight - oldHeight + oldTop;
+                  });
+              } else {
+                  conversationList.value = [...formattedConversations, ...conversationList.value];
+              }
+          } else {
+              conversationList.value = formattedConversations;
+              nextTick(() => {
+                  scrollToTheBottom();
+              });
+          }
+      }
     } else {
-      console.log('历史记录数据格式不正确:', result);
-      conversationList.value = [];
+      console.log('历史记录为空或数据格式不正确:', result);
+      if (!isLoadMore) {
+         conversationList.value = [];
+      } else {
+         historyHasMore.value = false; // 没有更多数据了
+      }
     }
   } catch (e) {
     console.error('获取历史记录失败:', e);
@@ -1846,7 +2064,21 @@ async function loadHistory(chatId) {
       message: '获取历史记录失败',
       type: 'error'
     });
-    conversationList.value = [];
+    if (!isLoadMore) conversationList.value = [];
+  } finally {
+    historyLoading.value = false;
+  }
+}
+
+// 监听滚动事件，加载更多历史记录
+function handleScroll() {
+  if (!scrollRef.value || historyLoading.value || !historyHasMore.value) return;
+  
+  // 当滚动到顶部附近时（例如距离顶部50px以内）触发加载
+  if (scrollRef.value.scrollTop <= 0) {
+    console.log('触发加载更多历史记录...');
+    currentPage.value++;
+    loadHistory(currentChatId.value, true);
   }
 }
 
@@ -3798,11 +4030,12 @@ defineExpose({
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 12px;
-  width: 100%;
+  /* width: 100%;  移除强制宽度，允许自适应 */
 }
 
 .media-container {
-  width: 100%;
+  /* width: 100%; 移除强制宽度 */
+  max-width: 100%;
 }
 
 .question-images {
@@ -3817,7 +4050,8 @@ defineExpose({
   position: relative;
   border-radius: 6px;
   overflow: hidden;
-  width: calc(50% - 4px);
+  /* width: calc(50% - 4px); 移除固定的50%宽度，改为自适应 */
+  width: auto;
   max-width: 200px;
   height: auto;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -4238,6 +4472,14 @@ defineExpose({
 
 :deep(.vuepress-markdown-body tr:nth-child(2n)) {
   background-color: var(--bgColor1);
+}
+
+/* 限制 Markdown 内容图片大小 */
+:deep(.vuepress-markdown-body img) {
+  max-width: 300px;
+  height: auto;
+  border-radius: 8px;
+  cursor: pointer;
 }
 
 :deep(.footer-bar > .el-input > .el-input__wrapper) {

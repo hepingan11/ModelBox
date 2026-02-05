@@ -12,7 +12,7 @@
       <div class="profile-content">
         <div class="profile-header">
           <div class="avatar-container">
-            <img src="https://img-hepingan.oss-cn-hangzhou.aliyuncs.com/page/a.jpg" alt="何平安" class="avatar" />
+            <img :src="optimizeImage('https://img-hepingan.oss-cn-hangzhou.aliyuncs.com/page/a.jpg', 200)" alt="何平安" class="avatar" loading="lazy" />
             <div class="avatar-glow"></div>
           </div>
           <h1 class="name">何平安</h1>
@@ -24,36 +24,65 @@
           <div class="profile-section">
             <h2><el-icon><User /></el-icon> 关于我</h2>
             <div class="section-content">
-              <p>为创造而生！为创造而失眠！我热爱一切新事物，祈求能用自己的双手创造出受人所爱，受人所用的项目；自己经常参加各种IT活动比赛，如黑客松 编程设计赛等，瞻仰圈子内的大佬大牛，成为他们，超越他们！有着不服输敢创敢拼的精神，对自己所热爱的事物有着十二分精神，并在B站分享着自己的经验或4000粉支持；有良好的团队协作能力，对于专业上的知识总是瞻仰前沿学习新技能，今年夏天参加了adventure黑客松，深刻感受到创造的魅力，让我更加对未知知识的探索充满兴趣和动力；对于我的技术栈我熟悉Java的各大热门框架和服务； 眼前的少年眼中燃着对社会的炽热期盼，仿佛有万千星辰在眸中闪烁 —— 他正翘首以盼一个珍贵的机会，好让青春在时代的画布上挥洒出更多滚烫的可能与绚烂的色彩！</p>
+              <p>为创造而生！为创造而失眠！我热爱一切新事物，祈求能用自己的双手创造出受人所爱，受人所用的项目；自己经常参加各种IT活动比赛，如黑客松 编程设计赛等，瞻仰圈子内的大佬大牛，成为他们，超越他们！有着不服输敢创敢拼的精神，对自己所热爱的事物有着十二分精神，并在各大自媒体平台分享着自己的经验；有强大的团队协作和业务理解能力，对于专业上的知识总是瞻仰前沿学习新技能；对于我的技术栈我熟悉Java的各大热门框架和服务； 眼前的少年眼中燃着对社会的炽热期盼，仿佛有万千星辰在眸中闪烁 —— 他正翘首以盼一个珍贵的机会，好让青春在时代的画布上挥洒出更多滚烫的可能与绚烂的色彩！</p>
             </div>
           </div>
           
           <!-- 技术栈 -->
-          <div class="profile-section">
+          <div class="profile-section tech-stack-section">
+            <div class="tech-bg-text">AI时代，永不掉队！</div>
             <h2><el-icon><Document /></el-icon> 技术栈</h2>
-            <div class="section-content">
-              <div class="tech-grid" :class="{ expanded: isTechExpanded }">
-                <div v-for="(skill, index) in skills" :key="index" class="tech-item">
-                  <div class="tech-icon" :style="{ backgroundColor: skill.bgColor || '#f5f5f5' }">
-                    <img :src="skill.icon" :alt="skill.name" class="tech-logo" />
+            <div class="section-content tech-section-content">
+              <!-- 第一行滚动 -->
+              <div class="tech-scroll-container tech-scroll-row row-1">
+                <div class="tech-scroll-track">
+                  <!-- 第一组数据 -->
+                  <div v-for="(skill, index) in skillsRow1" :key="'r1-a-'+index" class="tech-item item-card">
+                    <div class="tech-icon" :style="{ backgroundColor: skill.bgColor || '#f5f5f5' }">
+                      <img :src="optimizeImage(skill.icon, 80)" :alt="skill.name" class="tech-logo" loading="lazy" />
+                    </div>
+                    <div class="tech-info">
+                      <div class="tech-name">{{ skill.name }}</div>
+                      <el-tag size="small" :type="getTagType(skill.level)">{{ getProficiencyLabel(skill.level) }}</el-tag>
+                    </div>
                   </div>
-                  <div class="tech-info">
-                    <div class="tech-name">{{ skill.name }}</div>
-                    <el-tag size="small" :type="getTagType(skill.level)">{{ getProficiencyLabel(skill.level) }}</el-tag>
+                  <!-- 第一组数据复制，用于无缝衔接 -->
+                  <div v-for="(skill, index) in skillsRow1" :key="'r1-b-'+index" class="tech-item item-card">
+                    <div class="tech-icon" :style="{ backgroundColor: skill.bgColor || '#f5f5f5' }">
+                      <img :src="optimizeImage(skill.icon, 80)" :alt="skill.name" class="tech-logo" loading="lazy" />
+                    </div>
+                    <div class="tech-info">
+                      <div class="tech-name">{{ skill.name }}</div>
+                      <el-tag size="small" :type="getTagType(skill.level)">{{ getProficiencyLabel(skill.level) }}</el-tag>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div class="expand-button-container">
-                <el-button 
-                  type="text" 
-                  class="expand-toggle-btn" 
-                  @click="toggleTechExpanded"
-                >
-                  <el-icon class="expand-icon" :class="{ rotated: isTechExpanded }">
-                    <ArrowDown />
-                  </el-icon>
-                  {{ isTechExpanded ? '收起' : '展开全部' }}
-                </el-button>
+
+              <!-- 第二行滚动 -->
+              <div class="tech-scroll-container tech-scroll-row row-2">
+                <div class="tech-scroll-track">
+                  <!-- 第二组数据 -->
+                  <div v-for="(skill, index) in skillsRow2" :key="'r2-a-'+index" class="tech-item item-card">
+                    <div class="tech-icon" :style="{ backgroundColor: skill.bgColor || '#f5f5f5' }">
+                      <img :src="optimizeImage(skill.icon, 80)" :alt="skill.name" class="tech-logo" loading="lazy" />
+                    </div>
+                    <div class="tech-info">
+                      <div class="tech-name">{{ skill.name }}</div>
+                      <el-tag size="small" :type="getTagType(skill.level)">{{ getProficiencyLabel(skill.level) }}</el-tag>
+                    </div>
+                  </div>
+                  <!-- 第二组数据复制，用于无缝衔接 -->
+                  <div v-for="(skill, index) in skillsRow2" :key="'r2-b-'+index" class="tech-item item-card">
+                    <div class="tech-icon" :style="{ backgroundColor: skill.bgColor || '#f5f5f5' }">
+                      <img :src="optimizeImage(skill.icon, 80)" :alt="skill.name" class="tech-logo" loading="lazy" />
+                    </div>
+                    <div class="tech-info">
+                      <div class="tech-name">{{ skill.name }}</div>
+                      <el-tag size="small" :type="getTagType(skill.level)">{{ getProficiencyLabel(skill.level) }}</el-tag>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -64,10 +93,7 @@
             <div class="section-content">
               <div class="project-card" @click="openProjectPreview('pass-assistant')">
                 <h3>Pass Assistant <span class="project-date">2024.2 - 至今</span></h3>
-                <div class="project-preview-badge">
-                  <el-icon><Picture /></el-icon> 预览
-                </div>
-                <p>励志打造国内一流综合工具类网站，不断进步，集成多种AI工具、源码分享和技术交流功能，属于自己心中的乌托邦。集成了我毕生所学的多种技术</p>
+                <p>励志打造国内一流综合工具类网站，不断进步，集成多种AI工具、源码分享和技术交流功能，属于自己心中的乌托邦。集成了我毕生所学的多种技术，不断进步~</p>
                 <div class="project-tech">
                   <el-tag size="small" type="info">Vue</el-tag>
                   <el-tag size="small" type="success">Java</el-tag>
@@ -89,39 +115,14 @@
                     <el-icon><Connection /></el-icon>
                     <span>构建三端应用架构</span>
                   </div>
+                  <div class="highlight-item">
+                    <el-icon><Monitor /></el-icon>
+                    <span>独立设计开发运营</span>
+                  </div>
                 </div>
               </div>
               
-              <!-- 可以添加更多项目 -->
-              <div class="project-card" @click="openProjectPreview('super-pass')">
-                <h3>SuperPass <span class="project-date">2025.3 - 至今</span></h3>
-                <div class="project-preview-badge">
-                  <el-icon><Picture /></el-icon> 预览
-                </div>
-                <p>全新校园生活服小程序app，提供校园资讯、校园活动、校园二手交易、校园论坛(类校园墙),商务广告,特色等级头像框,管理员页面等多种功能。</p>
-                <p>目前已推广至本校使用，并获得校方认可，目前正在推广至其他高校。</p>
-                <div class="project-tech">
-                  <el-tag size="small" type="success">Java</el-tag>
-                  <el-tag size="small" type="warning">Uniapp</el-tag>
-                  <el-tag size="small" type="danger">Redis</el-tag>
-                  <el-tag size="small" type="info">MySQL</el-tag>
-                  <el-tag size="small" type="success">SpringCloud</el-tag>
-                </div>
-                <div class="project-highlights">
-                  <div class="highlight-item">
-                    <el-icon><Star /></el-icon>
-                    <span>已推广至本校使用</span>
-                  </div>
-                  <div class="highlight-item">
-                    <el-icon><User /></el-icon>
-                    <span>拥有校园学生私域流量</span>
-                  </div>
-                  <div class="highlight-item">
-                    <el-icon><Connection /></el-icon>
-                    <span>功能"花里胡哨"</span>
-                  </div>
-                </div>
-              </div>
+              
             </div>
           </div>
           
@@ -130,6 +131,101 @@
             <h2><el-icon><Briefcase /></el-icon> 工作兼职经历</h2>
             <div class="section-content">
               <div class="experience-timeline">
+
+                <div class="experience-item">
+                  <div class="experience-date">
+                    <div class="date-badge">2025.12 - now</div>
+                  </div>
+                  <div class="experience-content">
+                    <div class="experience-header">
+                      <h3>上海灵硕展览集团有限公司</h3>
+                      <div class="company-name">软件部技术主管</div>
+                    </div>
+                    <div class="experience-description">
+                      <p>
+                        作为团队主⼒成员，开发公司服装供应及展览⼩程序，项⽬采⽤
+                        SpringCloud+
+                        微信原⽣架构，后端使⽤
+                        Eureka+RabbitMQ+Elasticsearch+Redis
+                        等中间件优化，基于
+                        Docker
+                        和
+                        Kubernetes
+                        进⾏项⽬部署维护；前端熟练运⽤
+                        AI
+                        进⾏开发；
+                        使⽤
+                        RabbitMQ
+                        将微信消息推送
+                        ,
+                        短信推送消息进⾏队列存储转发，优化在⾼
+                        QTS
+                        下消息未及时发送出去导致请求超时；
+                        使⽤
+                        Elasticsearch
+                        将商机产品公司等信息进⾏搜索优化，并使⽤
+                        Kibana
+                        训练关键词数据；
+                        对数百张数据库表编写
+                        crud
+                        并基于业务设计优化表，懂业务逻辑的程序员才是好程序员
+                        ~
+                        引⼊优秀开源项⽬
+                        xxl-job
+                        任务调度中⼼对导出和下载⽂件进⾏独⽴设计；
+                        基于
+                        Langchain
+                        开发出
+                        AI
+                        问答功能，完成公司知识库训练，独⽴设计
+                        Mcp
+                        对数据库产品信息进⾏
+                        AI
+                        检索；
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="experience-item">
+                  <div class="experience-date">
+                    <div class="date-badge">2025.09 - 2025.11</div>
+                  </div>
+                  <div class="experience-content">
+                    <div class="experience-header">
+                      <h3>胖鱼智能科技(重庆)有限公司</h3>
+                      <div class="company-name">软件部技术主管</div>
+                    </div>
+                    <div class="experience-description">
+                      <p>
+                        负责公司⽹站的开发和维护，负责公司产品电商⼩程序的开发和维护；管理三⼈团队的项⽬跟进和⽇程安排，作为主⼒开发完成基于
+                        SpringCloud Ablibaba+Uniapp
+                        产品电商⼩程序和企业官⽹开发，规范模块化开发管理和阿⾥代码规范；
+                        团队曾私下⾃研出校园外卖⼩程序，为缓解⾼峰订单压⼒，采⽤
+                        RabbitMQ+Redis
+                        的组合通过
+                        RabbitMQ 
+                        实现订单请求削峰填⾕、异
+                        步解耦，
+                        Redis 
+                        实现订单状态缓存、库存预扣减、防重复提交，结合分层架构设计，保障系统在⾼并发下的⾼可⽤和数据⼀致性；将
+                        ⽤户下单后的最⻓等待时间存储在
+                        redis
+                        中并设置过期时间，并设置定时器定器检查过期
+                        key
+                        的原始⽅法优化为
+                        Redission
+                        延迟队列，
+                        key
+                        存⼊时指定过期时间，过期后⾃动进⼊消费队列，监听消费队列执⾏程序，减少服务压⼒和优化
+                        key
+                        过期时未及时执⾏程序；独⽴
+                        对接微信⽀付和⽀付宝⽀付并设计完整订单模块。
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
                 <div class="experience-item">
                   <div class="experience-date">
                     <div class="date-badge">2025.04 - 2025.08</div>
@@ -141,10 +237,10 @@
                     </div>
                     <div class="experience-description">
                       <p>软件外包类工作室；作为浩原科技工作室的主要开发者和管理人，旗下已有50余人接单技术人，工作室接取项目金额超5万元;独
-立开发出工作室接单小程序（微信搜索浩原科技）;开发中主要技术栈为Springboot+Uniapp或Vue，个人累计接取十几单项目的
-定制开发，有数单进行团队合作开发，对项目需求能做到100%实现，练就了熟练的项目开发经验,并熟练使用linux环境和宝塔面
-板部署项目；
-</p>
+                        立开发出工作室接单小程序（微信搜索浩原科技）;开发中主要技术栈为Springboot+Uniapp或Vue，个人累计接取十几单项目的
+                        定制开发，有数单进行团队合作开发，对项目需求能做到100%实现，练就了熟练的项目开发经验,并熟练使用linux环境和宝塔面
+                        板部署项目；
+                      </p>
                       <ul class="achievement-list">
                         <li> "四会会议app"：独立完成；使用Langchain4j框架集成了阿里云百炼大模型，将本地知识库嵌入模型支持RAG检索，加入了网
                           页解析MCP服务，使用mysql数据库作为会话记忆存储，项目架构使用Spring Cloud+Uniapp.</li>
@@ -308,7 +404,7 @@
       <el-carousel v-if="currentProject" :interval="5000" type="card" height="500px" :autoplay="false">
         <el-carousel-item v-for="(image, index) in currentProject.images" :key="index">
           <div class="carousel-image-container">
-            <img :src="image.url" :alt="image.caption" class="carousel-image">
+            <img :src="optimizeImage(image.url, 800)" :alt="image.caption" class="carousel-image" loading="lazy">
             <div class="carousel-caption">{{ image.caption }}</div>
           </div>
         </el-carousel-item>
@@ -406,60 +502,7 @@
             </p>
           </div>
           
-          <div class="description-section architecture-section">
-            <h4>🏗️ 技术架构</h4>
-            <div class="architecture-content">
-              <div class="arch-layer">
-                <span class="layer-title">技术栈：</span>
-                <span class="layer-desc">前端：UniApp跨平台框架，支持微信小程序、H5、APP<br/>
-                  后端：Springboot框架+Uniapp框架前后端分离开发模块，引入了Sa-token登录验证, 阿里Oss存储, Mybatis-plus等优秀maven库<br/>
-                  数据库：Mysql+Redis</span>
-              </div>
-              <div class="arch-layer">
-                <span class="layer-title">关键技术点：</span>
-                <span class="layer-desc">•项目采用Springboot框架+Uniapp框架前后端分离开发模块，引入了Sa-token登录验证, 阿里Oss存储, Mybatis-plus等优秀ma
- ven库<br/>
-•使用RabbitMQ消息队列对用户注册后的默认信息设置，头像框信息等加入队列中，减少用户在注册成功后的等待时间<br/>
-•使用Mysql+Redis数据库进行配合存储，如用户登录信息存在Redis中<br/>
-•项目接入了微信官方内容安全识别api, Ai对话Ai绘画api等<br/>
-•项目使用Elasticsearch搜索技术替代原有sql查询提高文章商品搜索效率<br/></span>
-              </div>
-              <div class="arch-layer">
-                <span class="layer-title">开源地址：</span>
-                <span class="layer-desc">https://gitee.com/hepingan11/superpass-app</span>
-              </div>
-            </div>
-          </div>
           
-          <div class="description-section features-section">
-            <h4>⭐ 核心功能</h4>
-            <div class="features-grid">
-              <div class="feature-item">
-                <span class="feature-icon">📰</span>
-                <span>校园资讯</span>
-              </div>
-              <div class="feature-item">
-                <span class="feature-icon">🎉</span>
-                <span>活动管理</span>
-              </div>
-              <div class="feature-item">
-                <span class="feature-icon">🛒</span>
-                <span>二手交易</span>
-              </div>
-              <div class="feature-item">
-                <span class="feature-icon">💬</span>
-                <span>校园论坛</span>
-              </div>
-              <div class="feature-item">
-                <span class="feature-icon">📢</span>
-                <span>商务广告</span>
-              </div>
-              <div class="feature-item">
-                <span class="feature-icon">👑</span>
-                <span>等级头像框</span>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -472,7 +515,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { User, Document, Collection, Star, ChatDotRound, Message, Link, Connection, Back, Picture, ArrowDown, ArrowUp, Briefcase } from '@element-plus/icons-vue';
 import { getBilibiliData } from '../../api/BSideApi';
@@ -509,9 +552,6 @@ const previewDialogVisible = ref(false);
 // 当前选择的项目
 const currentProject = ref(null);
 
-// 控制技术栈展开状态
-const isTechExpanded = ref(false);
-
 // 打开项目预览对话框
 const openProjectPreview = (projectId) => {
   const project = projectsImages.value.find(p => p.id === projectId);
@@ -519,11 +559,6 @@ const openProjectPreview = (projectId) => {
     currentProject.value = project;
     previewDialogVisible.value = true;
   }
-};
-
-// 切换技术栈展开状态
-const toggleTechExpanded = () => {
-  isTechExpanded.value = !isTechExpanded.value;
 };
 
 // B站数据
@@ -644,6 +679,13 @@ const skills = [
     icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg',
     bgColor: 'rgba(36, 150, 237, 0.1)'
   },
+  { 
+    name: 'Kubernetes', 
+    level: 70, 
+    color: '#2496ed',
+    icon: 'https://img-hepingan.oss-cn-hangzhou.aliyuncs.com/page1/k8s.png',
+    bgColor: 'rgba(240, 150, 237, 0.1)'
+  },
   {
     name: 'n8n', 
     level: 80, 
@@ -660,10 +702,17 @@ const skills = [
   },
   { 
     name: 'Linux', 
-    level: 70, 
+    level: 80, 
     color: '#003366',
     icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg',
     bgColor: 'rgba(0, 51, 102, 0.1)'
+  },
+  { 
+    name: '微信小程序', 
+    level: 80, 
+    color: '#003366',
+    icon: 'https://img-hepingan.oss-cn-hangzhou.aliyuncs.com/page1/wxml.png',
+    bgColor: 'rgba(0, 255, 0, 0.1)'
   },
   { 
     name: 'Git', 
@@ -786,6 +835,10 @@ const skills = [
   }
 ];
 
+// 将技能拆分为两各部分
+const skillsRow1 = computed(() => skills.filter((_, index) => index % 2 === 0));
+const skillsRow2 = computed(() => skills.filter((_, index) => index % 2 !== 0));
+
 // 根据熟练度返回标签类型
 const getTagType = (level) => {
   if (level >= 90) return 'danger'; // 精通
@@ -796,7 +849,7 @@ const getTagType = (level) => {
 
 // 根据熟练度返回标签文本
 const getProficiencyLabel = (level) => {
-  if (level >= 90) return '精通';
+  if (level >= 90) return '特长';
   if (level >= 80) return '熟练';
   if (level >= 70) return '掌握';
   return '了解';
@@ -805,6 +858,15 @@ const getProficiencyLabel = (level) => {
 // 返回上一页
 const goBack = () => {
   router.back();
+};
+// 优化图片 URL，添加 OSS 处理参数
+const optimizeImage = (url, width) => {
+  if (!url) return '';
+  // 如果是阿里云 OSS 图片，且不是 svg
+  if (url.includes('aliyuncs.com') && !url.endsWith('.svg')) {
+    return `${url}?x-oss-process=image/resize,w_${width}/format,webp`;
+  }
+  return url;
 };
 </script>
 
@@ -900,8 +962,33 @@ const goBack = () => {
 
 .profile-sections {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr); /* 防止内容撑开容器 */
   gap: 40px;
+  width: 100%; /* 确保本身宽度正常 */
+}
+
+.tech-stack-section {
+  position: relative;
+  overflow: hidden; /* 防止背景文字溢出 */
+}
+
+.tech-bg-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-5deg); /* 稍微倾斜增加艺术感 */
+  font-size: 4rem;
+  font-weight: 900;
+  white-space: nowrap;
+  pointer-events: none; /* 确保不影响点击 */
+  z-index: 0;
+  opacity: 0.1; /* 低透明度作为背景 */
+  background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-family: 'Impact', 'Arial Black', sans-serif; /* 硬朗的字体 */
+  letter-spacing: 10px;
 }
 
 .profile-section {
@@ -909,6 +996,9 @@ const goBack = () => {
   backdrop-filter: blur(10px) !important;
   border-radius: 16px;
   padding: 25px;
+  width: 100%; /* 强制宽度 */
+  max-width: 100%; /* 防止溢出 */
+  box-sizing: border-box; /* 包含padding */
   border: 1px solid rgba(255, 255, 255, 0.05);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -929,6 +1019,8 @@ const goBack = () => {
     color: var(--themeColor1);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     padding-bottom: 10px;
+    position: relative; /* 确保在背景文字之上 */
+    z-index: 1;
     
     .el-icon {
       color: var(--themeColor1);
@@ -939,41 +1031,61 @@ const goBack = () => {
 .section-content {
   line-height: 1.7;
   color: var(--textColor2);
+  position: relative; /* 确保在背景文字之上 */
+  z-index: 1;
   
   p {
     margin: 10px 0;
   }
 }
 
-.tech-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 20px;
-  max-height: 450px; /* 限制高度，大约显示2行 */
+.tech-section-content {
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+
+.tech-scroll-container {
+  width: 100%;
   overflow: hidden;
-  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 60px;
-    background: linear-gradient(transparent, rgba(var(--bgColor2-rgb, 35, 35, 40), 0.95));
-    pointer-events: none;
-    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    opacity: 1;
+  padding: 10px 0;
+  mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+}
+
+.tech-scroll-row {
+  &.row-1 .tech-scroll-track {
+    /* 第一行向左偏移错位，通过 margin-left 实现静态错位，
+       或者通过 animation-delay 负值让动画“抢跑”。
+       这里使用 margin-left 方式，简单直观。
+       负 margin 会让容器整体往左拉，左侧内容隐藏（被 overflow:hidden 裁切），右侧内容跟进 */
+    margin-left: -100px; 
+    /* 由于向左偏移了，宽度需要补偿，否则右边可能会有一块空白（取决于内容是否填满）
+       但因为 max-content 足够长，通常不需要补偿容器宽度，只是 visible area 变了
+       为了保险，可以稍微加宽容器或者不做处理（如果循环内容足够多） */
   }
+}
+
+.tech-scroll-track {
+  display: flex;
+  gap: 20px; /* 元素间隔 */
+  width: max-content;
+  animation: scroll 40s linear infinite;
+  padding-right: 20px; /* 轨道末端间隔，保证复制内容衔接时有空隙 */
   
-  &.expanded {
-    max-height: 2000px; /* 足够大的值确保完全展开 */
-    
-    &::after {
-      opacity: 0;
-      transform: translateY(20px);
-    }
+  &:hover {
+    animation-play-state: paused;
+  }
+}
+
+/* 移除 .tech-group 相关样式 */
+
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%); /* 移动一半的距离 (因为内容被复制了一份) */
   }
 }
 
@@ -986,10 +1098,13 @@ const goBack = () => {
   padding: 15px 10px;
   border-radius: 12px;
   background-color: rgba(255, 255, 255, 0.05);
+  min-width: 120px; /* 固定最小宽度 */
+  flex-shrink: 0;   /* 防止被压缩 */
   
   &:hover {
-    transform: translateY(-5px);
+    transform: translateY(-5px) scale(1.05);
     background-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
   }
 }
 
@@ -1031,44 +1146,7 @@ const goBack = () => {
   color: var(--textColor1);
 }
 
-.expand-button-container {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-  padding-top: 15px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-}
 
-.expand-toggle-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--textColor2);
-  font-size: 14px;
-  padding: 10px 20px;
-  border-radius: 25px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.1));
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(10px);
-  
-  &:hover {
-    color: var(--themeColor1);
-    background: linear-gradient(135deg, rgba(var(--themeColor1-rgb, 64, 158, 255), 0.1), rgba(var(--themeColor1-rgb, 64, 158, 255), 0.2));
-    border-color: rgba(var(--themeColor1-rgb, 64, 158, 255), 0.3);
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-  }
-  
-  .expand-icon {
-    font-size: 16px;
-    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    
-    &.rotated {
-      transform: rotate(180deg);
-    }
-  }
-}
 
 .project-card {
   padding: 20px;
@@ -1141,51 +1219,7 @@ const goBack = () => {
 }
 
 /* 项目预览对话框样式 */
-.project-preview-dialog {
-  :deep(.el-dialog__header) {
-    font-weight: bold;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-    padding-bottom: 15px;
-    margin-bottom: 20px;
-    color: #fff;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-  }
-  
-  :deep(.el-dialog__body) {
-    padding: 10px 20px 30px;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-    color: #fff;
-  }
-  
-  :deep(.el-dialog__footer) {
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    padding-top: 15px;
-  }
-  
-  :deep(.el-dialog) {
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-    border-radius: 16px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
-    border: 1px solid rgba(64, 158, 255, 0.2);
-    overflow: hidden;
-    backdrop-filter: blur(15px);
-  }
-  
-  :deep(.el-dialog__title) {
-    color: #fff;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  }
-  
-  :deep(.el-dialog__headerbtn .el-dialog__close) {
-    color: rgba(255, 255, 255, 0.8);
-    
-    &:hover {
-      color: var(--themeColor1);
-      transform: scale(1.1);
-    }
-  }
-}
+/* 这里的样式已被移动到底部的非scoped样式块中 */
 
 .project-preview-container {
   .el-carousel {
@@ -2037,6 +2071,52 @@ const goBack = () => {
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+}
+</style>
+
+<style lang="scss">
+/* 全局样式 - 用于覆盖 Element Plus 组件样式 */
+.project-preview-dialog {
+  /* 覆盖 el-dialog 整体背景 */
+  .el-dialog {
+    background: #121212 !important; /* 纯暗黑背景 */
+    border-radius: 16px !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    overflow: hidden;
+  }
+
+  .el-dialog__header {
+    background: #121212 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    margin-right: 0 !important;
+    padding: 20px !important;
+    
+    .el-dialog__title {
+      color: #e0e0e0 !important;
+      font-weight: bold;
+    }
+    
+    .el-dialog__headerbtn .el-dialog__close {
+      color: #999 !important;
+      
+      &:hover {
+        color: #fff !important;
+      }
+    }
+  }
+  
+  .el-dialog__body {
+    background: #121212 !important;
+    color: #ccc !important;
+    padding: 20px !important;
+  }
+  
+  .el-dialog__footer {
+    background: #121212 !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+    padding: 20px !important;
   }
 }
 </style>

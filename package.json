@@ -23,7 +23,7 @@
     "sass": "^1.66.1",
     "sass-loader": "^13.3.2",
     "terser-webpack-plugin": "^5.3.9",
-    "vue": "^3.0.0",
+    "vue": "^3.2.13",
     "vue-echarts": "^7.0.3",
     "vue-router": "^4.0.3",
     "vuex": "^4.0.0"

@@ -28,15 +28,15 @@
         placeholder="Ai模型"
         @change="updateModel"
       >
-        <el-option value="GPT" label="GPT-5(推荐)" />
-        <el-option value="CLAUDE" label="Claude-4-sonnet" />
+        <el-option value="GPT" label="GPT-5.2-high(付费)" />
+        <el-option value="GLM" label="GLM-4.7(最快)" />
+        <el-option value="CLAUDE" label="Claude-4.5-sonnet(付费)" />
         <el-option value="QWEN" label="通义千问3" />
-        <el-option value="DEEPSEEK" label="DeepSeek(推荐)" />
-        <el-option value="DEEPSEEK_R" label="DeepSeek深度思考" />
-        <el-option value="GEMINI" label="Gemini-2.5" />  
-        <el-option value="GROK" label="Grok-3" />
-        <el-option value="GLM" label="GLM-4.5V(推荐)" />
-        <el-option value="DOUBAO" label="豆包1.5pro" />
+        <el-option value="DEEPSEEK" label="DeepSeek" />
+        <el-option value="DEEPSEEK_R" label="DeepSeek深度思考(付费)" />
+        <el-option value="GEMINI" label="Gemini-3-pro(付费)" />  
+        <el-option value="GROK" label="Grok-4-Fast" />
+        <el-option value="DOUBAO" label="豆包1.6" />
       </el-select>
       
 
