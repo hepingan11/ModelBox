@@ -144,6 +144,18 @@ public class AiConfig {
     }
 
     @Bean
+    public OpenAiChatModel commandModel(){
+        final ChatGptCommon.ChatGptStructure chatGptStructure = (ChatGptCommon.ChatGptStructure) redisUtils.getValue(ServerConstant.CHAT_GPT_CONFIG);
+        return OpenAiChatModel.builder()
+                .openAiApi(OpenAiApi.builder()
+                        .apiKey(chatGptStructure.getClaudeKey())
+                        .baseUrl(AiBaseUrlConstant.COMMAND)
+                        .build())
+                .defaultOptions(OpenAiChatOptions.builder().model(AiModelConstant.COMMAND).build())
+                .build();
+    }
+
+    @Bean
     public OpenAiChatModel doubaoModel(){
         final ChatGptCommon.ChatGptStructure chatGptStructure = (ChatGptCommon.ChatGptStructure) redisUtils.getValue(ServerConstant.CHAT_GPT_CONFIG);
         return OpenAiChatModel.builder()

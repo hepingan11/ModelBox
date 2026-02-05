@@ -2,13 +2,17 @@ package com.cn.bdth.api;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.cn.bdth.dto.MessageDto;
+import com.cn.bdth.dto.ZhipuDrawDto;
 import com.cn.bdth.entity.ConversationUser;
 import com.cn.bdth.mapper.ConversationUserMapper;
+import com.cn.bdth.msg.ChatMessage;
 import com.cn.bdth.msg.Result;
 import com.cn.bdth.service.ChatService;
 import com.cn.bdth.utils.UserUtils;
+import com.cn.bdth.vo.TransitVo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Flux;
@@ -36,12 +40,12 @@ public class ChatController {
      */
     @PostMapping(value = "/chat",produces = "text/html; charset=UTF-8")
     public Flux<String> chat(@RequestParam("message") String message,
-                             @RequestParam("chatId") String chatId,
-                             @RequestParam("model") String model,
-                             @RequestParam("isMcp") Boolean isMcp,
-                             @RequestParam("isRag") Boolean isRag,
-                             @RequestParam("mcpList") String  mcpList,
-                             @RequestPart(value = "file", required = false) MultipartFile file){
+                                  @RequestParam("chatId") String chatId,
+                                  @RequestParam("model") String model,
+                                  @RequestParam("isMcp") Boolean isMcp,
+                                  @RequestParam("isRag") Boolean isRag,
+                                  @RequestParam("mcpList") String  mcpList,
+                                  @RequestPart(value = "file", required = false) MultipartFile file){
         MessageDto messageDto = new MessageDto()
                 .setMessage(message)
                 .setChatId(chatId)
@@ -57,6 +61,27 @@ public class ChatController {
         }
     }
 
+    //中转
+    @PostMapping(value = "/transit",produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result transit(@RequestBody MessageDto messageDto) {
+        try {
+            TransitVo transit = chatService.transit(messageDto);
+            return Result.data(transit);
+        }catch (Exception e){
+            return Result.error("中转失败");
+        }
+    }
+
+
+    @PostMapping(value = "/draw/callback",produces = "text/html; charset=UTF-8")
+    public Flux<String> drawCallback(@RequestBody MessageDto messageDto){
+        return chatService.drawCallback(messageDto);
+    }
+
+    /**
+     * 无上下文AI聊天
+     * @return
+     */
     @PostMapping(value = "/chat2",produces = "text/html; charset=UTF-8")
     public Flux<String> chat2(@RequestParam("message") String message,
                              @RequestParam("chatId") String chatId,
@@ -98,9 +123,9 @@ public class ChatController {
      * @param chatId
      * @return
      */
-    @GetMapping(value = "/history/{chatId}")
-    public Result getHistory(@PathVariable String chatId){
-        return Result.data(chatService.getHistory(chatId));
+    @GetMapping(value = "/history")
+    public Result getHistory(@RequestParam String chatId,@RequestParam Integer pageNum){
+        return Result.data(chatService.getHistory(chatId,pageNum));
     }
 
     /**
@@ -142,7 +167,6 @@ public class ChatController {
         }catch (Exception e){
             return Result.error("添加失败");
         }
-
     }
 
 

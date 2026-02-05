@@ -20,10 +20,16 @@ public class DrawController {
 
     @PostMapping(value = "/zhipu/image",name = "cogview绘画接口")
     public Result addZhipuDrawingTask(@RequestParam("prompt") String prompt,
-                                      @RequestParam("size") String size,
-                                      @RequestParam("quality") String quality,
-                                      @RequestParam("model") String model,
+                                      @RequestParam(value = "size",required = false) String size,
+                                      @RequestParam(value = "quality",required = false) String quality,
+                                      @RequestParam(value = "model",required = false) String model,
                                       @RequestPart(value = "file", required = false) MultipartFile file) {
+        if (size == null){
+            size = "1024x1024";
+        }
+        if (quality == null){
+            quality = "standard";
+        }
         ZhipuDrawDto dto = new ZhipuDrawDto()
                 .setPrompt(prompt)
                 .setSize(size)

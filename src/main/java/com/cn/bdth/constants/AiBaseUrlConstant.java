@@ -17,6 +17,8 @@ public interface AiBaseUrlConstant {
 
     String GEMINI = "https://sg.uiuiapi.com";
 
+    String COMMAND = "https://sg.uiuiapi.com";
+
     String GROK = "https://sg.uiuiapi.com";
 
 }

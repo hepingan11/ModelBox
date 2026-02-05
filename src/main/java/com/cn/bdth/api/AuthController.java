@@ -78,7 +78,7 @@ public class AuthController {
     }
 
     /**
-     * 注册账号
+     * 登陆账号
      *
      * @param dto dto
      * @return the result

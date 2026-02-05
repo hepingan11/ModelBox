@@ -37,6 +37,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -79,12 +80,43 @@ public class DrawServiceImpl implements DrawService {
         private Boolean watermark =false;
     }
 
+    public boolean isImageFile(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            return false;
+        }
+
+        // 检查 contentType
+        String contentType = file.getContentType();
+        boolean isImageByContentType = contentType != null && contentType.startsWith("image/");
+
+        // 检查文件扩展名
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null) {
+            return false;
+        }
+        String fileExtension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1).toLowerCase();
+        List<String> imageExtensions = Arrays.asList("jpg", "jpeg", "png", "gif", "bmp", "webp");
+        boolean isImageByExtension = imageExtensions.contains(fileExtension);
+
+        return isImageByContentType && isImageByExtension;
+    }
 
     @Override
     public String addZhipuDrawingTask(ZhipuDrawDto dto, MultipartFile file) {
         User user = userMapper.selectById(UserUtils.getCurrentLoginId());
         if (user.getFrequency() < 11 && !dto.getModel().equals("COGVIEW_3")) {
             throw new RuntimeException("IT币低于10，请先赞助哦~");
+        }
+        if (dto.getModel() == null || dto.getModel().isEmpty()){
+            if (file == null){
+                dto.setModel("COGVIEW_4");
+            }else {
+                dto.setModel("DOUBAO_SEEDREAM");
+            }
+        }
+        if (file != null && !isImageFile( file)){
+            //检测文件是否为图片格式
+            throw new RuntimeException("请上传图片文件");
         }
         // 设置请求的URL地址
         CloseableHttpClient aDefault = HttpClients.createDefault();
@@ -154,7 +186,7 @@ public class DrawServiceImpl implements DrawService {
                     .setModel(dto.getModel())
                     .setGenerateUrl(v));
             userMapper.updateById(user.setFrequency(user.getFrequency()-10));
-            return generateUrl;
+            return domain + v;
 
         } catch (IOException e) {
             e.printStackTrace();

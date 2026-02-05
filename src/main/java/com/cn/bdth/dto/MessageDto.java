@@ -27,4 +27,7 @@ public class MessageDto {
     private String role;
 
     private MultipartFile file;
+
+    //图文对话专属
+    private String imageUrl;
 }

@@ -1,22 +1,27 @@
 package com.cn.bdth.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cn.bdth.common.MysqlChatMemory;
 import com.cn.bdth.config.AiConfig;
 import com.cn.bdth.config.McpListConfig;
 import com.cn.bdth.constants.AiModelConstant;
+import com.cn.bdth.constants.DrawKeyWordsConstant;
 import com.cn.bdth.dto.MessageDto;
-import com.cn.bdth.entity.ConversationUser;
-import com.cn.bdth.entity.Mcps;
-import com.cn.bdth.entity.Rag;
-import com.cn.bdth.entity.SpringAiChatMemory;
-import com.cn.bdth.mapper.ConversationUserMapper;
-import com.cn.bdth.mapper.McpsMapper;
-import com.cn.bdth.mapper.RagMapper;
-import com.cn.bdth.mapper.SpringAiChatMemoryMapper;
+import com.cn.bdth.dto.ZhipuDrawDto;
+import com.cn.bdth.entity.*;
+import com.cn.bdth.mapper.*;
+import com.cn.bdth.msg.ChatMessage;
 import com.cn.bdth.service.ChatService;
+import com.cn.bdth.service.DrawService;
 import com.cn.bdth.utils.AliUploadUtils;
 import com.cn.bdth.utils.UserUtils;
+import com.cn.bdth.vo.TransitVo;
+import com.cn.bdth.vo.admin.DrawVo;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -80,15 +85,19 @@ public class ChatServiceImpl implements ChatService {
     private final RagMapper ragMapper;
 
     private final McpsMapper mcpsMapper;
+    private final DrawingMapper drawingMapper;
+    private final UserMapper userMapper;
 
 
     @Value("${ali-oss.domain}")
     private String domin;
 
     @Override
-    public List<SpringAiChatMemory> getHistory(String chatId) {
-        return springAiChatMemoryMapper.selectList(new QueryWrapper<SpringAiChatMemory>().lambda()
-                .eq(SpringAiChatMemory::getConversationId, chatId));
+    public Page<SpringAiChatMemory> getHistory(String chatId,Integer pageNum) {
+        Page<SpringAiChatMemory> p = new Page<>(pageNum, 20);
+        return springAiChatMemoryMapper.selectPage(p,new QueryWrapper<SpringAiChatMemory>().lambda()
+                .eq(SpringAiChatMemory::getConversationId, chatId)
+                .orderByDesc(SpringAiChatMemory::getId));
     }
 
     @Override
@@ -114,7 +123,10 @@ public class ChatServiceImpl implements ChatService {
         ConversationUser conversationUser = conversationUserMapper.selectOne(new QueryWrapper<ConversationUser>().lambda()
                 .eq(ConversationUser::getConversationId, messageDto.getChatId()));
         Long currentLoginId = UserUtils.getCurrentLoginId();
-
+        User user = userMapper.selectById(currentLoginId);
+        if (user.getFrequency() < 2){
+            return Flux.just("你的积分不足2，请先充值");
+        }
         if (conversationUser == null){
             conversationUserMapper.insert(new ConversationUser()
                     .setConversationId(messageDto.getChatId())
@@ -123,7 +135,6 @@ public class ChatServiceImpl implements ChatService {
                     .setTitle(LocalDateTime.now().toString().substring(5,10)+"新对话")
                     .setUserId(currentLoginId));
         }
-
 
         if (messageDto.getIsRag()){
             List<Rag> rags = ragMapper.selectList(new QueryWrapper<Rag>().lambda()
@@ -199,6 +210,9 @@ public class ChatServiceImpl implements ChatService {
             case "DEEPSEEK_R"->{
                 return ChatWithoutFile(messageDto,aiConfig.deepseekModel(),AiModelConstant.DEEPSEEK_R,role,toolCallbackProvider);
             }
+            case "COMMAND" ->{
+                return ChatWithoutFile(messageDto,aiConfig.commandModel(),AiModelConstant.COMMAND,role,toolCallbackProvider);
+            }
             case "DOUBAO" ->{
                 OpenAiChatModel doubaoModel = aiConfig.doubaoModel();
                 if (messageDto.getFile() == null){
@@ -209,15 +223,41 @@ public class ChatServiceImpl implements ChatService {
             }
             case "GLM" ->{
                 if (messageDto.getFile() == null){
-                    return ChatWithoutFile(messageDto, zhiPuAiChatModel, AiModelConstant.GLM,role,toolCallbackProvider);
+                    return ChatWithoutFile(messageDto, zhiPuAiChatModel, AiModelConstant.GLM, role, toolCallbackProvider);
                 }else {
                     return ChatWithFile(messageDto, zhiPuAiChatModel, AiModelConstant.GLM,role);
                 }
             }
         }
 
-        return Flux.empty();
+        return null;
     }
+
+    //检测是否包含绘画信息
+    private Boolean containDrawInfo(String message) {
+//        if (message == null || message.trim().isEmpty()) {
+//            return false;
+//        }
+//        String lowerText = message.trim().toLowerCase();
+//        // 匹配关键词库，存在任意关键词则判定为有绘画意图
+//        for (String keyword : DrawKeyWordsConstant.PAINT_KEYWORDS) {
+//            if (lowerText.contains(keyword)) {
+//                return true;
+//            }
+//        }
+//        return false;
+        IsDraw entity = ChatClient.builder(zhiPuAiChatModel).build()
+                .prompt().user(message).call().entity(IsDraw.class);
+        if (entity != null){
+            return entity.isDraw();
+        }else {
+            return false;
+        }
+
+    }
+
+    private record IsDraw(@JsonProperty("isDraw")
+    @JsonPropertyDescription("用户意图是否想要绘画") Boolean isDraw){}
 
     @Override
     public void updateRag(MultipartFile file) {
@@ -267,14 +307,154 @@ public class ChatServiceImpl implements ChatService {
                 .content();
     }
 
+    @Override
+    public TransitVo transit(MessageDto messageDto) {
+        if(containDrawInfo(messageDto.getMessage())){
+            new TransitVo().setType("DRAW");
+            return new TransitVo().setType("DRAW").setContent("正在为您绘制图片:"+messageDto.getMessage());
+        }else {
+            return new TransitVo().setType("TEXT");
+        }
+    }
+
+    /**
+     * 绘画回调
+     * @param messageDto
+     * @return
+     */
+    @Override
+    public Flux<String> drawCallback(MessageDto messageDto) {
+        //TODO 后面要不要考虑加入mcp和rag
+        ConversationUser conversationUser = conversationUserMapper.selectOne(new QueryWrapper<ConversationUser>().lambda()
+                .eq(ConversationUser::getConversationId, messageDto.getChatId()));
+        Long currentLoginId = UserUtils.getCurrentLoginId();
+
+        if (conversationUser == null){
+            conversationUserMapper.insert(new ConversationUser()
+                    .setConversationId(messageDto.getChatId())
+                    .setCreatedTime(LocalDateTime.now())
+                    .setUpdatedTime(LocalDateTime.now())
+                    .setTitle(LocalDateTime.now().toString().substring(5,10)+"新对话")
+                    .setUserId(currentLoginId));
+        }
+
+        // 如果messageDto中的role字段为null，则设置默认角色描述；否则使用传入的role值
+        String role="你名字叫何平安，是一个高冷酷酷的IT高手";
+        if (conversationUser != null) {
+            if (conversationUser.getRole() != null && !conversationUser.getRole().isEmpty()){
+                role = conversationUser.getRole();
+            }
+        }
+
+        if(messageDto.getImageUrl().contains(domin)){
+            messageDto.setImageUrl(messageDto.getImageUrl().replace(domin,""));
+        }
+
+        switch (messageDto.getModel()) {
+            case "GPT"->{
+                return DrawCallbackChat(messageDto, openaiModel,AiModelConstant.DEEPSEEK,role);
+            }
+            case "CLAUDE" ->{
+                return DrawCallbackChat(messageDto, aiConfig.claudeModel(),AiModelConstant.DEEPSEEK,role);
+            }
+            case "DEEPSEEK" -> {
+                return DrawCallbackChat(messageDto, aiConfig.deepseekModel(),AiModelConstant.DEEPSEEK,role);
+            }
+            case "QWEN" ->{
+                return DrawCallbackChat(messageDto,aiConfig.qwenModel(),AiModelConstant.QWEN,role);
+            }
+            case "GEMINI" -> {
+                return DrawCallbackChat(messageDto,aiConfig.geminiModel(),AiModelConstant.GEMINI,role);
+            }
+            case "GROK" ->{
+                return DrawCallbackChat(messageDto,aiConfig.gorkModel(),AiModelConstant.GROK,role);
+            }
+            case "DEEPSEEK_R"->{
+                return DrawCallbackChat(messageDto,aiConfig.deepseekModel(),AiModelConstant.DEEPSEEK_R,role);
+            }
+            case "DOUBAO" ->{
+                return DrawCallbackChat(messageDto, aiConfig.doubaoModel(), AiModelConstant.DOUBAO,role);
+            }
+            case "COMMAND" ->{
+                return DrawCallbackChat(messageDto, aiConfig.commandModel(), AiModelConstant.COMMAND, role);
+            }
+            case "GLM" ->{
+                return DrawCallbackChat(messageDto, zhiPuAiChatModel, AiModelConstant.GLM, role);
+            }
+        }
+        return Flux.empty();
+    }
+
+    /**
+     * 绘制回调对话
+     * @param messageDto
+     * @param model
+     * @param modelName
+     * @param role
+     * @return
+     */
+    public Flux<String> DrawCallbackChat(MessageDto messageDto, ChatModel model, String modelName, String role) {
+        ChatClient chatClient = ChatClient.builder(model)
+                .defaultSystem(role)
+                .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
+                .build();
+        Drawing drawing = drawingMapper.selectOne(new QueryWrapper<Drawing>().lambda()
+                .eq(Drawing::getGenerateUrl, messageDto.getImageUrl()));
+
+        String question = "(以下属于系统命令并严格执行)现在用户已经绘制完一张图片的状态，请输出绘制完该图的结束语，如已为您绘制好xxx的图片；这是用户绘图时的提示词输入："+messageDto.getMessage();
+        StringBuilder fullContent = new StringBuilder();
+
+        Flux<String> content = chatClient.prompt()
+                .user(question)
+                .advisors(advisorSpec -> advisorSpec.param(CONVERSATION_ID, messageDto.getChatId()))
+                .stream()
+                .content()
+                .doOnNext(fragment -> fullContent.append(fragment))
+                .doOnComplete(() -> {
+                    String completeContent = fullContent.toString();
+                    if (drawing != null && drawing.getImage() != null){
+                        springAiChatMemoryMapper.insert(new SpringAiChatMemory()
+                                .setContent(messageDto.getMessage())
+                                .setType("USER")
+                                .setMedia(drawing.getImage())
+                                .setModel(modelName)
+                                .setIsMcp(messageDto.getIsMcp())
+                                .setIsRag(messageDto.getIsRag())
+                                .setConversationId(messageDto.getChatId())
+                                .setTimestamp(LocalDateTime.now()));
+                    }else {
+                        springAiChatMemoryMapper.insert(new SpringAiChatMemory()
+                                .setContent(messageDto.getMessage())
+                                .setType("USER")
+                                .setModel(modelName)
+                                .setIsMcp(messageDto.getIsMcp())
+                                .setIsRag(messageDto.getIsRag())
+                                .setConversationId(messageDto.getChatId())
+                                .setTimestamp(LocalDateTime.now()));
+                    }
+                    springAiChatMemoryMapper.insert(new SpringAiChatMemory()
+                            .setContent(completeContent)
+                            .setModel(modelName)
+                            .setType("ASSISTANT")
+                            .setMedia(domin+messageDto.getImageUrl())
+                            .setIsMcp(messageDto.getIsMcp())
+                            .setIsRag(messageDto.getIsRag())
+                            .setConversationId(messageDto.getChatId())
+                            .setTimestamp(LocalDateTime.now()));
+                });
+
+        return content;
+    }
+
     /**
      * 无文件聊天
+     *
      * @param messageDto messageDto
-     * @param model 模型
-     * @param modelName 模型名称
+     * @param model      模型
+     * @param modelName  模型名称
      * @return Flux<String>
      */
-    public Flux<String> ChatWithoutFile(MessageDto messageDto,ChatModel model,String modelName,String role,ToolCallbackProvider toolCallbackProvider) {
+    public Flux<String> ChatWithoutFile(MessageDto messageDto, ChatModel model, String modelName, String role, ToolCallbackProvider toolCallbackProvider) {
         ChatClient chatClient;
         //是否开启MCP
         if (messageDto.getIsMcp()){
@@ -349,12 +529,13 @@ public class ChatServiceImpl implements ChatService {
 
     /**
      * 文件聊天
+     *
      * @param messageDto messageDto
-     * @param model 模型
-     * @param modelName 模型名称
+     * @param model      模型
+     * @param modelName  模型名称
      * @return Flux<String>
      */
-    public Flux<String> ChatWithFile(MessageDto messageDto, ChatModel model, String modelName,String role) {
+    public Flux<String> ChatWithFile(MessageDto messageDto, ChatModel model, String modelName, String role) {
         MediaType mediaType = MediaType.valueOf(Objects.requireNonNull(messageDto.getFile().getContentType()));
         String type = mediaType.getType();
         boolean isImage = "image".equals(type);

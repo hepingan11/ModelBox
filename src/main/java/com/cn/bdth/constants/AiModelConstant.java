@@ -6,9 +6,9 @@ package com.cn.bdth.constants;
  */
 public interface AiModelConstant {
 
-    String GPT = "gpt-5";
+    String GPT = "gpt-5.2-high";
 
-    String CLAUDE = "claude-sonnet-4-20250514";
+    String CLAUDE = "claude-sonnet-4-5-20250929-thinking-c";
 
     String QWEN = "qwen-plus";
 
@@ -16,13 +16,15 @@ public interface AiModelConstant {
 
     String DEEPSEEK_R = "deepseek-reasoner";
 
-    String GLM = "glm-4.5v";
+    String GLM = "glm-4.7";
 
-    String GEMINI = "gemini-2.5-flash";
+    String GEMINI = "gemini-3-pro-preview-thinking";
 
     String GROK = "grok-3";
 
-    String DOUBAO = "doubao-seed-1-6-250615";
+    String COMMAND = "command-r-08-2024";
+
+    String DOUBAO = "doubao-seed-1-6-lite-251015";
 
 }
 
