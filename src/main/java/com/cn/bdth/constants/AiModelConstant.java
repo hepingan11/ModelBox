@@ -20,11 +20,14 @@ public interface AiModelConstant {
 
     String GEMINI = "gemini-3-pro-preview-thinking";
 
-    String GROK = "grok-3";
+    String GROK = "grok-4-fast-reasoning";
 
     String COMMAND = "command-r-08-2024";
 
     String DOUBAO = "doubao-seed-1-6-lite-251015";
+
+    //付费模型
+    String PAY_MODEL = "GPT|CLAUDE|GEMINI|DEEPSEEK_R";
 
 }
 

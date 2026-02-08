@@ -13,4 +13,6 @@ public class TransitVo {
     //开头文本，仅type为DRAW时有效(正在为您绘制....的图片)
     private String content;
 
+    private String size;
+
 }

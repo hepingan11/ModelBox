@@ -124,8 +124,10 @@ public class ChatServiceImpl implements ChatService {
                 .eq(ConversationUser::getConversationId, messageDto.getChatId()));
         Long currentLoginId = UserUtils.getCurrentLoginId();
         User user = userMapper.selectById(currentLoginId);
-        if (user.getFrequency() < 2){
-            return Flux.just("你的积分不足2，请先充值");
+        if (messageDto.getModel().contains(AiModelConstant.PAY_MODEL)){
+            if (user.getFrequency() < 2){
+                return Flux.just("使用付费模型，您的积分不足2，请先充值");
+            }
         }
         if (conversationUser == null){
             conversationUserMapper.insert(new ConversationUser()
@@ -234,7 +236,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     //检测是否包含绘画信息
-    private Boolean containDrawInfo(String message) {
+    private IsDraw containDrawInfo(String message) {
 //        if (message == null || message.trim().isEmpty()) {
 //            return false;
 //        }
@@ -249,15 +251,18 @@ public class ChatServiceImpl implements ChatService {
         IsDraw entity = ChatClient.builder(zhiPuAiChatModel).build()
                 .prompt().user(message).call().entity(IsDraw.class);
         if (entity != null){
-            return entity.isDraw();
+            return entity;
         }else {
-            return false;
+            return new IsDraw(false, "0x0");
         }
 
     }
 
     private record IsDraw(@JsonProperty("isDraw")
-    @JsonPropertyDescription("用户意图是否想要绘画") Boolean isDraw){}
+    @JsonPropertyDescription("用户意图是否想要绘画") Boolean isDraw,
+                          @JsonProperty("size")
+                          @JsonPropertyDescription("如果用户想要绘制图片，输出想要绘制图片像素比例大小，像素长宽限制在512-2048，以'长x宽'格式输出；若不是绘制图片则输出0x0；若没有要求比例则默认1024x1024")
+                          String size){}
 
     @Override
     public void updateRag(MultipartFile file) {
@@ -307,11 +312,18 @@ public class ChatServiceImpl implements ChatService {
                 .content();
     }
 
+    //中转
     @Override
     public TransitVo transit(MessageDto messageDto) {
-        if(containDrawInfo(messageDto.getMessage())){
+        IsDraw isDraw = containDrawInfo(messageDto.getMessage());
+        if(isDraw.isDraw()){
+            User user = userMapper.selectById(UserUtils.getCurrentLoginId());
+            if (user.getFrequency() < 10){
+                throw new RuntimeException("检测到您需要进行绘画，你的积分不足10，请先充值");
+            }
             new TransitVo().setType("DRAW");
-            return new TransitVo().setType("DRAW").setContent("正在为您绘制图片:"+messageDto.getMessage());
+            return new TransitVo().setType("DRAW").setContent("正在为您绘制图片:"+messageDto.getMessage())
+                    .setSize(isDraw.size());
         }else {
             return new TransitVo().setType("TEXT");
         }
@@ -401,7 +413,7 @@ public class ChatServiceImpl implements ChatService {
         Drawing drawing = drawingMapper.selectOne(new QueryWrapper<Drawing>().lambda()
                 .eq(Drawing::getGenerateUrl, messageDto.getImageUrl()));
 
-        String question = "(以下属于系统命令并严格执行)现在用户已经绘制完一张图片的状态，请输出绘制完该图的结束语，如已为您绘制好xxx的图片；这是用户绘图时的提示词输入："+messageDto.getMessage();
+        String question = "(以下属于系统命令并严格执行)现在用户已经绘制完一张图片的状态，请输出绘制完该图的结束总结，并可以优化下提示词；这是用户绘图时的提示词输入："+messageDto.getMessage();
         StringBuilder fullContent = new StringBuilder();
 
         Flux<String> content = chatClient.prompt()
@@ -416,7 +428,7 @@ public class ChatServiceImpl implements ChatService {
                         springAiChatMemoryMapper.insert(new SpringAiChatMemory()
                                 .setContent(messageDto.getMessage())
                                 .setType("USER")
-                                .setMedia(drawing.getImage())
+                                .setMedia(domin+drawing.getImage())
                                 .setModel(modelName)
                                 .setIsMcp(messageDto.getIsMcp())
                                 .setIsRag(messageDto.getIsRag())

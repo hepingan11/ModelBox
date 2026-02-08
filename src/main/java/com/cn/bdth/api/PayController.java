@@ -1,6 +1,7 @@
 package com.cn.bdth.api;
 
-
+import com.cn.bdth.common.PayCommon;
+import com.cn.bdth.common.PayReturnInfoCommon;
 import com.cn.bdth.exceptions.OrdersException;
 import com.cn.bdth.msg.Result;
 import com.cn.bdth.service.PayService;
@@ -15,7 +16,7 @@ import java.util.Map;
 /**
  * 交易性接口
  *
- * @author  @github dulaiduwang003
+ * @author @github dulaiduwang003
  * @version 1.0
  */
 @Slf4j
@@ -24,9 +25,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class PayController {
 
-
     private final PayService payService;
-
 
     /**
      * 生成支付宝支付二维码
@@ -63,7 +62,6 @@ public class PayController {
         return Result.data(payService.getCurrentUserOrderPage(pageNum));
     }
 
-
     /**
      * 支付宝支付状态查询
      *
@@ -77,25 +75,84 @@ public class PayController {
 
     @RequestMapping("/paycallback")
     @ResponseBody
-    public String abc(HttpServletRequest request){
+    public String abc(HttpServletRequest request) {
         // 记得 map 第二个泛型是数组 要取 第一个元素 即[0]
         Map<String, String[]> parameterMap = request.getParameterMap();
         System.out.println("展示 回调的所有结果：");
         // 处理 回调 结果
-        parameterMap.keySet().stream().forEach((k) ->{
-            System.out.println(k+":"+parameterMap.get(k)[0]);
+        parameterMap.keySet().stream().forEach((k) -> {
+            System.out.println(k + ":" + parameterMap.get(k)[0]);
         });
 
         System.out.println("展示 回调的所有结果完成");
         System.out.print("\n最终结果是:");
 
-        if("OD".equals(parameterMap.get("status")[0])){
+        if ("OD".equals(parameterMap.get("status")[0])) {
             System.out.println("用户支付成功了");
-        }else {
+        } else {
             System.out.println("用户支付不成功");
         }
         return "ok";
     }
+
+    /**
+     * 微信JSAPI创建订单
+     * 
+     * @param payCommon 订单信息
+     * @return prepayId
+     */
+    @PostMapping("/jsapi/create")
+    @CrossOrigin
+    public Result submit(@RequestBody PayCommon payCommon) {
+        try {
+            PayReturnInfoCommon payReturnInfoCommon = payService.submitPay(payCommon);
+            return Result.data(payReturnInfoCommon);
+        } catch (Exception e) {
+            log.error("支付订单创建失败", e);
+            return Result.error("支付订单创建失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 微信Native创建订单
+     * 
+     * @param productId 产品id
+     * @return codeUrl
+     */
+    @PostMapping("/native/create/{productId}")
+    @CrossOrigin
+    public Result createNativeOrder(@PathVariable Long productId) {
+        try {
+            return Result.data(payService.createNativePay(productId));
+        } catch (Exception e) {
+            log.error("Native支付订单创建失败", e);
+            return Result.error("Native支付订单创建失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Native支付回调
+     *
+     * @param request the request
+     * @return the result
+     */
+    @PostMapping("/native/callback")
+    public String nativePayCallback(jakarta.servlet.http.HttpServletRequest request) {
+        return payService.nativePayCallback(request);
+    }
+
+    /**
+     * Native支付状态查询
+     *
+     * @param orderId the order id
+     * @return the result
+     */
+    @GetMapping("/native/status/{orderId}")
+    public Result nativePayStatus(@PathVariable String orderId) {
+        return Result.data(payService.nativePaymentStatus(orderId));
+    }
+
+
 
 
 }

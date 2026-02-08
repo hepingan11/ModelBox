@@ -1,5 +1,6 @@
 package com.cn.bdth.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cn.bdth.dto.ZhipuDrawDto;
 import com.cn.bdth.entity.Drawing;
 import com.cn.bdth.vo.admin.DrawDetailVo;
@@ -14,7 +15,7 @@ public interface DrawService {
 
     List<DrawDetailVo> listPublic(Integer page);
 
-    List<Drawing> listPrivate(Integer page);
+    Page<Drawing> listPrivate(Integer page);
 
     void toggle(Long drawId);
 }

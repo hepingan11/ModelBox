@@ -1,7 +1,10 @@
 package com.cn.bdth.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.cn.bdth.common.PayCommon;
+import com.cn.bdth.common.PayReturnInfoCommon;
 import com.cn.bdth.dto.ShelvesProductDto;
+import com.cn.bdth.msg.WxPayResponse;
 import com.cn.bdth.vo.AlipayPayCodeVo;
 import com.cn.bdth.vo.OrderPageVo;
 import com.cn.bdth.vo.ProductVo;
@@ -24,7 +27,6 @@ public interface PayService {
      */
     List<ProductVo> getProductList();
 
-
     /**
      * 获取当前用户订单页。
      *
@@ -33,14 +35,13 @@ public interface PayService {
      */
     OrderPageVo getCurrentUserOrderPage(final int pageNum);
 
-
     /**
      * 获取枫叶订单数据
      *
      * @param pageNum the page num
      * @return the current user order page
      */
-    OrderPageVo getUserOrderPage(final int pageNum,final String prompt, final String status);
+    OrderPageVo getUserOrderPage(final int pageNum, final String prompt, final String status);
 
     /**
      * 根据ID删除产品
@@ -49,7 +50,6 @@ public interface PayService {
      */
     void deleteProductById(final Long id);
 
-
     /**
      * 上架产品
      *
@@ -57,13 +57,10 @@ public interface PayService {
      */
     void shelvesProduct(final ShelvesProductDto dto);
 
-
-
     /**
      * 分页获取产品数据
      */
     IPage<ProductVo> getProductPageVo(final int pageNum, final String prompt);
-
 
     /**
      * 生成支付宝支付二维码
@@ -73,7 +70,6 @@ public interface PayService {
      */
     AlipayPayCodeVo generatePayQrCode(final Long productId);
 
-
     /**
      * 支付宝回调
      *
@@ -82,7 +78,6 @@ public interface PayService {
      */
     String alipayPullback(final HttpServletRequest request);
 
-
     /**
      * Payment status string.
      *
@@ -90,4 +85,30 @@ public interface PayService {
      * @return the string
      */
     String paymentStatus(final String orderNo);
+
+    PayReturnInfoCommon submitPay(PayCommon payCommon);
+
+    /**
+     * 创建Native支付
+     *
+     * @param productId the product id
+     * @return the string
+     */
+    WxPayResponse createNativePay(Long productId);
+
+    /**
+     * Native支付回调
+     *
+     * @param request the request
+     * @return the string
+     */
+    String nativePayCallback(final HttpServletRequest request);
+
+    /**
+     * Native支付状态
+     *
+     * @param orderId the order id
+     * @return the string
+     */
+    String nativePaymentStatus(String orderId);
 }

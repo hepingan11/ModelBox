@@ -111,7 +111,7 @@ public class DrawServiceImpl implements DrawService {
             if (file == null){
                 dto.setModel("COGVIEW_4");
             }else {
-                dto.setModel("DOUBAO_SEEDREAM");
+                dto.setModel("DOUBAO_SEEDEDIT");
             }
         }
         if (file != null && !isImageFile( file)){
@@ -215,11 +215,11 @@ public class DrawServiceImpl implements DrawService {
     }
 
     @Override
-    public List<Drawing> listPrivate(Integer page) {
+    public Page<Drawing> listPrivate(Integer page) {
         Page<Drawing> p = new Page<>(page, 15);
         return drawingMapper.selectPage(p, new QueryWrapper<Drawing>().lambda()
                 .orderByDesc(Drawing::getCreatedTime)
-                .eq(Drawing::getUserId,UserUtils.getCurrentLoginId())).getRecords();
+                .eq(Drawing::getUserId,UserUtils.getCurrentLoginId()));
     }
 
     @Override

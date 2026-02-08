@@ -33,6 +33,7 @@ public class RoutePathFilter {
                                     "/chat/**",
                                     "/gpt/**",
                                     "/public/**",
+                                    "/pay/**",
                                     "/gpt-web/**",
                                     "/bing/**",
                                     "/claude/**",
