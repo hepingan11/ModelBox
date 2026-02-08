@@ -376,6 +376,26 @@ export function UsersOrdersPage(data) {
 }
 
 /**
+ *    微信Native支付创建订单
+ */
+export function createNativeOrder(productId) {
+    return request({
+        url: '/pay/native/create/' + productId,
+        method: 'POST'
+    })
+}
+
+/**
+ *    微信Native支付状态查询
+ */
+export function nativePayStatus(orderId) {
+    return request({
+        url: '/pay/native/status/' + orderId,
+        method: 'GET'
+    })
+}
+
+/**
  *    使用兑换码
  */
 export function UseExchangeCode(data) {

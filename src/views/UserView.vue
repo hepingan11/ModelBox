@@ -85,85 +85,84 @@
         <!-- 绘画展示区 -->
         <div v-if="showParam === 1" class="gallery-section">
           <h3 style="color: var(--textColor1);">我的绘画作品</h3>
-          <el-scrollbar height="400px">
-            <div class="image-grid">
-              <div v-for="item in imageList" :key="item.drawingId || item.id" class="image-item hover-scale">
-                <!-- 公开状态标签 -->
-                <div class="image-status">
-                  <el-tag 
-                    :type="item.isPublic ? 'success' : 'info'" 
-                    size="small"
-                    class="status-tag"
-                  >
-                    <el-icon>
-                      <Globe v-if="item.isPublic" />
-                      <Lock v-else />
-                    </el-icon>
-                    {{ item.isPublic ? '公开' : '私有' }}
-                  </el-tag>
-                </div>
-                
-                <!-- 图片 -->
-                <el-image 
-                  :src="imageUrl+item.generateUrl" 
-                  fit="cover" 
-                  :preview-src-list="[imageUrl+item.generateUrl]"
-                  :preview-teleported="true"
-                  :z-index="9999"
-                  lazy
-                  class="gallery-image"
+          <div class="image-grid">
+            <div v-for="item in imageList" :key="item.drawingId || item.id" class="image-item hover-scale">
+              <!-- 公开状态标签 -->
+              <div class="image-status">
+                <el-tag 
+                  :type="item.isPublic ? 'success' : 'info'" 
+                  size="small"
+                  class="status-tag"
                 >
-                  <template #error>
-                    <div class="image-error">
-                      <el-icon><Picture /></el-icon>
-                      <span>加载失败</span>
-                    </div>
-                  </template>
-                  <template #placeholder>
-                    <div class="image-loading">
-                      <el-icon class="rotating"><Loading /></el-icon>
-                    </div>
-                  </template>
-                </el-image>
-                
-                <!-- 操作按钮 -->
-                <div class="image-actions">
-                  <el-button 
-                    :type="item.isPublic ? 'warning' : 'success'"
-                    size="small"
-                    @click="toggleImagePublic(item)"
-                    :loading="item.toggleLoading"
-                    class="toggle-btn"
-                  >
-                    <el-icon>
-                      <Lock v-if="item.isPublic" />
-                      <Share v-else />
-                    </el-icon>
-                    {{ item.isPublic ? '设为私有' : '设为公开' }}
-                  </el-button>
-                </div>
+                  <el-icon>
+                    <Globe v-if="item.isPublic" />
+                    <Lock v-else />
+                  </el-icon>
+                  {{ item.isPublic ? '公开' : '私有' }}
+                </el-tag>
+              </div>
+              
+              <!-- 图片 -->
+              <el-image 
+                class="gallery-image"
+                :src="imageUrl+item.generateUrl" 
+                fit="cover" 
+                :preview-src-list="[imageUrl+item.generateUrl]"
+                :preview-teleported="true"
+                :z-index="9999"
+                lazy
+              >
+                <template #error>
+                  <div class="image-error">
+                    <el-icon><Picture /></el-icon>
+                    <span>加载失败</span>
+                  </div>
+                </template>
+                <template #placeholder>
+                  <div class="image-loading">
+                    <el-icon class="rotating"><Loading /></el-icon>
+                  </div>
+                </template>
+              </el-image>
+              
+              <!-- 操作按钮 -->
+              <div class="image-actions">
+                <el-button 
+                  :type="item.isPublic ? 'warning' : 'success'"
+                  size="small"
+                  @click="toggleImagePublic(item)"
+                  :loading="item.toggleLoading"
+                  class="toggle-btn"
+                >
+                  <el-icon>
+                    <Lock v-if="item.isPublic" />
+                    <Share v-else />
+                  </el-icon>
+                  {{ item.isPublic ? '设为私有' : '设为公开' }}
+                </el-button>
               </div>
             </div>
-            
-            <!-- 加载更多指示器 -->
-            <div v-if="loading && imageList.length > 0" class="loading-more">
-              <el-icon class="loading-icon"><Loading /></el-icon>
-              <span>加载更多作品...</span>
-            </div>
-            
-            <!-- 没有更多数据提示 -->
-            <div v-if="noMoreData && imageList.length > 0" class="no-more-data">
-              <el-icon><CheckCircle /></el-icon>
-              <span>已展示所有作品</span>
-            </div>
-            
-            <!-- 空状态 -->
-            <div v-if="!loading && imageList.length === 0" class="empty-state">
-              <el-icon class="empty-icon"><Picture /></el-icon>
-              <h3>暂无作品</h3>
-              <p>还没有创作任何AI绘画作品，快去创作第一个吧！</p>
-            </div>
-          </el-scrollbar>
+          </div>
+          
+          <!-- 空状态 -->
+          <div v-if="!loading && imageList.length === 0" class="empty-state">
+            <el-icon class="empty-icon"><Picture /></el-icon>
+            <h3>暂无作品</h3>
+            <p>还没有创作任何AI绘画作品，快去创作第一个吧！</p>
+          </div>
+
+          <!-- 分页控件 -->
+          <div class="pagination-container" v-if="imageList.length > 0 || currentPage > 1">
+             <el-pagination
+              background
+              layout="prev, pager, next"
+              :current-page="currentPage"
+              :page-size="pageSize"
+              :total="total"
+              @current-change="handleCurrentChange"
+              :disabled="loading"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -222,11 +221,6 @@ export default {
     })
 
     onUnmounted(() => {
-      // 清理滚动监听器
-      const scrollbarElement = document.querySelector('.gallery-section .el-scrollbar__wrap')
-      if (scrollbarElement) {
-        scrollbarElement.removeEventListener('scroll', handleScroll)
-      }
     })
 
     async function getUser() {
@@ -246,37 +240,58 @@ export default {
       }
     }
 
+    const pageSize = ref(10)
+    const total = ref(100) // 默认给一个值，因为接口未返回总数
+
     async function getImageList() {
       // 重置状态
       imageList.value = []
       currentPage.value = 1
-      noMoreData.value = false
       showParam.value = 1;
       
-      // 加载第一页数据
-      await loadMoreImages()
-      
-      // 设置滚动监听
-      setupScrollListener()
+      // 加载数据
+      await loadImages()
     }
 
-    async function loadMoreImages() {
-      if (loading.value || noMoreData.value) return
-      
+    async function handleCurrentChange(val) {
+      currentPage.value = val
+      await loadImages()
+      // 滚动到顶部
+      const gallery = document.querySelector('.gallery-section')
+      if (gallery) {
+        gallery.scrollIntoView({ behavior: 'smooth' })
+      }
+    }
+
+    async function loadImages() {
       loading.value = true
       try {
         const response = await getUserDraw(currentPage.value)
         
-        if (response && response.length > 0) {
-          imageList.value.push(...response)
-          currentPage.value++
+        // 适配 Mybatis-Plus Page<T> 结构
+        if (response && response.records) {
+          imageList.value = response.records
+          total.value = Number(response.total)
           
-          // 如果返回的数据少于预期，说明没有更多数据了
-          if (response.length < 20) {
-            noMoreData.value = true
+          // 可选：同步后端返回的 size
+          if (response.size) {
+            pageSize.value = Number(response.size)
+          }
+        } 
+        // 兼容旧的数组返回格式
+        else if (Array.isArray(response)) {
+          imageList.value = response // 替换模式而非追加
+          
+          if (response.length < pageSize.value) {
+            total.value = (currentPage.value - 1) * pageSize.value + response.length
+          } else {
+             if (total.value <= currentPage.value * pageSize.value) {
+                total.value = (currentPage.value + 1) * pageSize.value
+             }
           }
         } else {
-          noMoreData.value = true
+          imageList.value = []
+          total.value = 0
         }
       } catch (error) {
         console.error('加载图片失败:', error)
@@ -287,25 +302,6 @@ export default {
         })
       } finally {
         loading.value = false
-      }
-    }
-
-    function setupScrollListener() {
-      // 等待DOM更新后设置监听器
-      setTimeout(() => {
-        const scrollbarElement = document.querySelector('.gallery-section .el-scrollbar__wrap')
-        if (scrollbarElement) {
-          scrollbarElement.addEventListener('scroll', handleScroll)
-        }
-      }, 100)
-    }
-
-    function handleScroll(event) {
-      const { scrollTop, scrollHeight, clientHeight } = event.target
-      
-      // 当滚动到底部附近时加载更多
-      if (scrollTop + clientHeight >= scrollHeight - 50) {
-        loadMoreImages()
       }
     }
 
@@ -413,8 +409,12 @@ export default {
       uploading,
       loading,
       noMoreData,
-      loadMoreImages,
-      toggleImagePublic
+      noMoreData,
+      loadMoreImages: loadImages, // 兼容引用
+      toggleImagePublic,
+      pageSize,
+      total,
+      handleCurrentChange
     }
   }
 }
@@ -649,6 +649,17 @@ export default {
     }
   }
   
+  .pagination-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    padding-bottom: 20px;
+  }
+
+  :deep(.el-pagination.is-background .el-pager li:not(.is-disabled).is-active) {
+    background-color: var(--themeColor1);
+  }
+
   .loading-more,
   .no-more-data {
     display: flex;

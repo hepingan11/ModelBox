@@ -20,6 +20,7 @@
     "lottie-web": "^5.12.2",
     "nprogress": "^0.2.0",
     "prismjs": "^1.29.0",
+    "qrcode": "^1.5.4",
     "sass": "^1.66.1",
     "sass-loader": "^13.3.2",
     "terser-webpack-plugin": "^5.3.9",

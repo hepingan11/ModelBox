@@ -93,26 +93,38 @@
               <div>支付宝支付</div>
             </div>
           </el-radio>
-          <!--          <el-radio label="1" v-model="payType">-->
-          <!--            <div class="pay">-->
-          <!--              <img class="wxpay-img" alt="微信支付"-->
-          <!--                   src="../assets/wxpay.svg">-->
-          <!--              <div>微信支付</div>-->
-          <!--            </div>-->
-          <!--          </el-radio>-->
+          <el-radio label="1" v-model="payType">
+            <div class="pay">
+              <img class="wxpay-img" alt="微信支付"
+                   src="../assets/wxpay.svg">
+              <div>微信支付</div>
+            </div>
+          </el-radio>
         </div>
         <template #footer>
           <span>
             <el-button class="buttonTheme" @click="payVisible = false"
               >不了, 谢谢</el-button
             >
-            <el-button class="buttonTheme themeColor" @click="alipayPay"
+            <el-button class="buttonTheme themeColor" @click="handlePay"
               >跳转至收银台</el-button
             >
           </span>
         </template>
       </el-dialog>
-    </div>
+
+    <!-- 微信支付二维码弹窗 -->
+    <el-dialog
+      v-model="wxPayVisible"
+      width="340px"
+      style="background-color: var(--bgColor1); text-align: center;"
+      :before-close="closeWxPay"
+    >
+      <div style="padding-bottom: 20px; font-weight: bold; font-size: 16px;">微信扫码支付</div>
+      <img :src="wxCodeUrl" style="width: 200px; height: 200px;" />
+      <div style="padding-top: 20px; color: #666;">请使用微信扫一扫完成支付</div>
+    </el-dialog>
+  </div>
     <LoginDialog
       :show="loginVisible"
       @close="loginVisible = false"
@@ -160,9 +172,12 @@
 </template>
 <script>
 import { onMounted, ref } from "vue";
+import QRCode from 'qrcode';
 import {
   alipayIsSucceed,
   alipayPayQrCode,
+  createNativeOrder,
+  nativePayStatus,
   GetProducts,
   GetUserInfo,
 } from "../../api/BSideApi";
@@ -299,6 +314,68 @@ export default {
       }
     }
 
+    const wxPayVisible = ref(false);
+    const wxCodeUrl = ref('');
+    let wxTimerId = null;
+
+    async function handlePay() {
+      if (payType.value === "0") {
+        await alipayPay();
+      } else {
+        await wxNativePay();
+      }
+    }
+
+    async function wxNativePay() {
+      try {
+        ElLoading.service({
+          fullscreen: true,
+          text: "正在构建订单...",
+          spinner: "el-icon-loading",
+          background: "rgba(0, 0, 0, 0.7)",
+        });
+        //构建微信订单
+        let res = await createNativeOrder(productId.value);
+        wxCodeUrl.value = await QRCode.toDataURL(res.codeUrl);
+        payVisible.value = false;
+        wxPayVisible.value = true;
+        
+        //轮询检查订单状态
+        wxTimerId = setInterval(async () => {
+          let status = await nativePayStatus(res.orderId);
+          if (status === "success") {
+            clearInterval(wxTimerId);
+            wxPayVisible.value = false;
+            ElNotification({
+              title: "成功",
+              message: "支付成功",
+              type: "success",
+            });
+            showSucceed.value = true;
+            mainPageVisible.value = false;
+            await getUser();
+          }
+        }, 3000);
+
+      } catch (e) {
+        ElNotification({
+          title: "错误",
+          message: e.message || "创建订单失败",
+          type: "error",
+        });
+      } finally {
+        ElLoading.service().close();
+      }
+    }
+
+    function closeWxPay() {
+      wxPayVisible.value = false;
+      if (wxTimerId) {
+        clearInterval(wxTimerId);
+        wxTimerId = null;
+      }
+    }
+
     onMounted(() => {
       if (store.getters.userinfo) {
         init();
@@ -313,6 +390,8 @@ export default {
       outcome,
       mainPageVisible,
       alipayPay,
+      wxNativePay,
+      handlePay,
       payChoose,
       init,
       introduce,
@@ -322,6 +401,9 @@ export default {
       loginVisible,
       productFrequency,
       payying,
+      wxPayVisible,
+      wxCodeUrl,
+      closeWxPay
     };
   },
 };

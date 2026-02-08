@@ -592,19 +592,73 @@ export default defineComponent({
   animation: jumpT 1.3s linear infinite;
 }
 
-@media screen and (max-width: 756px) {
+@media screen and (max-width: 768px) {
+  /* 容器整体布局：允许换行 */
+  :deep(.InputFormFieldWapper) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding-bottom: 5px;
+  }
+
+  /* 第一行左侧：模型选择 */
   :deep(.selectWrapper) {
-    width: 80px;
-    min-width: 80px;
-    .el-input {
-      .el-input__wrapper {
-        .el-input__inner {
-          text-indent: 0px;
-        }
+    order: 1;
+    width: auto;
+    min-width: 120px;
+    flex-grow: 0;
+    margin-right: auto; /* 确保靠左 */
+    margin-bottom: 8px; /* 与下方输入框的间距 */
+
+    .el-input__wrapper {
+      padding: 4px 8px !important;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05) !important;
+    }
+  }
+
+  /* 第一行右侧：控制按钮 */
+  .input-controls {
+    order: 1;
+    margin-left: auto; /* 确保靠右 */
+    margin-right: 0;
+    margin-bottom: 8px; /* 与下方输入框的间距 */
+    display: flex;
+    gap: 12px; /* 按钮间距 */
+    align-items: center;
+
+    .sendIcon,
+    .uploadFileButton {
+      width: 40px; /* 增大触摸区域 */
+      height: 40px;
+      margin-bottom: 0;
+      
+      .el-icon {
+        font-size: 20px;
       }
     }
   }
 
+  /* 第二行：输入框独占一行 */
+  .input-container {
+    order: 2;
+    width: 100%;
+    flex-basis: 100%; /* 强制占满一行 */
+    margin: 0;
+    
+    .el-input {
+      margin-left: 0 !important; /* 移除左边距 */
+    }
+  }
   
+  /* 优化移动端输入框内部样式 */
+  :deep(.InputFormFieldWapper) {
+    .el-textarea__inner {
+      padding: 12px;
+      min-height: 80px !important; /* 保证最小高度 */
+      margin: 0;
+    }
+  }
 }
 </style>

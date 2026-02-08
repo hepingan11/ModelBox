@@ -278,21 +278,41 @@
               :icon="UserFilled"
               :src="require('../assets/logo.png')"
           />
-          <template v-if="item.assistant">
+          <template v-if="item.assistant || item.aiImage">
             <div style="width: 100%">
+              <!-- 独立显示 AI 生成的图片 -->
+              <div v-if="item.aiImage" class="ai-generated-image" style="margin-bottom: 10px; margin-left: 9px;">
+                <el-image
+                  class="ai-image-component"
+                  :src="item.aiImage"
+                  :preview-src-list="[item.aiImage]"
+                  :initial-index="0"
+                  preview-teleported
+                  :z-index="9999"
+                >
+                  <template #error>
+                    <div class="image-error">
+                      <el-icon><Picture /></el-icon>
+                      <span>图片加载失败</span>
+                    </div>
+                  </template>
+                </el-image>
+              </div>
+
               <div
                   class="answer-data"
-                  :style="{ maxWidth: calculateWidth(item.assistant.length) }"
+                  :style="{ maxWidth: calculateWidth(item.assistant ? item.assistant.length : 0) }"
               >
                 <v-md-editor
                     :model-value="item.assistant"
                     mode="preview"
                     @copy-code-success="handleCopyCodeSuccess"
+                    v-if="item.assistant"
                 />
               </div>
 
               <div class="operation--model" v-if="!item.isError">
-                <div class="op-btn" @click="copyAnswer(item.assistant)">
+                <div class="op-btn" @click="copyAnswerWithImage(item)">
                   <el-icon>
                     <CopyDocument/>
                   </el-icon>
@@ -500,7 +520,8 @@
       center
       :close-on-click-modal="false"
       :close-on-press-escape="false"
-        style="background-color: var(--bgColor1);color: var(--textColor1);border-color: var(--borderColor);"
+      class="custom-edit-dialog"
+      style="background-color: var(--bgColor1);color: var(--textColor1);border-color: var(--borderColor);"
       @close="handleEditDialogClose"
   >
     <div style="padding: 20px;">
@@ -528,7 +549,7 @@
           />
         </el-form-item>
         
-        <div style="font-size: 12px; color: var(--textColor3); margin-top: 8px;">
+        <div style="font-size: 12px; color: var(--textColor2); margin-top: 8px;">
           <div>• 对话名称：用于标识这个对话</div>
           <div>• 系统角色：定义AI在此对话中的行为方式和回答风格</div>
           <div>• 提示：双击对话标题也可以快速编辑</div>
@@ -860,6 +881,75 @@ import store from '@/store';
 import { conversionTime } from '../utils/date';
 
 // 响应式数据
+// (Added: Early ResizeObserver error suppression)
+// 更强的ResizeObserver错误抑制逻辑 (提前执行)
+const resizeObserverErrorHandler = (e) => {
+  // Check for various ResizeObserver error messages
+  if (e.message && (
+      e.message === 'ResizeObserver loop completed with undelivered notifications.' ||
+      e.message.includes('ResizeObserver loop completed with undelivered notifications') || 
+      e.message.includes('ResizeObserver loop limit exceeded') ||
+      e.message.includes('ResizeObserver loop')
+  )) {
+    // 完全静默这些错误
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    return false;
+  }
+};
+
+// 立即绑定错误处理，尽可能早地拦截
+window.addEventListener('error', resizeObserverErrorHandler, true);
+window.addEventListener('unhandledrejection', (e) => {
+  if (e.reason && (
+    (e.reason.message && e.reason.message.includes('ResizeObserver')) ||
+    (typeof e.reason === 'string' && e.reason.includes('ResizeObserver'))
+  )) {
+    e.preventDefault();
+    return false;
+  }
+});
+
+// 保存引用以便清理
+window._resizeObserverErrorHandler = resizeObserverErrorHandler;
+
+// 全局错误抑制 - 覆盖console.error
+if (!window._originalConsoleError) {
+  window._originalConsoleError = console.error;
+  console.error = (...args) => {
+    if (args.length > 0 && (
+      (typeof args[0] === 'string' && args[0].includes('ResizeObserver')) ||
+      (args[0] && args[0].message && args[0].message.includes('ResizeObserver'))
+    )) {
+      return; // 静默ResizeObserver相关错误
+    }
+    window._originalConsoleError.apply(console, args);
+  };
+}
+
+// 重写ResizeObserver构造函数以添加防抖和错误处理
+if (window.ResizeObserver && !window._OriginalResizeObserver) {
+  window._OriginalResizeObserver = window.ResizeObserver;
+  window.ResizeObserver = class extends window._OriginalResizeObserver {
+    constructor(callback) {
+      // 使用 requestAnimationFrame 包装回调，避免 loop limit exceeded
+      const wrappedCallback = (entries, observer) => {
+        window.requestAnimationFrame(() => {
+          try {
+            callback(entries, observer);
+          } catch (error) {
+            // 静默处理回调内部错误
+            if (!error.message || !error.message.includes('ResizeObserver')) {
+               // console.warn('ResizeObserver callback internal error (suppressed):', error);
+            }
+          }
+        });
+      };
+      super(wrappedCallback);
+    }
+  };
+}
+
 const scrollRef = ref(null);
 const inputRef = ref(null);
 const input = ref('');
@@ -1405,66 +1495,8 @@ onMounted(() => {
   console.log('DialogueView 组件已挂载');
   console.log('当前用户信息:', storeInstance.getters.userinfo);
   
-  // 更强的ResizeObserver错误抑制
-  const resizeObserverErrorHandler = (e) => {
-    if (e.message && (
-        e.message.includes('ResizeObserver loop completed with undelivered notifications') || 
-        e.message.includes('ResizeObserver loop limit exceeded') ||
-        e.message.includes('ResizeObserver loop') ||
-        e.message.includes('ResizeObserver')
-    )) {
-      // 完全静默这些错误，不在控制台显示
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      return false;
-    }
-  };
-  
-  // 全局错误抑制
-  if (!window._originalConsoleError) {
-    window._originalConsoleError = console.error;
-    console.error = (...args) => {
-      if (args[0] && typeof args[0] === 'string' && args[0].includes('ResizeObserver')) {
-        return; // 静默ResizeObserver相关错误
-      }
-      window._originalConsoleError.apply(console, args);
-    };
-  }
-  
-  // 处理 ResizeObserver 错误
-  window.addEventListener('error', resizeObserverErrorHandler, true);
-  window.addEventListener('unhandledrejection', (e) => {
-    if (e.reason && (
-      (e.reason.message && e.reason.message.includes('ResizeObserver')) ||
-      (typeof e.reason === 'string' && e.reason.includes('ResizeObserver'))
-    )) {
-      e.preventDefault();
-      return false;
-    }
-  });
-  
-  // 重写ResizeObserver构造函数以添加错误处理
-  if (window.ResizeObserver && !window._OriginalResizeObserver) {
-    window._OriginalResizeObserver = window.ResizeObserver;
-    window.ResizeObserver = class extends window._OriginalResizeObserver {
-      constructor(callback) {
-        const wrappedCallback = (entries, observer) => {
-          try {
-            // 使用requestAnimationFrame延迟执行
-            requestAnimationFrame(() => {
-              callback(entries, observer);
-            });
-          } catch (error) {
-            // 静默处理错误
-            if (!error.message || !error.message.includes('ResizeObserver')) {
-              console.error('ResizeObserver callback error:', error);
-            }
-          }
-        };
-        super(wrappedCallback);
-      }
-    };
-  }
+  // ResizeObserver error handling moved to top of script setup
+
   
   // 初始检查设备类型
   checkMobile();
@@ -1491,7 +1523,8 @@ onMounted(() => {
   }
   
   // 保存错误处理器引用以便清理
-  window._resizeObserverErrorHandler = resizeObserverErrorHandler;
+  // window._resizeObserverErrorHandler = resizeObserverErrorHandler; // Moved to top
+
 });
 
 // 监听用户登录状态变化
@@ -1689,6 +1722,15 @@ function calculateWidth(textLength) {
   localStorage.setItem('dialogueCache', JSON.stringify(dialogueCache.value));
 }
 
+
+    // 判断用户是否在底部
+    function isUserAtBottom() {
+      if (!scrollRef.value) return true;
+      const { scrollTop, scrollHeight, clientHeight } = scrollRef.value;
+      // 允许100px的误差范围
+      return (scrollHeight - scrollTop - clientHeight) <= 100;
+    }
+
     async function onSubmit() {
       if (!storeInstance.getters.userinfo) {
         loginVisible.value = true;
@@ -1773,6 +1815,11 @@ function calculateWidth(textLength) {
           // 2. 发送绘画请求 /draw/zhipu/image
           const drawFormData = new FormData();
           drawFormData.append('prompt', content);
+          // 如果 transit 接口返回了 size 字段（仅在 DRAW 时存在），则传给绘画接口
+          if (transitData.size) {
+            drawFormData.append('size', transitData.size);
+          }
+          
           if (filesSnapshot.length > 0) {
             drawFormData.append('file', filesSnapshot[0]);
           }
@@ -1804,8 +1851,11 @@ function calculateWidth(textLength) {
              throw new Error('生成的图片URL无效');
           }
           
-          // 将图片显示在回答中 (使用Markdown图片语法)
-          conversationList.value[lastMsgIndex].assistant = `![生成的图片](${imageUrl})\n\n`;
+          // 将图片显示在回答中 (使用独立字段而非Markdown拼接，避免闪烁)
+          // conversationList.value[lastMsgIndex].assistant = `![生成的图片](${imageUrl})\n\n`;
+          conversationList.value[lastMsgIndex].aiImage = imageUrl;
+          // 清空可能存在的提示文本
+          conversationList.value[lastMsgIndex].assistant = '';
           
           // 3. 发送回调请求 /chat/draw/callback 获取文字总结
           const callbackResponse = await fetch(baseURL + '/chat/draw/callback', {
@@ -1831,13 +1881,16 @@ function calculateWidth(textLength) {
               const {done, value} = await reader.read();
               if (done) break;
               
+              const shouldScroll = isUserAtBottom();
               const chunk = decoder.decode(value, { stream: true });
               // 追加到图片后面
               conversationList.value[lastMsgIndex].assistant += chunk;
               
-              nextTick(() => {
-                scrollToTheBottom();
-              });
+              if (shouldScroll) {
+                nextTick(() => {
+                  scrollToTheBottom();
+                });
+              }
             }
           }
           
@@ -1884,13 +1937,17 @@ function calculateWidth(textLength) {
               const {done, value} = await reader.read();
               if (done) break;
               
+              const shouldScroll = isUserAtBottom();
               const chunk = decoder.decode(value, { stream: true });
               receivedText += chunk;
               
               conversationList.value[conversationList.value.length - 1].assistant = receivedText;
-              nextTick(() => {
-                scrollToTheBottom();
-              });
+              
+              if (shouldScroll) {
+                nextTick(() => {
+                  scrollToTheBottom();
+                });
+              }
             }
             
             conversationList.value[conversationList.value.length - 1].isError = false;
@@ -1986,19 +2043,24 @@ async function loadHistory(chatId, isLoadMore = false) {
                   media: msg.media || ''
               };
           } else if (type === 'ASSISTANT' || type === 'MODEL' || type === 'AI') {
-              // 处理 AI 回复中的媒体内容 (例如生成的图片)
+                  // 处理 AI 回复中的媒体内容 (例如生成的图片)
               let displayContent = content;
+              let aiImage = '';
+              
               if (msg.media && typeof msg.media === 'string' && msg.media.startsWith('http')) {
-                  // 如果 media 字段有图片URL，追加到 content 中以便显示
-                  // 检查 content 是否已经包含了该图片链接，避免重复
-                  if (!displayContent.includes(msg.media)) {
-                      displayContent = `![生成的图片](${msg.media})\n\n${displayContent}`;
-                  }
+                  // 如果 media 字段有图片URL，存入 aiImage 字段，不再拼接到 content
+                  aiImage = msg.media;
+                  // 移除 content 中可能已经存在的相同图片链接（为了兼容旧数据）
+                  // const imageMdParams = `](${msg.media})`;
+                  // if (displayContent.includes(imageMdParams)) {
+                  //    // 这里比较复杂，暂不处理旧数据清洗，优先显示 aiImage
+                  // }
               }
 
               if (currentPair) {
                   currentPair.assistant = displayContent;
                   currentPair.model = msg.model;
+                  currentPair.aiImage = aiImage;
                   formattedConversations.push(currentPair);
                   currentPair = null;
               } else {
@@ -2010,7 +2072,8 @@ async function loadHistory(chatId, isLoadMore = false) {
                       timestamp: msg.timestamp,
                       hasImage: false,
                       model: msg.model,
-                      media: ''
+                      media: '',
+                      aiImage: aiImage
                   });
               }
           }
@@ -2096,6 +2159,17 @@ function handleCopyCodeSuccess(code) {
     message: "复制成功",
     type: "success",
   });
+}
+
+// 复制包含图片的内容
+function copyAnswerWithImage(item) {
+  let text = item.assistant || '';
+  // 如果有图片，将图片作为Markdown格式添加到复制内容中
+  if (item.aiImage) {
+    const imageMd = `![生成的图片](${item.aiImage})\n\n`;
+    text = imageMd + text;
+  }
+  copyAnswer(text);
 }
 
 function copyAnswer(data) {
@@ -4207,15 +4281,20 @@ defineExpose({
     top: 60px; /* 从导航栏下方开始 */
     
     &.sidebar-collapsed {
-      transform: translateX(-220px); // 通过transform隐藏大部分侧边栏
-      width: 80px; // 保持小宽度
+      transform: translateX(-100%); // 完全移出屏幕
+      box-shadow: none; // 隐藏阴影
     }
+
   }
   
   .main-content {
-    margin-left: 0; // 移动设备上不需要左边距
+    margin-left: 0 !important; // 强制覆盖pc端样式
     width: 100vw; // 使用视口宽度
     flex: 1;
+    
+    &.main-expanded {
+      margin-left: 0 !important; // 强制覆盖pc端折叠样式
+    }
     
     .body {
       padding: 0 10px 160px; // 增加底部padding，确保移动端消息不被输入框遮挡
@@ -4225,12 +4304,13 @@ defineExpose({
   }
 
   .footer {
-    padding: 10px 15px; // 减少底部padding
-    margin-bottom: 20px; // 调整底部边距
-    max-width: none; // 移动端取消最大宽度限制
-    left: 10px;
-    right: 10px;
-    width: calc(100% - 20px); // 考虑左右padding
+    margin-bottom: 0; // 紧贴底部
+    left: 0;
+    right: 0;
+    width: 100%; // 占满宽度
+    padding: 10px 10px 20px; // 调整padding，底部稍多
+    box-sizing: border-box; // 确保内边距包含在宽度内
+    bottom: 0; // 确保固定在底部
   }
 
   .footer-bar {
@@ -4357,12 +4437,10 @@ defineExpose({
   // 优化滚动性能
   .conversation-list {
     -webkit-overflow-scrolling: touch; // iOS 平滑滚动
-    overflow-scrolling: touch; // 其他设备平滑滚动
   }
 
   .body {
     -webkit-overflow-scrolling: touch;
-    overflow-scrolling: touch;
   }
 
   // 防止ResizeObserver循环的样式
@@ -5243,6 +5321,78 @@ defineExpose({
     max-width: 280px;
     font-size: 12px;
     padding: 10px 12px;
+    padding: 10px 12px;
+  }
+}
+
+// ========================= 编辑对话弹窗特定样式 =========================
+:deep(.custom-edit-dialog) {
+  .el-dialog {
+    background-color: var(--bgColor1);
+    border: 1px solid var(--borderColor);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  }
+
+  .el-dialog__title {
+    color: var(--textColor1);
+    font-weight: 600;
+  }
+
+  .el-form-item__label {
+    color: var(--textColor2);
+  }
+
+  // 强制覆盖输入框背景和文字颜色
+  .el-input__wrapper,
+  .el-textarea__inner {
+    background-color: var(--bgColor2) !important;
+    box-shadow: 0 0 0 1px var(--borderColor) inset !important;
+    color: var(--textColor1) !important;
+    
+    &:hover, &.is-focus {
+      box-shadow: 0 0 0 1px var(--themeColor1) inset !important;
+    }
+  }
+  
+  .el-input__inner {
+    color: var(--textColor1) !important;
+    
+    &::placeholder {
+      color: var(--textColor3);
+    }
+  }
+  
+  .el-textarea__inner {
+    &::placeholder {
+      color: var(--textColor3);
+    }
+  }
+  
+  .el-input-group__append, 
+  .el-input-group__prepend {
+    background-color: var(--bgColor2);
+    border-color: var(--borderColor);
+    color: var(--textColor2);
+  }
+}
+
+// AI生成图片的特定样式 - 强制自适应比例
+.ai-image-component {
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  display: inline-block !important; /* 避免块级默认占满 */
+  max-width: 400px !important;
+  max-height: 400px !important;
+  width: auto !important;
+  height: auto !important;
+  
+  :deep(.el-image__inner) {
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    max-width: 100% !important;
+    max-height: 400px !important;
+    object-fit: contain !important;
   }
 }
 </style>
