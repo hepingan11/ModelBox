@@ -1,17 +1,25 @@
 package com.cn.bdth.api;
 
+import cn.dev33.satoken.stp.StpUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.cn.bdth.constants.user.AuthConstant;
 import com.cn.bdth.dto.EmailCodeDto;
 import com.cn.bdth.dto.EmailLoginDto;
+import com.cn.bdth.dto.WechatLoginDto;
+import com.cn.bdth.entity.User;
 import com.cn.bdth.exceptions.EmailBackException;
 import com.cn.bdth.exceptions.LoginPasswordException;
 import com.cn.bdth.exceptions.RegistrationException;
 import com.cn.bdth.msg.Result;
 import com.cn.bdth.service.AuthService;
+import com.cn.bdth.utils.WechatUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 
 /**
  * 登录授权接口
@@ -103,6 +111,25 @@ public class AuthController {
             authService.logout();
             return Result.ok();
         } catch (LoginPasswordException e) {
+            return Result.error(e.getMessage(), e.getCode());
+        }
+    }
+
+
+    /**
+     * 微信小程序登录
+     * @return 登录结果
+     */
+    @PostMapping("/wechat/login")
+    public Result wxLogin(@RequestBody WechatLoginDto wechatLoginDto) {
+        try {
+            User user = authService.wechatLogin(wechatLoginDto);
+            StpUtil.login(user.getUserId());
+            //设置具体TOKEN Session权限
+            StpUtil.getSession()
+                    .set(AuthConstant.ROLE, user.getType());
+            return Result.data(StpUtil.getTokenInfo());
+        }catch (LoginPasswordException e){
             return Result.error(e.getMessage(), e.getCode());
         }
     }

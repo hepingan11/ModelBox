@@ -42,6 +42,9 @@ public class AliUploadUtils {
     @Value("${ali-oss.bucketName}")
     private String bucketName;
 
+    @Value("${ali-oss.domain}")
+    private String domain;
+
     public String uploadFile(final MultipartFile file, final String path, final String newFileName, final boolean isImage) {
         OSS ossClient = new OSSClientBuilder()
                 .build(endpoint, accessKey, secretKey);
@@ -70,15 +73,6 @@ public class AliUploadUtils {
             ossClient.shutdown();
         }
     }
-
-//    public String uploadBase64(final String base64, String path) throws IOException {
-//        byte[] imageBytes = Base64.getDecoder().decode(base64);
-//        ByteArrayInputStream inputStream = new ByteArrayInputStream(imageBytes);
-//        // 生成随机的图片文件名
-//        final String fileName = UUID.randomUUID() + ".jpg";
-//        MultipartFile multipartFile = new MockMultipartFile(fileName, inputStream);
-//        return uploadFile(multipartFile, path, fileName, true);
-//    }
 
     public void deleteFile(final String fileUrl) {
         OSS ossClient = new OSSClientBuilder()

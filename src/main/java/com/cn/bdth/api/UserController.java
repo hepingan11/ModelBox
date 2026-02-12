@@ -1,13 +1,24 @@
 package com.cn.bdth.api;
 
 
+import cn.dev33.satoken.stp.StpUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.cn.bdth.dto.PersonalityDto;
 import com.cn.bdth.dto.StarDialogueDto;
+import com.cn.bdth.entity.Frame;
+import com.cn.bdth.entity.FrameUnlock;
+import com.cn.bdth.entity.User;
 import com.cn.bdth.exceptions.UploadException;
+import com.cn.bdth.mapper.FrameMapper;
+import com.cn.bdth.mapper.FrameUnlockMapper;
+import com.cn.bdth.mapper.UserMapper;
 import com.cn.bdth.msg.Result;
 import com.cn.bdth.service.GptService;
 import com.cn.bdth.service.StarService;
 import com.cn.bdth.service.UserService;
+import com.cn.bdth.utils.AliUploadUtils;
+import com.cn.bdth.utils.UserUtils;
+import com.cn.bdth.utils.WechatUtil;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -17,6 +28,11 @@ import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Random;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -30,6 +46,12 @@ public class UserController {
     private final StarService starService;
 
     private final GptService gptService;
+
+    private final UserMapper userMapper;
+
+    private final AliUploadUtils aliUploadUtils;
+
+
 
     /**
      * 获取用户个性GPT配置
@@ -166,10 +188,129 @@ public class UserController {
         return Result.data(starService.getUserStarWeb());
     }
 
-    @PostMapping(value = "/sign", name = "签到", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Result sign() {
-        return Result.data(userService.sign());
+
+    @PostMapping("/updateUser")
+    public Result updateUser(@RequestBody User user){
+        try {
+            userMapper.updateById(user.setUserId(UserUtils.getCurrentLoginId()));
+            return Result.ok();
+        }catch (Exception e){
+            return Result.error("更新用户信息失败");
+        }
+    }
+
+    @GetMapping("/getUserInfo")
+    public Result getUserInfo(){
+        User u = userMapper.selectById(UserUtils.getCurrentLoginId());
+        return Result.data(u);
+    }
+
+    @GetMapping("/getUserInfoById")
+    public Result getUserInfoById(Long userId){
+        User u = userMapper.selectById(userId);
+        return Result.data(u);
     }
 
 
+
+    /**
+     * 上传背景图
+     * @param file
+     * @return
+     */
+    @PostMapping("/updateBackgroundImage")
+    public Result updateBackgroundImage(@RequestBody MultipartFile file){
+        String newFileName = generateRandomString();
+        String url = aliUploadUtils.uploadFile(file, "link", newFileName+".jpg", true);
+        User user = userMapper.selectOne(new QueryWrapper<User>().lambda().eq(User::getUserId, UserUtils.getCurrentLoginId()));
+        user.setBackgroundImage(url);
+        userMapper.update(user, new QueryWrapper<User>().lambda().eq(User::getUserId, UserUtils.getCurrentLoginId()));
+        return Result.data(url);
+    }
+
+    /**
+     * 更新头像
+     * @param file
+     * @return
+     */
+    @PostMapping(value = "/uploadAvatar")
+    public Result uploadImg(@RequestBody MultipartFile file){
+        String newFileName = generateRandomString();
+        String url = aliUploadUtils.uploadFile(file, "cr", newFileName+".jpg", true);
+        User user = userMapper.selectOne(new QueryWrapper<User>().lambda().eq(User::getUserId, UserUtils.getCurrentLoginId()));
+        aliUploadUtils.deleteFile(user.getAvatar());
+        user.setAvatar(url);
+        userMapper.update(user, new QueryWrapper<User>().lambda().eq(User::getUserId, UserUtils.getCurrentLoginId()));
+        return Result.data(url);
+    }
+
+    private String generateRandomString() {
+        String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        int STRING_LENGTH = 12;
+        Random random = new Random();
+        StringBuilder sb = new StringBuilder(STRING_LENGTH);
+        for (int i = 0; i < STRING_LENGTH; i++) {
+            int index = random.nextInt(CHARACTERS.length());
+            sb.append(CHARACTERS.charAt(index));
+        }
+        return sb.toString();
+    }
+
+    private final FrameMapper frameMapper;
+
+    private final FrameUnlockMapper frameUnlockMapper;
+    @GetMapping("/frameList")
+    public Result frameList(){
+        List<Frame> frameList = frameMapper.selectList(new QueryWrapper<Frame>().lambda()
+                .orderByAsc(Frame::getCreatedTime));
+        return Result.data(frameList);
+    }
+
+    @GetMapping("/userFrameList")
+    public Result UserFrameList(){
+        List<FrameUnlock> frameUnlocks = frameUnlockMapper.selectList(new QueryWrapper<FrameUnlock>().lambda()
+                .eq(FrameUnlock::getUserId, UserUtils.getCurrentLoginId()));
+        List<Long> frameIds = frameUnlocks.stream().map(FrameUnlock::getFrameId).collect(Collectors.toList());
+        return Result.data(frameIds);
+    }
+
+    @PostMapping("/updateFrame")
+    public Result updateFrame(@RequestBody String url){
+        User user = userMapper.selectOne(new QueryWrapper<User>().lambda().eq(User::getUserId, UserUtils.getCurrentLoginId()));
+        user.setAvatarFrameUrl(url);
+        userMapper.updateById(user);
+        return Result.ok();
+    }
+
+    /**
+     * 签到
+     * @return
+     */
+    @GetMapping("/sign")
+    public Result sign(){
+        User user = userMapper.selectOne(new QueryWrapper<User>().lambda().eq(User::getUserId, UserUtils.getCurrentLoginId()));
+        user.setExperience(user.getExperience()+5);
+        checkLevel(user);
+        userMapper.updateById(user);
+        return Result.ok();
+    }
+
+
+    private void checkLevel(User user){
+        if (user.getExperience() >= 100){
+            user.setLevel(2);
+        }
+        if (user.getExperience() >= 300){
+            user.setLevel(3);
+        }
+        if (user.getExperience() >= 500){
+            user.setLevel(4);
+        }
+        if (user.getExperience() >= 1000){
+            user.setLevel(5);
+        }
+        if (user.getExperience() >= 2000){
+            user.setLevel(6);
+        }
+    }
 }

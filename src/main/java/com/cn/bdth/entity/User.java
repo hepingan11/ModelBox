@@ -66,5 +66,15 @@ public class User {
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
 
+    private String phone;
 
+    private Integer experience;
+
+    private Integer level;
+
+    private String avatarFrameUrl;
+
+    private String backgroundImage;
+
+    private LocalDateTime lastLoginTime;
 }

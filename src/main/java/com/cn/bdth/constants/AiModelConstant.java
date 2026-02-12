@@ -16,7 +16,7 @@ public interface AiModelConstant {
 
     String DEEPSEEK_R = "deepseek-reasoner";
 
-    String GLM = "glm-4.7";
+    String GLM = "glm-5";
 
     String GEMINI = "gemini-3-pro-preview-thinking";
 

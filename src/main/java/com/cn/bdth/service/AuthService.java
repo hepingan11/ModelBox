@@ -3,6 +3,8 @@ package com.cn.bdth.service;
 import com.cn.bdth.dto.EmailCodeDto;
 import com.cn.bdth.dto.EmailContentDto;
 import com.cn.bdth.dto.EmailLoginDto;
+import com.cn.bdth.dto.WechatLoginDto;
+import com.cn.bdth.entity.User;
 
 /**
  * 登录接口
@@ -42,4 +44,9 @@ public interface AuthService {
     void logout();
 
     void submitEmailContent(EmailContentDto emailContentDto);
+
+    /**
+     * 微信登录
+     */
+    User wechatLogin(WechatLoginDto wechatLoginDto);
 }

@@ -12,9 +12,7 @@ hs_err_pid*
 
 # Dependency directories
 target/
-!target/maven-archiver/pom.properties
-!target/maven-status/maven-compiler-plugin/compile/inputFiles.lst
-!target/maven-status/maven-compiler-plugin/testCompile/inputFiles.lst
+
 
 # Gradle
 .gradle/

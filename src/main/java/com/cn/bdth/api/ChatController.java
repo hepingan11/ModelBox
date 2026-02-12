@@ -1,15 +1,19 @@
 package com.cn.bdth.api;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cn.bdth.dto.MessageDto;
-import com.cn.bdth.dto.ZhipuDrawDto;
+import com.cn.bdth.dto.ChatDto;
+import com.cn.bdth.entity.ChatList;
 import com.cn.bdth.entity.ConversationUser;
+import com.cn.bdth.entity.Group;
 import com.cn.bdth.mapper.ConversationUserMapper;
-import com.cn.bdth.msg.ChatMessage;
 import com.cn.bdth.msg.Result;
 import com.cn.bdth.service.ChatService;
 import com.cn.bdth.utils.UserUtils;
 import com.cn.bdth.vo.TransitVo;
+import com.cn.bdth.vo.ChatListVo;
+import com.cn.bdth.vo.ChatVo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -250,6 +254,61 @@ public class ChatController {
     @GetMapping(value = "/mcp/list")
     public Result mcpList(){
         return Result.data(chatService.mcpList());
+    }
+
+
+    //  发起聊天
+    @GetMapping("/initiate")
+    public Result initiate(Long userId) {
+        try {
+            ChatList initiate = chatService.initiate(userId);
+            return Result.data(initiate);
+        }catch (Exception e){
+            return Result.error(e.getMessage());
+        }
+    }
+
+    //  发送消息
+    @PostMapping("/message")
+    public Result message(@RequestBody ChatDto chatDto) {
+        try {
+            chatService.message(chatDto);
+            return Result.ok();
+        }catch (Exception e){
+            return Result.error("发送失败");
+        }
+    }
+
+    //  获取聊天记录
+    @GetMapping("/message/list")
+    public Result messageList(@RequestParam Long id,@RequestParam Integer pageNum) {
+        try {
+            List<ChatVo> chatVos = chatService.messageList(id, pageNum);
+            return Result.data(chatVos);
+        }catch (Exception e){
+            return Result.error("获取失败");
+        }
+    }
+
+    //获取会话列表
+    @GetMapping("/list")
+    public Result list(@RequestParam Integer pageNum) {
+        try {
+            Page<ChatListVo> chatListVos = chatService.chatList(pageNum);
+            return Result.data(chatListVos);
+        }catch (Exception e){
+            return Result.error("获取失败");
+        }
+    }
+
+    @GetMapping("/group/list")
+    public Result groupList(@RequestParam Integer pageNum) {
+        try {
+            Page<Group> chatListVos = chatService.groupList(pageNum);
+            return Result.data(chatListVos);
+        }catch (Exception e){
+            return Result.error("获取失败");
+        }
     }
 
 }

@@ -6,22 +6,19 @@ import com.cn.bdth.common.MysqlChatMemory;
 import com.cn.bdth.config.AiConfig;
 import com.cn.bdth.config.McpListConfig;
 import com.cn.bdth.constants.AiModelConstant;
-import com.cn.bdth.constants.DrawKeyWordsConstant;
 import com.cn.bdth.dto.MessageDto;
-import com.cn.bdth.dto.ZhipuDrawDto;
+import com.cn.bdth.dto.ChatDto;
 import com.cn.bdth.entity.*;
 import com.cn.bdth.mapper.*;
-import com.cn.bdth.msg.ChatMessage;
 import com.cn.bdth.service.ChatService;
-import com.cn.bdth.service.DrawService;
 import com.cn.bdth.utils.AliUploadUtils;
+import com.cn.bdth.utils.BeanUtils;
 import com.cn.bdth.utils.UserUtils;
 import com.cn.bdth.vo.TransitVo;
-import com.cn.bdth.vo.admin.DrawVo;
+import com.cn.bdth.vo.ChatListVo;
+import com.cn.bdth.vo.ChatVo;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -85,9 +82,20 @@ public class ChatServiceImpl implements ChatService {
     private final RagMapper ragMapper;
 
     private final McpsMapper mcpsMapper;
+
     private final DrawingMapper drawingMapper;
+
     private final UserMapper userMapper;
 
+    private final ChatMapper chatMapper;
+
+    private final ChatListMapper chatListMapper;
+
+    private final ProjectMapper projectMapper;
+
+    private final ProjectMemberMapper projectMemberMapper;
+
+    private final GroupMapper groupMapper;
 
     @Value("${ali-oss.domain}")
     private String domin;
@@ -198,22 +206,46 @@ public class ChatServiceImpl implements ChatService {
                 }
             }
             case "DEEPSEEK" -> {
-                return ChatWithoutFile(messageDto, aiConfig.deepseekModel(),AiModelConstant.DEEPSEEK,role,toolCallbackProvider);
+                if (messageDto.getFile() == null){
+                    return ChatWithoutFile(messageDto,aiConfig.deepseekModel(),AiModelConstant.DEEPSEEK,role,toolCallbackProvider);
+                }else {
+                    return ChatWithFile(messageDto,aiConfig.deepseekModel(),AiModelConstant.DEEPSEEK,role);
+                }
             }
             case "QWEN" ->{
-                return ChatWithoutFile(messageDto,aiConfig.qwenModel(),AiModelConstant.QWEN,role,toolCallbackProvider);
+                if (messageDto.getFile() == null){
+                    return ChatWithoutFile(messageDto,aiConfig.qwenModel(),AiModelConstant.QWEN,role,toolCallbackProvider);
+                }else {
+                    return ChatWithFile(messageDto,aiConfig.qwenModel(),AiModelConstant.QWEN,role);
+                }
             }
             case "GEMINI" -> {
-                return ChatWithoutFile(messageDto,aiConfig.geminiModel(),AiModelConstant.GEMINI,role,toolCallbackProvider);
+                if (messageDto.getFile() == null){
+                    return ChatWithoutFile(messageDto,aiConfig.geminiModel(),AiModelConstant.GEMINI,role,toolCallbackProvider);
+                }else {
+                    return ChatWithFile(messageDto,aiConfig.geminiModel(),AiModelConstant.GEMINI,role);
+                }
             }
             case "GROK" ->{
-                return ChatWithoutFile(messageDto,aiConfig.gorkModel(),AiModelConstant.GROK,role,toolCallbackProvider);
+                if (messageDto.getFile() == null){
+                    return ChatWithoutFile(messageDto,aiConfig.gorkModel(),AiModelConstant.GROK,role,toolCallbackProvider);
+                }else {
+                    return ChatWithFile(messageDto,aiConfig.gorkModel(),AiModelConstant.GROK,role);
+                }
             }
             case "DEEPSEEK_R"->{
-                return ChatWithoutFile(messageDto,aiConfig.deepseekModel(),AiModelConstant.DEEPSEEK_R,role,toolCallbackProvider);
+                if (messageDto.getFile() == null){
+                    return ChatWithoutFile(messageDto,aiConfig.deepseekModel(),AiModelConstant.DEEPSEEK_R,role,toolCallbackProvider);
+                }else {
+                    return ChatWithFile(messageDto,aiConfig.deepseekModel(),AiModelConstant.DEEPSEEK_R,role);
+                }
             }
             case "COMMAND" ->{
-                return ChatWithoutFile(messageDto,aiConfig.commandModel(),AiModelConstant.COMMAND,role,toolCallbackProvider);
+                if (messageDto.getFile() == null){
+                    return ChatWithoutFile(messageDto,aiConfig.commandModel(),AiModelConstant.COMMAND,role,toolCallbackProvider);
+                }else {
+                    return ChatWithFile(messageDto,aiConfig.commandModel(),AiModelConstant.COMMAND,role);
+                }
             }
             case "DOUBAO" ->{
                 OpenAiChatModel doubaoModel = aiConfig.doubaoModel();
@@ -237,17 +269,6 @@ public class ChatServiceImpl implements ChatService {
 
     //检测是否包含绘画信息
     private IsDraw containDrawInfo(String message) {
-//        if (message == null || message.trim().isEmpty()) {
-//            return false;
-//        }
-//        String lowerText = message.trim().toLowerCase();
-//        // 匹配关键词库，存在任意关键词则判定为有绘画意图
-//        for (String keyword : DrawKeyWordsConstant.PAINT_KEYWORDS) {
-//            if (lowerText.contains(keyword)) {
-//                return true;
-//            }
-//        }
-//        return false;
         IsDraw entity = ChatClient.builder(zhiPuAiChatModel).build()
                 .prompt().user(message).call().entity(IsDraw.class);
         if (entity != null){
@@ -619,7 +640,159 @@ public class ChatServiceImpl implements ChatService {
 
 
 
+    /**
+     * 创建/查询会话
+     * @param userId
+     * @return
+     */
+    @Override
+    public ChatList initiate(Long userId) {
+        if (Objects.equals(userId, UserUtils.getCurrentLoginId())){
+            throw new RuntimeException("不能与自己聊天");
+        }
+        ChatList cl = chatListMapper.selectOne(new QueryWrapper<ChatList>().lambda()
+                .eq(ChatList::getUser1Id, UserUtils.getCurrentLoginId())
+                .eq(ChatList::getUser2Id, userId)
+                .or()
+                .eq(ChatList::getUser1Id, userId)
+                .eq(ChatList::getUser2Id, UserUtils.getCurrentLoginId()));
+        if (cl == null){
+            ChatList chatList = new ChatList().setUser1Id(UserUtils.getCurrentLoginId())
+                    .setUser2Id(userId)
+                    .setCreatedTime(LocalDateTime.now())
+                    .setUser1Message(0)
+                    .setLastMessage("-")
+                    .setLastTime(LocalDateTime.now())
+                    .setUser2Message(1);
+            chatListMapper.insert(chatList);
+            return chatList;
+        }else {
+            return cl;
+        }
+    }
 
+    /**
+     * 发送消息
+     * @param chatDto
+     * @return
+     */
+    @Override
+    public void message(ChatDto chatDto) {
+        Chat chat = new Chat().setChatListId( chatDto.getChatListId())
+                .setType( chatDto.getType())
+                .setContent( chatDto.getContent())
+                .setUserId(UserUtils.getCurrentLoginId())
+                .setCreatedTime(LocalDateTime.now());
+        chatMapper.insert(chat);
+        ChatList chatList = chatListMapper.selectOne(new QueryWrapper<ChatList>().lambda()
+                .eq(ChatList::getId, chatDto.getChatListId()));
+        if (chat.getContent().startsWith("https://img-hepingan.oss")){
+            chat.setContent("[图片]");
+        }
+        if (chat.getContent().length()>30){
+            chat.setContent(chat.getContent().substring(0,30)+"...");
+        }
+        //判断发送消息的用户是user1还是user2
+        if (chatList.getUser1Id().equals(UserUtils.getCurrentLoginId())){
+            chatList.setUser2Message(chatList.getUser2Message()+1);
+            chatList.setLastMessage(chat.getContent());
+            chatList.setLastTime(LocalDateTime.now());
+            chatListMapper.updateById(chatList);
+        }else {
+            chatList.setUser1Message(chatList.getUser1Message()+1);
+            chatList.setLastMessage(chat.getContent());
+            chatList.setLastTime(LocalDateTime.now());
+            chatListMapper.updateById(chatList);
+        }
+    }
+
+    /**
+     * 获取消息列表
+     * @param chatListId
+     * @return
+     */
+    @Override
+    public List<ChatVo> messageList(Long chatListId, Integer pageNum) {
+        Page<Chat> page = new Page<>(pageNum, 15);
+        List<Chat> chats = chatMapper.selectPage(page, new QueryWrapper<Chat>().lambda()
+                .eq(Chat::getChatListId, chatListId)).getRecords();
+        List<ChatVo> chatsVo = chats.stream().map(chat -> {
+            ChatVo chatVo = BeanUtils.copyClassProperTies(chat, ChatVo.class);
+            if (chat.getUserId().equals(UserUtils.getCurrentLoginId())){
+                chatVo.setIsUser(true);
+            }else {
+                chatVo.setIsUser(false);
+            }
+            return chatVo;
+        }).toList();
+        ChatList chatList = chatListMapper.selectById(chatListId);
+        if (chatList.getUser1Id().equals(UserUtils.getCurrentLoginId())){
+            chatListMapper.updateById(chatList.setUser1Message(0));
+        }else {
+            chatListMapper.updateById(chatList.setUser2Message(0));
+        }
+        return chatsVo;
+    }
+
+    /**
+     * 获取会话列表
+     * @return
+     */
+    @Override
+    public Page<ChatListVo> chatList(Integer pageNum) {
+        Page<ChatList> chatLists = chatListMapper.selectPage(new Page<>(pageNum, 15),new QueryWrapper<ChatList>().lambda()
+                .eq(ChatList::getUser1Id, UserUtils.getCurrentLoginId())
+                .or()
+                .eq(ChatList::getUser2Id, UserUtils.getCurrentLoginId()));
+        Page<ChatListVo> chatListVos = BeanUtils.copyClassProperTies(chatLists,Page.class);
+        List<ChatListVo> list = new ArrayList<>();
+        for (ChatList chatList : chatLists.getRecords()){
+            ChatListVo chatListVo = BeanUtils.copyClassProperTies(chatList, ChatListVo.class);
+            if (chatList.getUser1Id().equals(UserUtils.getCurrentLoginId())){
+                User user = userMapper.selectOne(new QueryWrapper<User>().lambda()
+                        .eq(User::getUserId, chatList.getUser2Id()));
+                chatListVo.setInitiateUserId(chatList.getUser1Id())
+                        .setInitiateMessage(chatList.getUser1Message())
+                        .setTargetUserName(user.getUserName())
+                        .setTargetUserAvatar(user.getAvatar())
+                        .setTargetUserId(chatList.getUser2Id())
+                        .setTargetId(chatList.getUser2Id());
+            }else if (chatList.getUser2Id().equals(UserUtils.getCurrentLoginId())){
+                User user = userMapper.selectOne(new QueryWrapper<User>().lambda()
+                        .eq(User::getUserId, chatList.getUser1Id()));
+                chatListVo.setInitiateUserId(chatList.getUser2Id())
+                        .setInitiateMessage(chatList.getUser2Message())
+                        .setTargetUserName(user.getUserName())
+                        .setTargetUserAvatar(user.getAvatar())
+                        .setTargetUserId(chatList.getUser1Id())
+                        .setTargetId(chatList.getUser1Id());
+            }
+            list.add(chatListVo);
+        }
+        chatListVos.setRecords(list);
+        return chatListVos;
+    }
+
+    @Override
+    public Page<Group> groupList(Integer pageNum) {
+        Page<ProjectMember> p = new Page<>(pageNum, 12);
+        List<Long> projectList = new ArrayList<>();
+        if (pageNum == 1){
+            projectList = projectMapper.selectList(new QueryWrapper<Project>().lambda()
+                            .eq(Project::getUserId, UserUtils.getCurrentLoginId()))
+                    .stream().map(Project::getProjectId).toList();
+            p.setSize(12-projectList.size());
+        }
+        List<Long> list = projectMemberMapper.selectPage(p,new QueryWrapper<ProjectMember>().lambda()
+                        .eq(ProjectMember::getUserId, UserUtils.getCurrentLoginId())).getRecords()
+                .stream().map(ProjectMember::getProjectId).toList();
+        projectList.addAll(list);
+        for (Long projectId : projectList){
+            groupMapper.selectOne(new QueryWrapper<Group>().lambda()
+                    .eq(Group::getProjectId, projectId));
+        }
+        return null;
+    }
 
 }
 

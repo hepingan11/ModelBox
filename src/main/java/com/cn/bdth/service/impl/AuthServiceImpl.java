@@ -4,18 +4,22 @@ import cn.dev33.satoken.secure.SaSecureUtil;
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.cn.bdth.common.UserInspiritCommon;
+import com.cn.bdth.constants.ServerConstant;
 import com.cn.bdth.constants.user.AuthConstant;
 import com.cn.bdth.dto.EmailCodeDto;
 import com.cn.bdth.dto.EmailContentDto;
 import com.cn.bdth.dto.EmailLoginDto;
+import com.cn.bdth.dto.WechatLoginDto;
 import com.cn.bdth.entity.User;
 import com.cn.bdth.exceptions.EmailBackException;
 import com.cn.bdth.exceptions.ExceptionMessages;
 import com.cn.bdth.exceptions.LoginPasswordException;
 import com.cn.bdth.exceptions.RegistrationException;
 import com.cn.bdth.mapper.UserMapper;
+import com.cn.bdth.msg.Result;
 import com.cn.bdth.service.AuthService;
 import com.cn.bdth.utils.RedisUtils;
+import com.cn.bdth.utils.WechatUtil;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 /**
@@ -48,6 +53,9 @@ public class AuthServiceImpl implements AuthService {
     private final JavaMailSender mailSender;
 
     private final TemplateEngine templateEngine;
+
+    private final WechatUtil wechatUtil;
+
     private final static String SALT = "HuJiaXin";
 
     @Value(value = "${spring.mail.username}")
@@ -164,6 +172,32 @@ public class AuthServiceImpl implements AuthService {
             mailSender.send(message);
         } catch (MessagingException e) {
             throw new RegistrationException(ExceptionMessages.VERIFICATION_CODE_ERR, 500);
+        }
+    }
+
+    @Override
+    public User wechatLogin(WechatLoginDto wechatLoginDto) {
+        String openId = wechatUtil.getOpenId(wechatLoginDto.getCode());
+        User user = userMapper.selectOne(new QueryWrapper<User>().lambda().eq(User::getOpenId, openId));
+        if (user == null) {
+            user = new User();
+            user.setOpenId(openId);
+            user.setUserName("wx_"+openId.substring(6, 15));
+            user.setType("user");
+            user.setExperience(0);
+            user.setLevel(1);
+            user.setPhone(wechatLoginDto.getPhone());
+            UserInspiritCommon.InspiritStructure value = (UserInspiritCommon.InspiritStructure) redisUtils.getValue(ServerConstant.INSPIRIT_CONFIG);
+            user.setFrequency(value.getIncentiveFrequency());
+            user.setBackgroundImage("https://img-hepingan.oss-cn-hangzhou.aliyuncs.com/page1/twilight.jpeg");
+            user.setAvatar("https://img-hepingan.oss-cn-hangzhou.aliyuncs.com/page1/defaultAvatar.jpg");
+            user.setLastLoginTime(LocalDateTime.now());
+            user.setCreatedTime(LocalDateTime.now());
+            userMapper.insert(user);
+            return user;
+        }else {
+            userMapper.updateById(user.setLastLoginTime(LocalDateTime.now()));
+            return user;
         }
     }
 
