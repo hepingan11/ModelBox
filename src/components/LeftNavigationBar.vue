@@ -34,7 +34,7 @@
           <div class="beian">
             <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">渝ICP备2023004248号</a>
           </div>
-          <div class="bottomRightName">Pass Assistant</div>
+          <div class="bottomRightName">聚模台</div>
           <div class="bottomRightEdition">v4.1.0 2025.8.23</div>
         </div>
       </div>

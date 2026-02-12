@@ -6,7 +6,7 @@
   <iframe id="iframe1" frameborder="false" src="https://my.spline.design/particles-e6fc86dd354fba802798b80c4b639ee1/" style="height: 100%;width: 100%"></iframe>
   <!-- <iframe id="iframe2" frameborder="false" src="https://my.spline.design/particles-09c66dceb707e50fcd2c245d149afdc6/" style="height: 100%;width: 100%"></iframe> -->
   <Loading ref="loading"></Loading>/
-  <div class="container" @click="router().push({ path: '/app' })" v-if="!iframeLoaded" >
+  <div class="container" @click="router().push({ path: '/' })" v-if="!iframeLoaded" >
     <a data-animation="ripple">进入<span style="font-weight: bold;">IT乌托邦</span></a>
   </div>
   <div class="footer-info">

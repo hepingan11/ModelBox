@@ -35,7 +35,7 @@
             :xs="12" 
             :sm="12" 
             :md="8" 
-            :lg="8" 
+            :lg="6" 
             v-for="item in imgList" 
             :key="item" 
             class="img-card"

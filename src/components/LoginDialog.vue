@@ -159,7 +159,7 @@
         </div>
         <div style="padding: 20px 40px 30px">
           <div class="login-title">
-            <div class="login-selected">Pass Assistant</div>
+            <div class="login-selected">聚模台</div>
           </div>
           <el-form @keyup.enter="retrievePassword" ref="formRef" size="large">
             <el-form-item prop="username">
@@ -272,7 +272,7 @@
         </div>
         <div style="padding: 20px 40px 30px">
           <div class="login-title">
-            <div class="login-selected">Pass Assistant</div>
+            <div class="login-selected">聚模台</div>
           </div>
           尊敬的用户，欢迎访问我们的AI文本对话网站。为了保护您的个人信息安全，我们特制定以下隐私政策：
           <br>
@@ -494,7 +494,7 @@ export default defineComponent({
         loginLoading.value = false;
         ElNotification({
           title: "登录成功",
-          message: "快登录体验Pass Assistant吧",
+          message: "快登录体验聚模台吧",
           type: "success",
         });
         loginLoading.value = false;

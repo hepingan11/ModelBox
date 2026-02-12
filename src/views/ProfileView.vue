@@ -92,7 +92,7 @@
             <h2><el-icon><Collection /></el-icon> 代表项目</h2>
             <div class="section-content">
               <div class="project-card" @click="openProjectPreview('pass-assistant')">
-                <h3>Pass Assistant <span class="project-date">2024.2 - 至今</span></h3>
+                <h3>聚模台 <span class="project-date">2024.2 - 至今</span></h3>
                 <p>励志打造国内一流综合工具类网站，不断进步，集成多种AI工具、源码分享和技术交流功能，属于自己心中的乌托邦。集成了我毕生所学的多种技术，不断进步~</p>
                 <div class="project-tech">
                   <el-tag size="small" type="info">Vue</el-tag>
@@ -526,9 +526,9 @@ const router = useRouter();
 const projectsImages = ref([
   {
     id: 'pass-assistant',
-    name: 'Pass Assistant',
+    name: '聚模台',
     images: [
-      { url: 'https://img-hepingan.oss-cn-hangzhou.aliyuncs.com/PixPin_2024-06-11_15-10-24.png', caption: 'Pass Assistant 首页' },
+      { url: 'https://img-hepingan.oss-cn-hangzhou.aliyuncs.com/PixPin_2024-06-11_15-10-24.png', caption: '聚模台 首页' },
       { url: 'https://img-hepingan.oss-cn-hangzhou.aliyuncs.com/page/QQ20250501-211214.png', caption: 'AI 工具页面' },
       { url: 'https://img-hepingan.oss-cn-hangzhou.aliyuncs.com/page/QQ20250506-123348.png', caption: '源码星球模块' },
       { url: 'https://img-hepingan.oss-cn-hangzhou.aliyuncs.com/page/20250817035652.png', caption: 'AI对话模块' }

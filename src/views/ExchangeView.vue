@@ -13,7 +13,7 @@
       <div>
         <img class="logo" :src="require('../assets/logoHead.svg')" alt="" />
       </div>
-      <div class="title">Pass Assistant</div>
+      <div class="title">聚模台</div>
       <input
         type="text"
         class="input"

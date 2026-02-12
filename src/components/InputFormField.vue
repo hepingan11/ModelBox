@@ -29,7 +29,7 @@
         @change="updateModel"
       >
         <el-option value="GPT" label="GPT-5.2-high(付费)" />
-        <el-option value="GLM" label="GLM-4.7(最快)" />
+        <el-option value="GLM" label="GLM-5(推荐)" />
         <el-option value="CLAUDE" label="Claude-4.5-sonnet(付费)" />
         <el-option value="QWEN" label="通义千问3" />
         <el-option value="DEEPSEEK" label="DeepSeek" />
@@ -75,7 +75,7 @@
             content="上传图片或视频"
             placement="top"
           >
-            <div class="uploadFileButton" v-if="modelInner === 'GLM' || modelInner === 'GPT' || modelInner === 'DOUBAO'">
+            <div class="uploadFileButton">
               <input 
                 type="file" 
                 ref="fileInput" 
@@ -83,7 +83,6 @@
                 multiple
                 accept="image/*,video/*"
                 @change="handleFileUpload"
-                :disabled="!(modelInner === 'GLM' || modelInner === 'GPT' || modelInner === 'DOUBAO')"
               />
               <el-icon :size="16">
                 <Document />
@@ -189,15 +188,8 @@ export default defineComponent({
 
 
 
-    // 监听modelInner的变化，如果不是GLM或GPT，则清空已上传的文件
+    // 监听modelInner的变化
     watch(modelInner, (newVal) => {
-      if (newVal !== 'GLM' && newVal !== 'GPT' && newVal !== 'DOUBAO') {
-        currentFiles.value = [];
-        if (fileInput.value) {
-          fileInput.value.value = '';
-        }
-        emit("file-removed", {}); // 通知父组件所有文件已移除
-      }
       // 保存模型选择到本地存储
       saveModelToStorage(newVal);
     });

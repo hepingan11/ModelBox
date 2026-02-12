@@ -2,11 +2,22 @@
   <div class="drawing-gallery">
     <!-- 页面标题 -->
     <div class="gallery-header">
-      <h1 class="title">
-        <el-icon><Picture /></el-icon>
-        AI绘画作品鉴赏
-      </h1>
-      <p class="subtitle">探索AI创造的精美艺术作品</p>
+      <div class="header-content">
+        <h1 class="title">
+          <el-icon><Picture /></el-icon>
+          AI绘画作品鉴赏
+        </h1>
+        <p class="subtitle">探索AI创造的精美艺术作品</p>
+      </div>
+      <el-button 
+        class="refresh-btn" 
+        circle 
+        :icon="Refresh" 
+        size="large"
+        @click="refreshImages"
+        :loading="loading"
+        title="刷新列表"
+      />
     </div>
 
     <!-- 图片网格容器 -->
@@ -222,7 +233,7 @@ import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue'
 import { ElNotification, ElMessage } from 'element-plus'
 import { 
   Picture, Loading, Clock, CheckCircle, Close, ZoomIn, Download, Share,
-  Edit, Setting, Star, StarFilled, ChatDotRound, CopyDocument
+  Edit, Setting, Star, StarFilled, ChatDotRound, CopyDocument, Refresh
 } from '@element-plus/icons-vue'
 import { getPublicDrawingList } from '../../../api/BSideApi'
 
@@ -295,6 +306,17 @@ async function loadImages() {
   } finally {
     loading.value = false
   }
+}
+
+/**
+ * 刷新图片列表
+ */
+function refreshImages() {
+  imageList.value = []
+  currentPage.value = 1
+  noMoreData.value = false
+  loadImages()
+  ElMessage.success('刷新成功')
 }
 
 /**
@@ -528,13 +550,40 @@ function openComments() {
 <style lang="scss" scoped>
 .drawing-gallery {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-color: var(--bgColor1);
   padding: 20px;
 
   .gallery-header {
     text-align: center;
-    color: white;
+    color: var(--textColor1);
     margin-bottom: 40px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .header-content {
+      flex: 1;
+    }
+
+    .refresh-btn {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--bgColor2);
+      border: 1px solid var(--borderColor);
+      color: var(--textColor1);
+      font-size: 20px;
+      width: 50px;
+      height: 50px;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: var(--bgColor3);
+        transform: translateY(-50%) rotate(180deg);
+      }
+    }
 
     .title {
       display: flex;
@@ -544,7 +593,7 @@ function openComments() {
       font-size: 2.5rem;
       font-weight: bold;
       margin: 0 0 10px 0;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      // text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
 
     .subtitle {
@@ -571,12 +620,12 @@ function openComments() {
     }
 
     &::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.3);
+      background: var(--borderColor);
       border-radius: 3px;
     }
 
     &::-webkit-scrollbar-thumb:hover {
-      background: rgba(255, 255, 255, 0.5);
+      background: var(--textColor3);
     }
   }
 
@@ -588,7 +637,7 @@ function openComments() {
   }
 
   .image-card {
-    background: white;
+    background: var(--bgColor2);
     border-radius: 16px;
     overflow: hidden;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
@@ -626,7 +675,7 @@ function openComments() {
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #f5f5f5;
+        background: var(--bgColor3);
 
         .loading-icon {
           font-size: 24px;
@@ -654,18 +703,19 @@ function openComments() {
 
         .user-name {
           font-weight: 500;
-          color: #333;
+          color: var(--textColor1);
           font-size: 14px;
         }
       }
 
       .prompt-text {
-        color: #666;
+        color: var(--textColor2);
         font-size: 13px;
         line-height: 1.4;
         margin-bottom: 10px;
         display: -webkit-box;
         -webkit-line-clamp: 2;
+        line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -675,7 +725,7 @@ function openComments() {
         display: flex;
         align-items: center;
         gap: 4px;
-        color: #999;
+        color: var(--textColor3);
         font-size: 12px;
 
         .el-icon {
@@ -692,7 +742,7 @@ function openComments() {
     justify-content: center;
     gap: 8px;
     padding: 40px 20px;
-    color: white;
+    color: var(--textColor2);
     font-size: 14px;
 
     .loading-icon {
@@ -702,7 +752,7 @@ function openComments() {
 
   .empty-state {
     text-align: center;
-    color: white;
+    color: var(--textColor2);
     padding: 80px 20px;
 
     .empty-icon {
@@ -738,7 +788,7 @@ function openComments() {
   .el-dialog__header {
     padding: 0;
     margin: 0;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid var(--borderColor);
   }
 
   .el-dialog__body {
@@ -754,8 +804,8 @@ function openComments() {
     justify-content: space-between;
     align-items: center;
     padding: 16px 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: var(--themeColor1);
+    color: var(--themeTextColor);
     flex-shrink: 0; // 防止头部被压缩
 
     .header-left {
@@ -776,7 +826,7 @@ function openComments() {
     .close-btn {
       background: rgba(255, 255, 255, 0.2);
       border: none;
-      color: white;
+      color: var(--themeTextColor);
 
       &:hover {
         background: rgba(255, 255, 255, 0.3);
@@ -795,7 +845,7 @@ function openComments() {
     flex: 1;
     display: flex;
     flex-direction: column;
-    background: #f8f9fa;
+    background: var(--bgColor3);
     min-width: 0; // 防止 flex 子项溢出
 
     .image-container {
@@ -827,7 +877,7 @@ function openComments() {
         flex-direction: column;
         align-items: center;
         gap: 12px;
-        color: #999;
+        color: var(--textColor3);
         font-size: 16px;
 
         .el-icon {
@@ -841,8 +891,8 @@ function openComments() {
       display: flex;
       gap: 12px;
       justify-content: center;
-      background: white;
-      border-top: 1px solid #f0f0f0;
+      background: var(--bgColor2);
+      border-top: 1px solid var(--borderColor);
 
       .el-button {
         flex: 1;
@@ -853,14 +903,14 @@ function openComments() {
 
   .preview-right {
     flex: 0 0 380px;
-    background: white;
+    background: var(--bgColor2);
     overflow-y: auto;
-    border-left: 1px solid #f0f0f0;
+    border-left: 1px solid var(--borderColor);
     max-height: 100%; // 确保不超出父容器
 
     .creator-section {
       padding: 24px;
-      border-bottom: 1px solid #f0f0f0;
+      border-bottom: 1px solid var(--borderColor);
 
       .creator-header {
         display: flex;
@@ -882,7 +932,7 @@ function openComments() {
             margin: 0 0 4px 0;
             font-size: 16px;
             font-weight: 600;
-            color: #333;
+            color: var(--textColor1);
           }
 
           .creator-time {
@@ -890,7 +940,7 @@ function openComments() {
             display: flex;
             align-items: center;
             gap: 4px;
-            color: #666;
+            color: var(--textColor2);
             font-size: 13px;
 
             .el-icon {
@@ -904,7 +954,7 @@ function openComments() {
     .artwork-info {
       .info-card {
         padding: 20px 24px;
-        border-bottom: 1px solid #f0f0f0;
+        border-bottom: 1px solid var(--borderColor);
 
         &:last-child {
           border-bottom: none;
@@ -916,32 +966,32 @@ function openComments() {
           gap: 8px;
           margin-bottom: 16px;
           font-weight: 600;
-          color: #333;
+          color: var(--textColor1);
           font-size: 15px;
 
           .el-icon {
             font-size: 18px;
-            color: #667eea;
+            color: var(--themeColor1);
           }
         }
 
         .prompt-content {
           .prompt-text {
-            color: #555;
+            color: var(--textColor2);
             line-height: 1.6;
             margin: 0 0 12px 0;
             padding: 16px;
-            background: #f8f9fa;
+            background: var(--bgColor3);
             border-radius: 8px;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid var(--themeColor1);
           }
 
           .copy-btn {
             padding: 4px 8px;
-            color: #667eea;
+            color: var(--themeColor1);
 
             &:hover {
-              background: #f0f2ff;
+              background: var(--bgColor3);
             }
           }
         }
@@ -958,11 +1008,11 @@ function openComments() {
 
             label {
               font-weight: 500;
-              color: #666;
+              color: var(--textColor2);
             }
 
             span {
-              color: #333;
+              color: var(--textColor1);
             }
 
             .el-rate {
@@ -983,7 +1033,7 @@ function openComments() {
       }
 
       .interaction-card {
-        background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
+        background: linear-gradient(135deg, var(--bgColor1) 0%, var(--bgColor3) 100%);
       }
     }
   }
@@ -994,8 +1044,20 @@ function openComments() {
   .drawing-gallery {
     padding: 10px;
 
-    .gallery-header .title {
-      font-size: 2rem;
+    .gallery-header {
+      margin-bottom: 20px;
+      
+      .title {
+        font-size: 1.8rem;
+      }
+
+      .refresh-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+        top: 0;
+        transform: none;
+      }
     }
 
     .image-grid {
@@ -1041,7 +1103,7 @@ function openComments() {
     .preview-right {
       flex: none;
       border-left: none;
-      border-top: 1px solid #f0f0f0;
+      border-top: 1px solid var(--borderColor);
       max-height: 50vh;
 
       .creator-section,

@@ -110,19 +110,25 @@
               </div>
               
               <div class="setting-row">
-                <el-form-item label="图像尺寸" prop="size">
-                  <el-select 
-                    v-model="drawingForm.size" 
-                    placeholder="选择图像尺寸"
+                <el-form-item label="图像宽度(px)" prop="width" style="flex: 1;">
+                  <el-input-number 
+                    v-model="drawingForm.width" 
+                    :min="512" 
+                    :max="2048" 
+                    :step="16"
+                    placeholder="宽度"
                     class="full-width-select"
-                  >
-                    <el-option
-                      v-for="item in sizeOptions"
-                      :key="item.value"
-                      :label="item.label"
-                      :value="item.value"
-                    />
-                  </el-select>
+                  />
+                </el-form-item>
+                <el-form-item label="图像高度(px)" prop="height" style="flex: 1;">
+                  <el-input-number 
+                    v-model="drawingForm.height" 
+                    :min="512" 
+                    :max="2048" 
+                    :step="16"
+                    placeholder="高度"
+                    class="full-width-select"
+                  />
                 </el-form-item>
               </div>
               
@@ -286,7 +292,8 @@ import { addZhipuDrawingTask } from '../../api/BSideApi';
 const drawingForm = reactive({
   prompt: '',
   negative_prompt: '',
-  size: '1024x1024',
+  width: 1024,
+  height: 1024,
   quality: 'standard',
   model: 'COGVIEW_4'
 });
@@ -310,18 +317,7 @@ const modelOptions = [
   { value: 'DOUBAO_SEEDEDIT', label: '豆包图生图' }
 ];
 
-const sizeOptions = [
-  { value: '1024x1024', label: '1024x1024 (方形)' },
-  { value: '1024x1792', label: '1024x1792 (竖版)' },
-  { value: '1792x1024', label: '1792x1024 (横版)' },
-  { value: '512x512', label: '512x512' },
-  { value: '864x1152', label: '864x1152' },
-  { value: '1512x648 ', label: '1512x648 ' },
-  { value: '1344x768', label: '1344x768' },
-  { value: '1152x864', label: '1152x864' },
-  { value: '720x1440', label: '720x1440' },
-  { value: '1248x832 ', label: '1248x832 ' }
-];
+
 
 const qualityOptions = [
   { value: 'standard', label: '标准质量' },
@@ -403,10 +399,10 @@ const generateImage = async () => {
   generating.value = true;
   
   try {
-    // 后端使用 @RequestParam 和 @RequestPart，所以统一使用 FormData
     const requestData = new FormData();
     requestData.append('prompt', drawingForm.prompt);
-    requestData.append('size', drawingForm.size);
+    // 拼接宽高为 size 参数
+    requestData.append('size', `${drawingForm.width}x${drawingForm.height}`);
     requestData.append('quality', drawingForm.quality);
     requestData.append('model', drawingForm.model);
     
@@ -451,7 +447,8 @@ const generateImage = async () => {
 const resetForm = () => {
   drawingForm.prompt = '';
   drawingForm.negative_prompt = '';
-  drawingForm.size = '1024x1024';
+  drawingForm.width = 1024;
+  drawingForm.height = 1024;
   drawingForm.quality = 'standard';
   drawingForm.model = 'COGVIEW_4';
   
@@ -1452,6 +1449,29 @@ function goToUserPage() {
         }
       }
     }
+  }
+}
+// 复写 el-input-number 样式以适配暗黑模式
+:deep(.el-input-number) {
+  .el-input-number__decrease,
+  .el-input-number__increase {
+    background: var(--bgColor2);
+    border-color: var(--borderColor);
+    color: var(--textColor1);
+    
+    &:hover {
+      color: var(--themeColor1);
+      
+      & ~ .el-input__inner:not(.is-disabled) {
+        border-color: var(--themeColor1);
+      }
+    }
+  }
+
+  .el-input__inner {
+    background-color: var(--bgColor2);
+    color: var(--textColor1);
+    border-color: var(--borderColor);
   }
 }
 </style>

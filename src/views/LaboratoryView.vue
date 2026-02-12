@@ -41,7 +41,7 @@
                     <p class="text">我的博客</p>
                     <p class="text2">
                       <span class="subtitle-line"></span>
-                      Pass Assistant站长的博客
+                      聚模台站长的博客
                       <span class="subtitle-line"></span>
                     </p>
                   </div>

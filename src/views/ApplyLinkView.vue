@@ -12,7 +12,7 @@
             <span class="form-label">链接名称</span>
             <el-input 
               v-model="form.linkName" 
-              placeholder="例如: Pass Assistant"
+              placeholder="例如: 聚模台"
               class="form-input"
             />
           </div>

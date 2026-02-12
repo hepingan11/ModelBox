@@ -17,7 +17,7 @@
             <div @click="navigateToProIndex" style="cursor: pointer; display: inline-block; z-index: 1000; position: relative;">
   <img src="@/assets/logo.png" alt="logo" class="logo" style="z-index: 1000; position: relative;"/>
 </div>
-            <h1 data-text="Pass Assistant" class="glitch-title">Pass Assistant</h1>
+            <h1 data-text="聚模台" class="glitch-title">聚模台</h1>
             <div class="typing-animation">
               <h2>{{ typingText }}</h2>
               <span class="cursor">|</span>
@@ -278,6 +278,7 @@ let typingIndex = 0;
 
 // 更新日志数据
 const updateLogs = ref([
+  { version: '4.2.0', description: 'AI对话完美支持多模态对话与绘画，支持微信Native支付', date: '2026.2.8', major: false },
   { version: '4.1.0', description: '新增AI视频生成，公开图片平台,MCP和RAG支持用户自定义,重写关于页面,优化了部分模块界面设计', date: '2025.8.24', major: false },
   { version: '4.0.0', description: '🍬版本大更新!删除了智慧校园,SD绘画(费用过高)和HDFS集群,优化我的数据模块，重写首页对话模块,现首页采用SpringAi支持多模型多模态MCP+RAG+自定义角色+对话列表的AI对话;新增SpringCloud微服务版本,优化了部分模块；更加人民的网站！', date: '2025.8.20', major: true },
   { version: '3.2.0', description: '引入对话模型DeepSeek,Claude3.7,豆包1.5pro,智谱GLM-4v,Grok3,Gemini,新增我的简介,优化了外链模块', date: '2025.5.15', major: false },

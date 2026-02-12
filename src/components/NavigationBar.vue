@@ -182,7 +182,7 @@ export default defineComponent({
     let navigationList = ref([
       {
         title: "问答",
-        to: "/app",
+        to: "/",
       },
       {
         title: "实验室",

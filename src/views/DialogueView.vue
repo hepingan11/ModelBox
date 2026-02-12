@@ -13,9 +13,9 @@
         <!-- Logo和介绍区域 -->
         <div class="brand-section">
           <div class="logo-container">
-            <img class="sidebar-logo" alt="Pass Assistant Logo" src="../assets/logo.png"/>
+            <img class="sidebar-logo" alt="聚模台 Logo" src="../assets/logo.png"/>
             <div class="brand-info">
-              <h2 class="brand-title">Pass Assistant</h2>
+              <h2 class="brand-title">聚模台</h2>
               <p class="brand-subtitle">智能对话助手</p>
             </div>
           </div>
@@ -26,6 +26,16 @@
         <div class="action-buttons">
           <!-- 说明图标 -->
           <div class="help-icon-container">
+            <!-- IT币余额展示 -->
+            <div class="it-coin-display" v-if="store.getters.userinfo">
+              <el-tooltip content="点击充值 IT 币" placement="top">
+                <div class="it-coin-content" @click="navigateToPurchase">
+                  <el-icon class="it-coin-icon" style="color: #f59e0b;"><Goods /></el-icon>
+                  <span class="it-coin-count">{{ store.getters.userinfo.frequency }}</span>
+                </div>
+              </el-tooltip>
+            </div>
+
             <el-icon 
               class="help-icon" 
               @mouseenter="showHelpTooltip = true"
@@ -173,12 +183,12 @@
 
           
           <img class="logo" alt="Vue logo" src="../assets/logo.png"/>
-          <div class="expositoryCase">欢迎使用-Pass Assistant</div>
+          <div class="expositoryCase">欢迎使用-聚模台</div>
           <div class="consume">
             <el-icon>
               <Goods/>
             </el-icon>
-            <div class="consumeText">每次提问消耗1个IT币</div>
+            <div class="consumeText">付费模型每次提问消耗2个IT币</div>
           </div>
           <div class="beCareful">请注意不支持违法、违规等不当信息内容</div>
         </div>
@@ -467,7 +477,7 @@
       <div class="cache-flex-center">
         <img alt="Vue logo" src="../assets/logo02.svg" class="cache-img"/>
       </div>
-      <div class="cache-text">Pass Assistant</div>
+      <div class="cache-text">聚模台</div>
       <div class="cache-flex-center cache-padding-top">
         <div class="cache-btn" @click="createdNewChat">
           <el-icon size="16px">
@@ -819,6 +829,25 @@
       </div>
     </div>
   </el-dialog>
+    <!-- 公告弹窗 -->
+    <el-dialog
+      v-model="showAnnouncement"
+      title="系统公告"
+      width="500px"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      center
+      class="announcement-dialog"
+    >
+      <div class="announcement-content" style="line-height: 1.6; font-size: 16px;">
+        <p>目前完美支持GPT|Claude|Gemini|Deepseek|GLM|Doubao|Grok|QWEN|Command大模型的多模态对话和Mcp+Rag功能，更多功能请点击顶部的实验室；手机端浏览页面会有部分影响！</p>
+      </div>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button type="primary" @click="closeAnnouncement">我知道了</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -909,6 +938,16 @@ window.addEventListener('unhandledrejection', (e) => {
     return false;
   }
 });
+
+// 公告弹窗控制
+const showAnnouncement = ref(false);
+const ANNOUNCEMENT_KEY = 'has_seen_announcement_v1'; // Increment version when content changes
+
+// 关闭公告并记录状态
+function closeAnnouncement() {
+  showAnnouncement.value = false;
+  localStorage.setItem(ANNOUNCEMENT_KEY, 'true');
+}
 
 // 保存引用以便清理
 window._resizeObserverErrorHandler = resizeObserverErrorHandler;
@@ -1239,6 +1278,11 @@ function navigateToDataView() {
   router.push('/mydata');
 }
 
+// 导航到充值页面
+function navigateToPurchase() {
+  router.push('/purchase');
+}
+
 // 编辑对话设置
 function editConversationTitle(conversation) {
   console.log('编辑对话设置:', conversation);
@@ -1493,6 +1537,12 @@ onBeforeUnmount(() => {
 
 onMounted(() => {
   console.log('DialogueView 组件已挂载');
+  
+  // 检查公告
+  const hasSeen = localStorage.getItem(ANNOUNCEMENT_KEY);
+  if (!hasSeen) {
+    showAnnouncement.value = true;
+  }
   console.log('当前用户信息:', storeInstance.getters.userinfo);
   
   // ResizeObserver error handling moved to top of script setup
@@ -5394,5 +5444,41 @@ defineExpose({
     max-height: 400px !important;
     object-fit: contain !important;
   }
+}
+// IT币展示样式
+.it-coin-display {
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.it-coin-content {
+  display: flex;
+  align-items: center;
+  background-color: var(--bgColor2);
+  padding: 6px 10px;
+  border-radius: 20px;
+  color: var(--textColor1);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid var(--borderColor);
+}
+
+.it-coin-content:hover {
+  background-color: var(--bgColor1);
+  border-color: var(--themeColor1);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.it-coin-icon {
+  margin-right: 6px;
+  font-size: 16px;
+}
+
+.it-coin-count {
+  font-family: 'DIN Alternate', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 </style>
