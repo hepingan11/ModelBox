@@ -157,7 +157,7 @@ const uploadImage = async (filePath) => {
                 name: 'file',
                 header: {
                     'Content-Type': 'multipart/form-data',
-                    'sa-token': uni.getStorageSync('sa-token')
+                    'token': uni.getStorageSync('token')
                 },
                 success: (res) => {
                     try {

@@ -2,7 +2,7 @@
     <view class="chat-container">
         <!-- 顶部导航栏 -->
         <view class="nav-bar">
-            <text class="nav-title">{{ chatTarget.username || '聊天' }}</text>
+            <text class="nav-title">{{ chatTarget.userName || '聊天' }}</text>
             <view class="nav-right" @click="goToUserSpace">
                 <text class="user-icon">👤</text>
             </view>
@@ -118,7 +118,7 @@ import { apiBaseUrl } from '@/store/index.js'
 const conversationId = ref('')
 const chatTarget = reactive({
     userId: '',
-    username: '',
+    userName: '',
     avatar: ''
 })
 
@@ -236,7 +236,7 @@ const getUserInfo = async (id) => {
         })
         
         if (res.code === 200 && res.data) {
-            chatTarget.username = res.data.username || res.data.nickname || '用户'
+            chatTarget.userName = res.data.userName || res.data.nickname || '用户'
             chatTarget.avatar = res.data.avatar || defaultAvatar
             
             // 如果没有conversationId，则创建对话
@@ -436,7 +436,7 @@ const uploadImage = (filePath) => {
             filePath: filePath,
             name: 'file',
             header: {
-                'sa-token': uni.getStorageSync('sa-token') || '' // 添加token认证
+                'token': uni.getStorageSync('token') || '' // 添加token认证
             },
             success: (uploadRes) => {
                 console.log('上传响应:', uploadRes);

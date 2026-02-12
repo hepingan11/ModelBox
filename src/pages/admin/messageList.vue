@@ -30,7 +30,7 @@
                         <image class="avatar" :src="item.targetUserAvatar || '/static/default-avatar.png'"></image>
                         <view class="user-details">
                             <view class="user-main-info">
-                                <text class="username">{{ item.targetUserName || '用户' + item.targetUserId }}</text>
+                                <text class="userName">{{ item.targetUserName || '用户' + item.targetUserId }}</text>
                                 <view class="user-level" :class="'level-' + (item.targetUserLevel || 1)">
                                     <text class="level-text">Lv.{{ item.targetUserLevel || 1 }}</text>
                                 </view>
@@ -158,7 +158,7 @@ const getUserInfo = async (message) => {
         
         if (targetUserRes.code === 200 && targetUserRes.data) {
             // 更新消息中的用户信息
-            message.targetUserName = targetUserRes.data.username;
+            message.targetUserName = targetUserRes.data.userName;
             message.targetUserAvatar = targetUserRes.data.avatar;
             message.targetUserLevel = targetUserRes.data.level;
             message.targetUserSignature = targetUserRes.data.signature;
@@ -172,7 +172,7 @@ const getUserInfo = async (message) => {
             });
             
             if (initiateUserRes.code === 200 && initiateUserRes.data) {
-                message.initiateUserName = initiateUserRes.data.username;
+                message.initiateUserName = initiateUserRes.data.userName;
                 message.initiateUserAvatar = initiateUserRes.data.avatar;
                 message.initiateUserLevel = initiateUserRes.data.level;
                 message.initiateUserSignature = initiateUserRes.data.signature;
@@ -331,7 +331,7 @@ onMounted(() => {
     gap: 10rpx;
 }
 
-.username {
+.userName {
     font-size: 28rpx;
     font-weight: 500;
     color: #333;

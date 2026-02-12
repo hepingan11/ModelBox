@@ -113,7 +113,7 @@ const uploadImage = async (filePath) => {
                 filePath: filePath,
                 name: 'file',
                 header: {
-                    'sa-token': uni.getStorageSync('sa-token') || ''
+                    'token': uni.getStorageSync('token') || ''
                 },
                 success: (uploadRes) => {
                     try {

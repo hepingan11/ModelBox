@@ -1,5 +1,5 @@
 <template>
-	<view class="create-project-page">
+	<view class="create-project-page" :class="themeClass">
 		<scroll-view scroll-y class="form-scroll">
 			<view class="form-container">
 				<!-- 项目名称 -->
@@ -173,7 +173,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import request from '@/utils/request'
+
 import { apiBaseUrl } from '@/store/index'
+import { useTheme } from '@/hooks/useTheme'
+
+const { themeClass } = useTheme()
 
 // 表单数据
 const formData = ref({
@@ -401,7 +405,7 @@ const uploadSingleImage = (imagePath) => {
 			filePath: imagePath,
 			name: 'file',
 			header: {
-				'Authorization': uni.getStorageSync('sa-token') || ''
+				'Authorization': uni.getStorageSync('token') || ''
 			},
 			success: (res) => {
 				try {
@@ -549,7 +553,7 @@ onMounted(() => {
 <style scoped>
 .create-project-page {
 	min-height: 100vh;
-	background-color: #f5f5f5;
+	background-color: var(--bgColor1);
 	display: flex;
 	flex-direction: column;
 }
@@ -570,12 +574,16 @@ onMounted(() => {
 	margin-bottom: 20rpx;
 }
 
+.darkMode .form-item {
+	background-color: var(--bgColor2);
+}
+
 .form-label {
 	display: flex;
 	align-items: center;
 	margin-bottom: 16rpx;
 	font-size: 28rpx;
-	color: #333;
+	color: var(--textColor1);
 	font-weight: bold;
 }
 
@@ -595,21 +603,29 @@ onMounted(() => {
 	width: 100%;
 	height: 72rpx;
 	padding: 0 24rpx;
-	background-color: #f5f5f5;
+	background-color: var(--bgColor1);
 	border-radius: 12rpx;
 	font-size: 28rpx;
-	color: #333;
+	color: var(--textColor1);
+}
+
+.darkMode .form-input {
+	background-color: var(--bgColor3);
 }
 
 .form-textarea {
 	width: 100%;
 	min-height: 200rpx;
 	padding: 20rpx 24rpx;
-	background-color: #f5f5f5;
+	background-color: var(--bgColor1);
 	border-radius: 12rpx;
 	font-size: 28rpx;
-	color: #333;
+	color: var(--textColor1);
 	line-height: 1.6;
+}
+
+.darkMode .form-textarea {
+	background-color: var(--bgColor3);
 }
 
 .char-count {
@@ -626,18 +642,22 @@ onMounted(() => {
 	justify-content: space-between;
 	height: 72rpx;
 	padding: 0 24rpx;
-	background-color: #f5f5f5;
+	background-color: var(--bgColor1);
 	border-radius: 12rpx;
+}
+
+.darkMode .picker-input {
+	background-color: var(--bgColor3);
 }
 
 .picker-text {
 	font-size: 28rpx;
-	color: #333;
+	color: var(--textColor1);
 }
 
 .picker-placeholder {
 	font-size: 28rpx;
-	color: #999;
+	color: var(--textColor3);
 }
 
 .picker-arrow {
@@ -724,14 +744,18 @@ onMounted(() => {
 .upload-btn {
 	width: 200rpx;
 	height: 200rpx;
-	background-color: #f5f5f5;
-	border: 2rpx dashed #d9d9d9;
+	background-color: var(--bgColor1);
+	border: 2rpx dashed var(--borderColor);
 	border-radius: 12rpx;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
 	transition: all 0.2s;
+}
+
+.darkMode .upload-btn {
+	background-color: var(--bgColor3);
 }
 
 .upload-btn:active {
@@ -759,6 +783,11 @@ onMounted(() => {
 	box-shadow: 0 -2rpx 8rpx rgba(0, 0, 0, 0.06);
 }
 
+.darkMode .bottom-actions {
+	background-color: var(--bgColor2);
+	box-shadow: none;
+}
+
 .cancel-btn,
 .submit-btn {
 	flex: 1;
@@ -769,8 +798,12 @@ onMounted(() => {
 }
 
 .cancel-btn {
-	background-color: #f5f5f5;
-	color: #666;
+	background-color: var(--bgColor1);
+	color: var(--textColor2);
+}
+
+.darkMode .cancel-btn {
+	background-color: var(--bgColor3);
 }
 
 .submit-btn {

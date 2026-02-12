@@ -1,5 +1,5 @@
 <template>
-	<view class="my-project-container">
+	<view class="my-project-container" :class="themeClass">
 		<!-- 顶部标题栏 -->
 		<view class="header">
 			<text class="header-title">我的项目</text>
@@ -112,7 +112,7 @@
 									</view>
 									<view class="member-details">
 										<view class="member-name-row">
-											<text class="member-name">{{ member.username }}</text>
+											<text class="member-name">{{ member.userName }}</text>
 											<view v-if="member.level" class="member-level" :class="'level-' + member.level">
 												<text class="level-text">Lv.{{ member.level }}</text>
 											</view>
@@ -275,7 +275,11 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+
 import request from '@/utils/request.js'
+import { useTheme } from '@/hooks/useTheme'
+
+const { themeClass } = useTheme()
 
 // 标签页状态
 const activeTab = ref('created') // 'created' 或 'joined'
@@ -767,7 +771,7 @@ onMounted(() => {
 <style scoped>
 .my-project-container {
 	min-height: 100vh;
-	background-color: #f5f5f5;
+	background-color: var(--bgColor1);
 	display: flex;
 	flex-direction: column;
 }
@@ -777,6 +781,10 @@ onMounted(() => {
 	background: linear-gradient(135deg, #00A872 0%, #00C896 100%);
 	padding: 40rpx 30rpx 30rpx;
 	color: #fff;
+}
+
+.darkMode .header {
+	background: linear-gradient(135deg, var(--bgColor3) 0%, var(--bgColor2) 100%);
 }
 
 .header-title {
@@ -795,7 +803,11 @@ onMounted(() => {
 .tabs {
 	display: flex;
 	background-color: #fff;
-	border-bottom: 1rpx solid #f0f0f0;
+	border-bottom: 1rpx solid var(--borderColor);
+}
+
+.darkMode .tabs {
+	background-color: var(--bgColor2);
 }
 
 .tab-item {
@@ -811,12 +823,12 @@ onMounted(() => {
 
 .tab-text {
 	font-size: 30rpx;
-	color: #666;
+	color: var(--textColor3);
 	transition: all 0.3s ease;
 }
 
 .tab-item.active .tab-text {
-	color: #00A872;
+	color: var(--themeColor1);
 	font-weight: bold;
 }
 
@@ -827,7 +839,7 @@ onMounted(() => {
 	transform: translateX(-50%);
 	width: 60rpx;
 	height: 6rpx;
-	background: linear-gradient(90deg, #00A872 0%, #00C896 100%);
+	background: linear-gradient(90deg, var(--themeColor1) 0%, var(--themeColor2) 100%);
 	border-radius: 3rpx;
 	animation: slideIn 0.3s ease;
 }
@@ -864,6 +876,11 @@ onMounted(() => {
 	box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.08);
 }
 
+.darkMode .project-card {
+	background-color: var(--bgColor2);
+	box-shadow: none;
+}
+
 /* 项目头部 */
 .project-header {
 	margin-bottom: 20rpx;
@@ -879,7 +896,7 @@ onMounted(() => {
 .project-name {
 	font-size: 32rpx;
 	font-weight: bold;
-	color: #333;
+	color: var(--textColor1);
 	flex: 1;
 	margin-right: 16rpx;
 }
@@ -912,13 +929,13 @@ onMounted(() => {
 }
 
 .status-offline {
-	background-color: #f5f5f5;
-	color: #999;
+	background-color: var(--bgColor1);
+	color: var(--textColor3);
 }
 
 .project-time {
 	font-size: 24rpx;
-	color: #999;
+	color: var(--textColor3);
 }
 
 /* 项目图片 - 九宫格 */
@@ -932,7 +949,11 @@ onMounted(() => {
 	position: relative;
 	overflow: hidden;
 	border-radius: 8rpx;
-	background-color: #f5f5f5;
+	background-color: var(--bgColor1);
+}
+
+.darkMode .image-item {
+	background-color: var(--bgColor3);
 }
 
 .grid-image {
@@ -974,8 +995,12 @@ onMounted(() => {
 .project-info {
 	margin-bottom: 20rpx;
 	padding: 16rpx;
-	background-color: #f9f9f9;
+	background-color: var(--bgColor1);
 	border-radius: 12rpx;
+}
+
+.darkMode .project-info {
+	background-color: var(--bgColor3);
 }
 
 .info-row {
@@ -990,12 +1015,12 @@ onMounted(() => {
 }
 
 .info-label {
-	color: #999;
+	color: var(--textColor3);
 	min-width: 140rpx;
 }
 
 .info-value {
-	color: #333;
+	color: var(--textColor1);
 	flex: 1;
 }
 
@@ -1017,8 +1042,12 @@ onMounted(() => {
 .members-section {
 	margin-bottom: 20rpx;
 	padding: 16rpx;
-	background-color: #f9f9f9;
+	background-color: var(--bgColor1);
 	border-radius: 12rpx;
+}
+
+.darkMode .members-section {
+	background-color: var(--bgColor3);
 }
 
 .members-header {
@@ -1031,12 +1060,12 @@ onMounted(() => {
 .members-title {
 	font-size: 28rpx;
 	font-weight: bold;
-	color: #333;
+	color: var(--textColor1);
 }
 
 .expand-btn {
 	font-size: 24rpx;
-	color: #00A872;
+	color: var(--themeColor1);
 	padding: 4rpx 12rpx;
 }
 
@@ -1057,17 +1086,21 @@ onMounted(() => {
 	transition: all 0.3s ease;
 }
 
+.darkMode .member-item {
+	background-color: var(--bgColor2);
+}
+
 .member-item.clickable {
 	cursor: pointer;
 }
 
 .member-item.clickable:hover {
-	background-color: #f5f5f5;
+	background-color: var(--bgColor1);
 	transform: translateX(4rpx);
 }
 
 .member-item.clickable:active {
-	background-color: #eeeeee;
+	background-color: var(--bgColor1);
 	transform: scale(0.98);
 }
 
@@ -1112,7 +1145,7 @@ onMounted(() => {
 
 .member-name {
 	font-size: 28rpx;
-	color: #333;
+	color: var(--textColor1);
 	font-weight: 500;
 }
 
@@ -1128,7 +1161,7 @@ onMounted(() => {
 
 .member-time {
 	font-size: 22rpx;
-	color: #999;
+	color: var(--textColor3);
 }
 
 .fail-reason {
@@ -1166,7 +1199,7 @@ onMounted(() => {
 }
 
 .edit-status-btn {
-	background: linear-gradient(135deg, #00A872 0%, #00C896 100%);
+	background: linear-gradient(135deg, var(--themeColor1) 0%, var(--themeColor2) 100%);
 	color: #fff;
 	padding: 6rpx 16rpx;
 	font-size: 22rpx;
@@ -1178,8 +1211,8 @@ onMounted(() => {
 }
 
 .reject-btn {
-	background-color: #f5f5f5;
-	color: #666;
+	background-color: var(--bgColor1);
+	color: var(--textColor3);
 }
 
 .empty-members {
@@ -1189,7 +1222,7 @@ onMounted(() => {
 
 .empty-text {
 	font-size: 26rpx;
-	color: #999;
+	color: var(--textColor3);
 }
 
 /* 项目操作按钮 */
@@ -1200,7 +1233,7 @@ onMounted(() => {
 
 .view-detail-btn {
 	flex: 1;
-	background: linear-gradient(135deg, #00A872 0%, #00C896 100%);
+	background: linear-gradient(135deg, var(--themeColor1) 0%, var(--themeColor2) 100%);
 	color: #fff;
 	height: 72rpx;
 	line-height: 72rpx;
@@ -1221,6 +1254,10 @@ onMounted(() => {
 	font-weight: bold;
 }
 
+.darkMode .disband-btn {
+	background-color: rgba(244, 67, 54, 0.1);
+}
+
 .disband-btn::after {
 	border: none;
 }
@@ -1234,6 +1271,10 @@ onMounted(() => {
 	border-radius: 12rpx;
 	font-size: 28rpx;
 	border: 2rpx solid #ff9800;
+}
+
+.darkMode .leave-btn {
+	background-color: rgba(255, 152, 0, 0.1);
 }
 
 .leave-btn::after {
@@ -1257,19 +1298,19 @@ onMounted(() => {
 
 .empty-title {
 	font-size: 32rpx;
-	color: #333;
+	color: var(--textColor1);
 	font-weight: bold;
 	margin-bottom: 16rpx;
 }
 
 .empty-desc {
 	font-size: 26rpx;
-	color: #999;
+	color: var(--textColor3);
 	margin-bottom: 40rpx;
 }
 
 .create-btn {
-	background: linear-gradient(135deg, #00A872 0%, #00C896 100%);
+	background: linear-gradient(135deg, var(--themeColor1) 0%, var(--themeColor2) 100%);
 	color: #fff;
 	padding: 20rpx 60rpx;
 	border-radius: 40rpx;
@@ -1287,7 +1328,7 @@ onMounted(() => {
 .loading-text,
 .no-more-text {
 	font-size: 26rpx;
-	color: #999;
+	color: var(--textColor3);
 }
 
 /* 状态选择菜单样式 */
@@ -1297,6 +1338,10 @@ onMounted(() => {
 	border-radius: 16rpx;
 	overflow: hidden;
 	animation: slideUp 0.3s ease-out;
+}
+
+.darkMode .status-menu-content {
+	background-color: var(--bgColor2);
 }
 
 @keyframes slideUp {
@@ -1312,13 +1357,13 @@ onMounted(() => {
 
 .status-menu-header {
 	padding: 30rpx;
-	border-bottom: 1px solid #f0f0f0;
+	border-bottom: 1px solid var(--borderColor);
 }
 
 .status-menu-title {
 	font-size: 32rpx;
 	font-weight: bold;
-	color: #333;
+	color: var(--textColor1);
 }
 
 .status-menu-list {
@@ -1334,11 +1379,11 @@ onMounted(() => {
 }
 
 .status-menu-item:active {
-	background-color: #f5f5f5;
+	background-color: var(--bgColor1);
 }
 
 .status-menu-item.active {
-	background-color: #f0f4ff;
+	background-color: rgba(0, 168, 114, 0.1);
 }
 
 .status-dot {
@@ -1363,17 +1408,17 @@ onMounted(() => {
 .status-menu-text {
 	flex: 1;
 	font-size: 28rpx;
-	color: #333;
+	color: var(--textColor1);
 }
 
 .check-icon {
 	font-size: 32rpx;
-	color: #00A872;
+	color: var(--themeColor1);
 	font-weight: bold;
 }
 
 .status-menu-footer {
-	border-top: 1px solid #f0f0f0;
+	border-top: 1px solid var(--borderColor);
 }
 
 /* 拒绝弹窗样式 */
@@ -1397,15 +1442,19 @@ onMounted(() => {
 	overflow: hidden;
 }
 
+.darkMode .modal-content {
+	background-color: var(--bgColor2);
+}
+
 .modal-header {
 	padding: 30rpx;
-	border-bottom: 1px solid #f0f0f0;
+	border-bottom: 1px solid var(--borderColor);
 }
 
 .modal-title {
 	font-size: 32rpx;
 	font-weight: bold;
-	color: #333;
+	color: var(--textColor1);
 }
 
 .modal-body {
@@ -1416,24 +1465,28 @@ onMounted(() => {
 	width: 100%;
 	min-height: 200rpx;
 	padding: 16rpx;
-	background-color: #f9f9f9;
+	background-color: var(--bgColor1);
 	border-radius: 12rpx;
 	font-size: 28rpx;
-	color: #333;
+	color: var(--textColor1);
 	box-sizing: border-box;
+}
+
+.darkMode .reject-textarea {
+	background-color: var(--bgColor3);
 }
 
 .char-count {
 	display: block;
 	text-align: right;
 	font-size: 24rpx;
-	color: #999;
+	color: var(--textColor3);
 	margin-top: 8rpx;
 }
 
 .modal-footer {
 	display: flex;
-	border-top: 1px solid #f0f0f0;
+	border-top: 1px solid var(--borderColor);
 }
 
 .modal-btn {
@@ -1447,12 +1500,12 @@ onMounted(() => {
 }
 
 .cancel-btn {
-	color: #666;
-	border-right: 1px solid #f0f0f0;
+	color: var(--textColor3);
+	border-right: 1px solid var(--borderColor);
 }
 
 .confirm-btn {
-	color: #00A872;
+	color: var(--themeColor1);
 	font-weight: bold;
 }
 </style>

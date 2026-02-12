@@ -1,5 +1,5 @@
 <template>
-	<view class="login-container">
+	<view class="login-container" :class="themeClass">
 		<!-- 顶部装饰 -->
 		<view class="decorations">
 			<view class="circle circle-1"></view>
@@ -15,42 +15,83 @@
 		
 		<!-- 顶部logo -->
 		<view class="logo-box">
-			<image :src="wxUserInfo.avatarUrl || '/static/logo.jpg'" mode="aspectFit" class="logo-img"></image>
+			<image :src="wxUserInfo.avatarUrl || '/static/logo.png'" mode="aspectFit" class="logo-img"></image>
 			<text class="logo-title">{{ wxUserInfo.nickName ? `Hi，${wxUserInfo.nickName}！` : 'Hi，欢迎回来！' }}</text>
 			<text class="logo-subtitle">登录你的账户，开始新的旅程</text>
 		</view>
 		
 		<!-- 登录表单 -->
 		<view class="login-form">
-			<!-- 账密登录表单 - 在微信环境下可折叠 -->
-			<view v-if="showLoginForm" class="form-section">
-				<view class="input-group">
-					<text class="iconfont icon-user"></text>
-					<input type="text" v-model="formData.username" placeholder="请输入用户名" class="input-field" />
+			<!-- Tab 切换栏 -->
+			<view class="login-tabs">
+				<view 
+					class="tab-item" 
+					:class="{ 'tab-active': activeTab === 'wechat' }"
+					@tap="activeTab = 'wechat'"
+				>
+					<text>微信登录</text>
 				</view>
-				
-				<view class="input-group">
-					<text class="iconfont icon-password"></text>
-					<input type="password" v-model="formData.password" placeholder="请输入密码" class="input-field" />
+				<view 
+					class="tab-item" 
+					:class="{ 'tab-active': activeTab === 'account' }"
+					@tap="activeTab = 'account'"
+				>
+					<text>账号登录</text>
 				</view>
-				
-				<button class="login-btn" @tap="handleLogin" :disabled="isLoading || !isAgreed">
-					<text v-if="!isLoading">登 录</text>
-					<view class="loading-dots" v-else>
-						<view class="dot"></view>
-						<view class="dot"></view>
-						<view class="dot"></view>
+				<!-- Tab 滑动指示器 -->
+				<view class="tab-indicator" :class="{ 'tab-indicator-right': activeTab === 'account' }"></view>
+			</view>
+			
+			<!-- Tab 内容区 -->
+			<view class="tab-content">
+				<!-- 微信登录面板 -->
+				<view v-if="activeTab === 'wechat'" class="tab-panel">
+					<view class="wechat-login-area">
+						<!-- 移除了 wechat-big-icon -->
+						<text class="wechat-login-tip">点击下方按钮，授权手机号快速登录</text>
+						<button 
+							class="wechat-login-btn" 
+							open-type="getPhoneNumber" 
+							@getphonenumber="onGetPhoneNumber" 
+							:disabled="isLoading || !isAgreed"
+						>
+							<view class="wechat-icon">
+								<image src="/static/wechat-icon.svg" mode="aspectFit" class="wechat-icon-img"></image>
+							</view>
+							<text v-if="!isLoading" class="wechat-text">微信快捷登录</text>
+							<view class="loading-dots" v-else>
+								<view class="dot"></view>
+								<view class="dot"></view>
+								<view class="dot"></view>
+							</view>
+						</button>
 					</view>
-				</button>
+				</view>
+				
+				<!-- 账号登录面板 -->
+				<view v-if="activeTab === 'account'" class="tab-panel">
+					<view class="input-group">
+						<text class="iconfont icon-user"></text>
+						<input type="text" v-model="formData.userName" placeholder="请输入用户名" class="input-field" />
+					</view>
+					
+					<view class="input-group">
+						<text class="iconfont icon-password"></text>
+						<input type="password" v-model="formData.password" placeholder="请输入密码" class="input-field" />
+					</view>
+					
+					<button class="login-btn" @tap="handleLogin" :disabled="isLoading || !isAgreed">
+						<text v-if="!isLoading">登 录</text>
+						<view class="loading-dots" v-else>
+							<view class="dot"></view>
+							<view class="dot"></view>
+							<view class="dot"></view>
+						</view>
+					</button>
+				</view>
 			</view>
 			
-			<!-- 在微信环境下显示展开按钮 -->
-			<view v-if="isWechatMiniApp && !showLoginForm" class="toggle-form-btn" @tap="showLoginForm = true">
-				<text>账号登录</text>
-				<text class="toggle-icon">▼</text>
-			</view>
-			
-			<!-- 社区合约勾选 -->
+			<!-- 社区合约勾选（两种方式共用） -->
 			<view class="agreement-box">
 				<view class="checkbox-wrapper" @tap="toggleAgreement">
 					<view class="checkbox" :class="{'checkbox-checked': isAgreed}">
@@ -62,15 +103,6 @@
 					<text class="agreement-link" @tap="showAgreement">《社区合约》</text>
 				</view>
 			</view>
-			
-			<!-- 微信快捷登录按钮 - 仅在微信小程序环境显示 -->
-			<button v-if="isWechatMiniApp" class="wechat-login-btn"  @tap="handleWxLoginDirectly" :disabled="isLoading || !isAgreed">
-				<view class="wechat-icon">
-					<image src="/static/wechat-icon.svg" mode="aspectFit" class="wechat-icon-img"></image>
-				</view>
-				<text class="wechat-text">微信快捷登录</text>
-			</button>
-			
 		</view>
 		
 		<!-- 社区合约弹窗 -->
@@ -117,12 +149,15 @@
 <script setup>
 import { ref, getCurrentInstance, onMounted } from 'vue'
 import { apiBaseUrl } from '../../store/index'
+import { useTheme } from '@/hooks/useTheme'
+
+const { themeClass } = useTheme()
 
 const { proxy } = getCurrentInstance()
 const baseUrl = apiBaseUrl
 
 const formData = ref({
-	username: '',
+	userName: '',
 	password: ''
 })
 
@@ -130,8 +165,7 @@ const isLoading = ref(false)
 const wxUserInfo = ref({})
 const isAgreed = ref(false)
 const showAgreementPopup = ref(false)
-const isWechatMiniApp = ref(false)
-const showLoginForm = ref(true)
+const activeTab = ref('wechat')  // 默认微信登录 Tab
 
 // 调试相关
 const showDebug = ref(false)
@@ -159,34 +193,8 @@ const closeAgreement = () => {
 	showAgreementPopup.value = false
 }
 
-// 检测是否为微信小程序环境
-const detectWechatMiniApp = () => {
-	// 获取系统信息
-	const systemInfo = uni.getSystemInfoSync()
-	console.log('系统信息:', systemInfo)
-	// 在微信小程序中，platform 为 'devtools' 或其他值，但可以通过 uniPlatform 判断
-	// 或者通过检查是否支持微信登录 API
-	const isWeixin = systemInfo.platform === 'devtools' || 
-	                 systemInfo.platform === 'ios' || 
-	                 systemInfo.platform === 'android' ||
-	                 (typeof wx !== 'undefined') // 微信小程序全局对象
-	
-	// 更可靠的方式：检查 __wxConfig 或其他微信特有对象
-	const isWechatEnv = typeof wx !== 'undefined' && typeof wx.login === 'function'
-	
-	isWechatMiniApp.value = isWechatEnv
-	// 在微信环境下，默认折叠账密登录表单
-	if (isWechatEnv) {
-		showLoginForm.value = false
-	}
-	addDebugLog(`环境检测: 微信小程序=${isWechatMiniApp.value}, 平台=${systemInfo.platform}`)
-}
-
 // 页面加载时检查是否有已存储的微信用户信息
 onMounted(() => {
-	// 检测环境
-	detectWechatMiniApp()
-	
 	const storedUserInfo = uni.getStorageSync('wx-user-info')
 	if (storedUserInfo) {
 		wxUserInfo.value = storedUserInfo
@@ -195,7 +203,7 @@ onMounted(() => {
 })
 
 const handleLogin = () => {
-	if (!formData.value.username || !formData.value.password) {
+	if (!formData.value.userName || !formData.value.password) {
 		uni.showToast({
 			title: '请输入用户名和密码',
 			icon: 'none'
@@ -222,7 +230,7 @@ const handleLogin = () => {
 			if (res.data.code === 200) {
 				// 存储token
 				console.log(res.data)
-				uni.setStorageSync('sa-token', res.data.data.tokenValue)
+				uni.setStorageSync('token', res.data.data.tokenValue)
 				uni.setStorageSync('userId', res.data.data.loginId)
 				uni.showToast({
 					title: '登录成功',
@@ -254,8 +262,38 @@ const handleLogin = () => {
 	})
 }
 
-// 直接处理微信登录
-const handleWxLoginDirectly= () => {
+// 获取微信用户昵称（尝试获取，失败不影响登录流程）
+const getWxNickName = () => {
+	return new Promise((resolve) => {
+		// 微信小程序2022年后 getUserProfile 不再返回真实昵称
+		// 但仍然尝试获取，如果获取不到则返回空字符串
+		try {
+			uni.getUserProfile({
+				desc: '用于完善用户资料',
+				success: (res) => {
+					addDebugLog(`获取用户资料成功: ${JSON.stringify(res.userInfo)}`)
+					const nickName = res.userInfo?.nickName || ''
+					// 保存用户信息到本地
+					wxUserInfo.value = res.userInfo || {}
+					uni.setStorageSync('wx-user-info', res.userInfo)
+					resolve(nickName)
+				},
+				fail: (err) => {
+					addDebugLog(`获取用户资料失败（不影响登录）: ${JSON.stringify(err)}`)
+					resolve('')
+				}
+			})
+		} catch (e) {
+			addDebugLog(`getUserProfile 不支持: ${e.message}`)
+			resolve('')
+		}
+	})
+}
+
+// 处理获取手机号回调（微信登录核心流程）
+const onGetPhoneNumber = async (e) => {
+	addDebugLog(`getPhoneNumber 回调: ${JSON.stringify(e.detail)}`)
+	
 	if (!isAgreed.value) {
 		uni.showToast({
 			title: '请先同意社区合约',
@@ -264,47 +302,104 @@ const handleWxLoginDirectly= () => {
 		return
 	}
 	
-	uni.login({
-		provider: 'weixin',
-		success: (res) => {
-			console.log(res.code)
-			uni.request({
-				url: `${baseUrl}/user/wx-login`,
-				method: 'POST',
-				data: res.code,
+	// 用户拒绝授权手机号
+	if (e.detail.errMsg && e.detail.errMsg !== 'getPhoneNumber:ok') {
+		addDebugLog(`用户拒绝手机号授权: ${e.detail.errMsg}`)
+		uni.showToast({
+			title: '需要授权手机号才能登录',
+			icon: 'none'
+		})
+		return
+	}
+	
+	// 获取手机号授权码（code）- 新版微信API返回的是 code，不是 encryptedData
+	const phoneCode = e.detail.code
+	if (!phoneCode) {
+		addDebugLog('未获取到手机号授权码')
+		uni.showToast({
+			title: '获取手机号失败，请重试',
+			icon: 'none'
+		})
+		return
+	}
+	
+	addDebugLog(`手机号授权码: ${phoneCode}`)
+	isLoading.value = true
+	
+	try {
+		// 步骤1：调用 uni.login 获取登录 code
+		const loginCode = await new Promise((resolve, reject) => {
+			uni.login({
+				provider: 'weixin',
 				success: (res) => {
-					console.log(res)
-					if(res.data.code === 200){
-						uni.setStorageSync('sa-token', res.data.data.tokenValue)
-						uni.setStorageSync('userId', res.data.data.loginId)
-						uni.showToast({
-							title: '登录成功',
-							icon: 'success'
-						})
-						setTimeout(() => {
-							uni.switchTab({
-								url: '/pages/index/index'
-							})
-						}, 1500)
-					}else{
-						uni.showToast({
-							title: res.data.msg || '登录失败',
-							icon: 'none'
-						})
-					}
+					addDebugLog(`uni.login 成功, code: ${res.code}`)
+					resolve(res.code)
 				},
-				fail: () => {
-					uni.showToast({
-						title: '网络错误',
-						icon: 'none'
-					})
-				},
-				complete: () => {
-					isLoading.value = false
+				fail: (err) => {
+					addDebugLog(`uni.login 失败: ${JSON.stringify(err)}`)
+					reject(err)
 				}
 			})
+		})
+		
+		// 步骤2：尝试获取微信昵称
+		const nickName = await getWxNickName()
+		addDebugLog(`昵称: ${nickName || '(未获取到)'}`)
+		
+		// 步骤3：调用后端登录接口，传递 code、phone（手机号授权码）、nickName
+		const loginData = {
+			code: loginCode,
+			phone: phoneCode,
+			nickName: nickName || ''
 		}
-	});
+		addDebugLog(`发送登录请求: ${JSON.stringify(loginData)}`)
+		
+		uni.request({
+			url: `${baseUrl}/auth/wechat/login`,
+			method: 'POST',
+			header: {
+				'Content-Type': 'application/json'
+			},
+			data: loginData,
+			success: (res) => {
+				addDebugLog(`登录响应: ${JSON.stringify(res.data)}`)
+				if (res.data.code === 200) {
+					uni.setStorageSync('token', res.data.data.tokenValue)
+					uni.setStorageSync('userId', res.data.data.loginId)
+					uni.showToast({
+						title: '登录成功',
+						icon: 'success'
+					})
+					setTimeout(() => {
+						uni.switchTab({
+							url: '/pages/index/index'
+						})
+					}, 1500)
+				} else {
+					uni.showToast({
+						title: res.data.msg || '登录失败',
+						icon: 'none'
+					})
+				}
+			},
+			fail: () => {
+				uni.showToast({
+					title: '网络错误',
+					icon: 'none'
+				})
+			},
+			complete: () => {
+				isLoading.value = false
+			}
+		})
+	} catch (err) {
+		addDebugLog(`登录流程出错: ${JSON.stringify(err)}`)
+		isLoading.value = false
+		uni.showToast({
+			title: '登录失败，请重试',
+			icon: 'none'
+		})
+	}
 };
 
 </script>
@@ -313,9 +408,10 @@ const handleWxLoginDirectly= () => {
 .login-container {
 	padding: 60rpx 40rpx;
 	min-height: 100vh;
-	background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+	background: linear-gradient(135deg, var(--bgColor1) 0%, var(--bgColor2) 100%);
 	position: relative;
 	overflow: hidden;
+	color: var(--textColor1);
 }
 
 /* 管理员登录入口 */
@@ -323,12 +419,12 @@ const handleWxLoginDirectly= () => {
 	position: absolute;
 	top: 40rpx;
 	right: 40rpx;
-	background: rgba(255, 255, 255, 0.8);
+	background: var(--bgColor2);
 	padding: 15rpx 25rpx;
 	border-radius: 30rpx;
 	display: flex;
 	align-items: center;
-	box-shadow: 0 4rpx 10rpx rgba(0, 0, 0, 0.1);
+	box-shadow: 0 4rpx 10rpx var(--bgboxShadowColor1);
 	z-index: 10;
 	backdrop-filter: blur(5px);
 	transition: all 0.3s;
@@ -340,13 +436,14 @@ const handleWxLoginDirectly= () => {
 
 .admin-login-text {
 	font-size: 24rpx;
-	color: #5271FF;
+	color: var(--themeColor1);
 	font-weight: 500;
 	margin-right: 8rpx;
 }
 
 .admin-login-icon {
 	font-size: 28rpx;
+	color: var(--textColor1);
 }
 
 /* 装饰性元素 */
@@ -368,7 +465,7 @@ const handleWxLoginDirectly= () => {
 .circle-1 {
 	width: 300rpx;
 	height: 300rpx;
-	background: linear-gradient(45deg, #5271FF, #5F04AF);
+	background: linear-gradient(45deg, var(--themeColor1), #5F04AF);
 	top: -100rpx;
 	right: -50rpx;
 }
@@ -403,39 +500,86 @@ const handleWxLoginDirectly= () => {
 	height: 160rpx;
 	margin-bottom: 20rpx;
 	border-radius: 50%;
-	box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.1);
+	box-shadow: 0 8rpx 20rpx var(--bgboxShadowColor1);
 }
 
 .logo-title {
 	font-size: 42rpx;
-	color: #333;
+	color: var(--textColor1);
 	font-weight: bold;
 	margin-bottom: 10rpx;
 }
 
 .logo-subtitle {
 	font-size: 26rpx;
-	color: #666;
+	color: var(--textColor3);
 }
 
 .login-form {
-	padding: 40rpx;
-	background: rgba(255, 255, 255, 0.85);
+	padding: 0;
+	background: var(--bgColor3);
 	border-radius: 20rpx;
-	box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.1);
+	box-shadow: 0 10rpx 30rpx var(--bgboxShadowColor1);
 	position: relative;
 	z-index: 1;
 	backdrop-filter: blur(10px);
+	overflow: hidden;
 }
 
-.form-section {
-	animation: slideDown 0.3s ease-out;
+/* Tab 切换栏 */
+.login-tabs {
+	display: flex;
+	position: relative;
+	background: var(--bgColor1);
+	border-bottom: 1rpx solid var(--borderColor);
 }
 
-@keyframes slideDown {
+.tab-item {
+	flex: 1;
+	text-align: center;
+	padding: 28rpx 0;
+	font-size: 30rpx;
+	color: var(--textColor3);
+	font-weight: 500;
+	transition: color 0.3s;
+	position: relative;
+	z-index: 1;
+}
+
+.tab-item.tab-active {
+	color: var(--themeColor1);
+	font-weight: 600;
+}
+
+.tab-indicator {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	width: 50%;
+	height: 4rpx;
+	background: var(--themeColor1);
+	border-radius: 4rpx;
+	transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tab-indicator-right {
+	transform: translateX(100%);
+}
+
+/* Tab 内容区 */
+.tab-content {
+	padding: 40rpx;
+	/* 移除最小高度限制，根据内容自适应 */
+}
+
+.tab-panel {
+	animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
 	from {
 		opacity: 0;
-		transform: translateY(-10rpx);
+		transform: translateY(10rpx);
 	}
 	to {
 		opacity: 1;
@@ -443,45 +587,28 @@ const handleWxLoginDirectly= () => {
 	}
 }
 
-/* 展开/折叠按钮 */
-.toggle-form-btn {
+/* 微信登录面板 */
+.wechat-login-area {
 	display: flex;
-	justify-content: center;
+	flex-direction: column;
 	align-items: center;
-	padding: 24rpx 20rpx;
-	background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
-	border-radius: 12rpx;
-	margin-bottom: 20rpx;
-	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-	border: 1rpx solid rgba(0, 0, 0, 0.05);
-	box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+	padding: 10rpx 0 20rpx; /* 减少内边距 */
 }
 
-.toggle-form-btn:active {
-	background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
-	transform: translateY(1rpx);
-	box-shadow: 0 1rpx 4rpx rgba(0, 0, 0, 0.08);
-}
+/* 移除了 wechat-big-icon 样式 */
 
-.toggle-form-btn text {
-	font-size: 28rpx;
-	color: #495057;
-	font-weight: 600;
-	letter-spacing: 1rpx;
-}
-
-.toggle-icon {
-	margin-left: 12rpx;
-	font-size: 18rpx;
-	transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-	color: #868e96;
+.wechat-login-tip {
+	font-size: 26rpx;
+	color: var(--textColor3); /* 加深一点颜色确保可见 */
+	margin-bottom: 40rpx;
+	margin-top: 10rpx; /* 稍微给点顶部间距 */
 }
 
 .input-group {
 	display: flex;
 	align-items: center;
 	padding: 25rpx 30rpx;
-	background-color: #f8f8f8;
+	background-color: var(--bgColor1);
 	border-radius: 40rpx;
 	margin-bottom: 30rpx;
 	transition: all 0.3s;
@@ -489,28 +616,29 @@ const handleWxLoginDirectly= () => {
 }
 
 .input-group:focus-within {
-	border-color: #5271FF;
-	box-shadow: 0 0 10rpx rgba(82, 113, 255, 0.2);
+	border-color: var(--themeColor1);
+	box-shadow: 0 0 10rpx var(--themeColor1);
+	opacity: 0.2;
 }
 
 .input-group .iconfont {
 	font-size: 40rpx;
-	color: #5271FF;
+	color: var(--themeColor1);
 	margin-right: 20rpx;
 }
 
 .input-field {
 	flex: 1;
 	font-size: 28rpx;
-	color: #333;
+	color: var(--textColor1);
 }
 
 /* 社区合约勾选样式 */
 .agreement-box {
 	display: flex;
 	align-items: center;
-	margin-top: 20rpx;
-	padding: 0 10rpx;
+	padding: 20rpx 40rpx 30rpx;
+	border-top: 1rpx solid rgba(0, 0, 0, 0.04);
 }
 
 .checkbox-wrapper {
@@ -520,7 +648,7 @@ const handleWxLoginDirectly= () => {
 .checkbox {
 	width: 36rpx;
 	height: 36rpx;
-	border: 2rpx solid #ccc;
+	border: 2rpx solid var(--textColor4);
 	border-radius: 6rpx;
 	display: flex;
 	align-items: center;
@@ -529,8 +657,8 @@ const handleWxLoginDirectly= () => {
 }
 
 .checkbox-checked {
-	background-color: #5271FF;
-	border-color: #5271FF;
+	background-color: var(--themeColor1);
+	border-color: var(--themeColor1);
 }
 
 .checkbox-icon {
@@ -541,26 +669,26 @@ const handleWxLoginDirectly= () => {
 
 .agreement-text {
 	font-size: 26rpx;
-	color: #666;
+	color: var(--textColor3);
 	margin-left: 10rpx;
 }
 
 .agreement-link {
-	color: #5271FF;
+	color: var(--themeColor1);
 	text-decoration: underline;
 }
 
 .login-btn {
 	width: 100%;
 	height: 90rpx;
-	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-	color: #fff;
+	background: var(--themeColor1);
+	color: var(--themeTextColor);
 	font-size: 32rpx;
 	font-weight: 600;
 	border-radius: 12rpx;
 	margin-top: 40rpx;
 	margin-bottom: 30rpx;
-	box-shadow: 0 8rpx 24rpx rgba(102, 126, 234, 0.4);
+	box-shadow: 0 8rpx 24rpx var(--bgboxShadowColor1);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -584,7 +712,7 @@ const handleWxLoginDirectly= () => {
 
 .login-btn:active {
 	transform: translateY(2rpx);
-	box-shadow: 0 4rpx 12rpx rgba(102, 126, 234, 0.3);
+	box-shadow: 0 4rpx 12rpx var(--bgboxShadowColor1);
 }
 
 .login-btn:active::before {
@@ -665,10 +793,10 @@ const handleWxLoginDirectly= () => {
 /* 社区合约弹窗样式 */
 .agreement-popup {
 	width: 600rpx;
-	background-color: #fff;
+	background-color: var(--bgColor2);
 	border-radius: 20rpx;
 	overflow: hidden;
-	box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.2);
+	box-shadow: 0 10rpx 30rpx var(--bgboxShadowColor2);
 }
 
 .agreement-popup-title {
@@ -676,7 +804,8 @@ const handleWxLoginDirectly= () => {
 	font-weight: bold;
 	text-align: center;
 	padding: 30rpx 0;
-	border-bottom: 1rpx solid #eee;
+	border-bottom: 1rpx solid var(--borderColor);
+	color: var(--textColor1);
 }
 
 .agreement-popup-content {
@@ -686,7 +815,7 @@ const handleWxLoginDirectly= () => {
 
 .agreement-popup-text {
 	font-size: 26rpx;
-	color: #333;
+	color: var(--textColor1);
 	line-height: 1.6;
 }
 
@@ -697,16 +826,17 @@ const handleWxLoginDirectly= () => {
 .agreement-section-title {
 	font-weight: bold;
 	margin-bottom: 10rpx;
+	color: var(--textColor1);
 }
 
 .agreement-section-content {
-	color: #666;
+	color: var(--textColor3);
 	padding-left: 20rpx;
 }
 
 .agreement-popup-btns {
 	display: flex;
-	border-top: 1rpx solid #eee;
+	border-top: 1rpx solid var(--borderColor);
 }
 
 .agreement-popup-btn {
@@ -715,8 +845,8 @@ const handleWxLoginDirectly= () => {
 	line-height: 90rpx;
 	text-align: center;
 	font-size: 30rpx;
-	color: #5271FF;
-	background-color: #fff;
+	color: var(--themeColor1);
+	background-color: var(--bgColor2);
 	border-radius: 0;
 }
 

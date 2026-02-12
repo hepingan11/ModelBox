@@ -1,5 +1,5 @@
 <template>
-	<view class="personal-center">
+	<view class="personal-center" :class="themeClass">
 		
 		
 		<!-- 顶部用户信息卡片 -->
@@ -24,7 +24,7 @@
 						<image v-if="userInfo.avatarFrameUrl" :src="userInfo.avatarFrameUrl" class="avatar-frame" mode="aspectFit"></image>
 					</view>
 					<view class="user-details">
-						<text class="user-name">{{ userInfo.username || '未设置昵称' }}</text>
+						<text class="user-name">{{ userInfo.userName || '未设置昵称' }}</text>
 						<!-- 用户等级 -->
 						<view class="user-level" :class="'level-' + (userInfo.level || 1)">
 							<text class="level-text">Lv.{{ userInfo.level || 1 }}</text>
@@ -147,6 +147,9 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import request from '@/utils/request.js'
+import { useTheme } from '@/hooks/useTheme'
+
+const { themeClass } = useTheme()
 
 // 获取页面参数
 const props = defineProps({
@@ -162,8 +165,8 @@ const defaultBackgroundImage = ''
 // 用户信息
 const userInfo = ref({
 	id: '',
-	username: '',
-	role: '',
+	userName: '',
+	type: '',
 	avatar: '',
 	phone: '',
 	backgroundImage: '',
@@ -478,7 +481,7 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .personal-center {
-	background-color: #f5f7fa;
+	background-color: var(--bgColor1);
 	min-height: 100vh;
 	height: 100vh;
 	position: relative;
@@ -496,7 +499,7 @@ onMounted(() => {
 	left: 0;
 	width: 100%;
 	height: 90rpx;
-	background-color: #fff;
+	background-color: var(--bgColor2);
 	display: flex;
 	align-items: center;
 	padding: 0 30rpx;
@@ -516,6 +519,7 @@ onMounted(() => {
 .nav-title {
 	font-size: 32rpx;
 	font-weight: bold;
+	color: var(--textColor1);
 }
 
 .nav-right {
@@ -525,10 +529,10 @@ onMounted(() => {
 /* 用户信息卡片 */
 .user-card {
 	position: relative;
-	background-color: #fff;
+	background-color: var(--bgColor2);
 	border-radius: 0 0 12rpx 12rpx;
 	padding: 140rpx 30rpx 40rpx;
-	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+	box-shadow: 0 2rpx 10rpx var(--bgboxShadowColor1);
 	margin-bottom: 20rpx;
 	overflow: hidden;
 }
@@ -610,12 +614,12 @@ onMounted(() => {
 .chat-btn {
 	width: 88rpx;
 	height: 88rpx;
-	background: linear-gradient(135deg, #00A872 0%, #00C896 100%);
+	background: var(--themeColor1);
 	border-radius: 50%;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	box-shadow: 0 4rpx 12rpx rgba(0, 168, 114, 0.3);
+	box-shadow: 0 4rpx 12rpx var(--bgboxShadowColor1);
 	transition: all 0.3s ease;
 }
 
@@ -632,7 +636,7 @@ onMounted(() => {
 /* 内容标签页 */
 .content-tabs {
 	display: flex;
-	background-color: #fff;
+	background-color: var(--bgColor2);
 	padding: 0 30rpx;
 	position: sticky;
 	top: 0;
@@ -650,12 +654,12 @@ onMounted(() => {
 
 .tab-item text {
 	font-size: 32rpx;
-	color: #666;
+	color: var(--textColor3);
 	font-weight: 500;
 }
 
 .tab-item.active text {
-	color: #333;
+	color: var(--themeColor1);
 	font-weight: bold;
 }
 
@@ -664,7 +668,7 @@ onMounted(() => {
 	bottom: 0;
 	width: 60rpx;
 	height: 6rpx;
-	background-color: #58d3ac;
+	background-color: var(--themeColor1);
 	border-radius: 3rpx;
 }
 
@@ -690,7 +694,7 @@ onMounted(() => {
 
 .empty-text {
 	font-size: 30rpx;
-	color: #999;
+	color: var(--textColor3);
 	margin-bottom: 30rpx;
 }
 
@@ -705,15 +709,15 @@ onMounted(() => {
 	padding: 12rpx 40rpx;
 	font-size: 28rpx;
 	border-radius: 40rpx;
-	background-color: #f5f5f5;
-	color: #666;
+	background-color: var(--bgColor1);
+	color: var(--textColor3);
 	border: none;
 	line-height: 1.5;
 }
 
 .empty-btn.primary {
-	background-color: #58d3ac;
-	color: #fff;
+	background-color: var(--themeColor1);
+	color: var(--themeTextColor);
 }
 
 /* 项目列表 */
@@ -724,10 +728,10 @@ onMounted(() => {
 .project-item {
 	display: flex;
 	padding: 20rpx;
-	background-color: #fff;
+	background-color: var(--bgColor2);
 	border-radius: 12rpx;
 	margin-bottom: 20rpx;
-	box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.04);
+	box-shadow: 0 2rpx 6rpx var(--bgboxShadowColor1);
 }
 
 .project-image {
@@ -748,7 +752,7 @@ onMounted(() => {
 .project-title {
 	font-size: 30rpx;
 	font-weight: 500;
-	color: #333;
+	color: var(--textColor1);
 	margin-bottom: 6rpx;
 	display: -webkit-box;
 	-webkit-box-orient: vertical;
@@ -758,7 +762,7 @@ onMounted(() => {
 
 .project-intro {
 	font-size: 26rpx;
-	color: #666;
+	color: var(--textColor3);
 	margin-bottom: 8rpx;
 	display: -webkit-box;
 	-webkit-box-orient: vertical;
@@ -775,8 +779,8 @@ onMounted(() => {
 
 .project-tags .tag {
 	font-size: 22rpx;
-	color: #999;
-	background-color: #f5f5f5;
+	color: var(--textColor3);
+	background-color: var(--bgColor1);
 	padding: 4rpx 8rpx;
 	border-radius: 4rpx;
 }

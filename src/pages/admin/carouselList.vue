@@ -237,7 +237,7 @@ const uploadFile = (filePath) => {
 			url: '/system/uploadImg',
 			filePath: filePath,
 			header: {
-				'sa-token': uni.getStorageSync('sa-token')
+				'token': uni.getStorageSync('token')
 			},
 			name: 'file',
 			success: (uploadFileRes) => {

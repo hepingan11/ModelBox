@@ -1,0 +1,64 @@
+/* src/static/css/theme.css */
+
+/* 全局变量定义 */
+:root,
+page {
+    /* 默认日间模式配色 (Light Mode) */
+    --bgColor1: #f5f5f5;
+    --bgboxShadowColor1: #cccccc44;
+    --bgColor2: #ededed;
+    --bgboxShadowColor2: #dddddd44;
+    --bgColor3: #adadad;
+    --themeColor1: #8166e7;
+    --themeColor2: #7554eb;
+    /* 重复但保持一致 */
+    --themeTextColor: #eee;
+    --textColor1: #222;
+    --textColor2: #444;
+    --textColor3: #666;
+    --textColor4: #888;
+    --textColor5: #d5d5d5;
+    --dColor1: #EEEEEEFF;
+    --dColor2: #e0d8f8;
+    --borderColor: #eee;
+    /* 语义色 - Light Mode */
+    --vipColor: #ff9800;
+    --adminColor: #ff4d4f;
+    --userColor: #52c41a;
+    --activityTagBg: #f0f0f0;
+    --activityTagColor: #666;
+    --activityCardBeforeBg: rgba(0, 0, 0, 0.05);
+    /* 卡片里装饰性圆圈 */
+    --errorColor: #ff4d4f;
+    /* 退出登录按钮文字颜色 */
+}
+
+/* 夜间模式配色 (Dark Mode) - 当容器有 .darkMode 类时生效 */
+.darkMode {
+    --bgColor1: #222;
+    --bgboxShadowColor1: #11111144;
+    --bgColor2: #2a2a2a;
+    --bgboxShadowColor2: #44444444;
+    --bgColor3: #656565;
+    --themeColor1: #8166e7;
+    --themeColor2: #7554eb;
+    --themeTextColor: #eee;
+    --textColor1: #eee;
+    --textColor2: #ccc;
+    --textColor3: #999;
+    --textColor4: #777;
+    --textColor5: #353535;
+    --dColor1: #2A2A2A;
+    --dColor2: #302e37;
+    --borderColor: #333;
+    /* 语义色 - Dark Mode */
+    --vipColor: #ffa726;
+    --adminColor: #ff7875;
+    --userColor: #73d13d;
+    --tagTextColor: #fff;
+    /* Activity Card 变量 - Dark Mode */
+    --activityTagBg: #333;
+    --activityTagColor: #aaa;
+    --activityCardBeforeBg: rgba(255, 255, 255, 0.05);
+    --errorColor: #ff7875;
+}

@@ -5,4 +5,5 @@ export default defineConfig({
   plugins: [
     uni(),
   ],
+  envPrefix: ['VITE_', 'VUE_APP_'],
 })

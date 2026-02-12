@@ -1,12 +1,12 @@
-const BASE_URL = 'http://127.0.0.1:9090';
+const BASE_URL = 'http://127.0.0.1:8625';
 
 // 封装请求方法
 const request = (url, options = {}) => {
 	return new Promise((resolve, reject) => {
 		// 调用 uni.request 发起请求
 		// 获取本地存储的 token
-		const token = uni.getStorageSync('sa-token');
-		
+		const token = uni.getStorageSync('token');
+
 
 		// 创建请求对象
 		const requestTask = uni.request({
@@ -16,7 +16,7 @@ const request = (url, options = {}) => {
 			timeout: 10000, // 设置10秒超时
 			header: {
 				...options.header,
-				'sa-token': `${token}`
+				'token': `${token}`
 			},
 			success: (res) => {
 				if (res.data.code === 200) {
@@ -27,9 +27,10 @@ const request = (url, options = {}) => {
 						icon: 'none',
 						duration: 2000
 					});
+					uni.removeStorageSync('token');
 					setTimeout(() => {
-						uni.reLaunch({
-							url: '/pages/login/login'
+						uni.navigateTo({
+							url: '/pages/index/index?tab=2'
 						});
 					}, 1500);
 				} else {
@@ -43,7 +44,7 @@ const request = (url, options = {}) => {
 			},
 			fail: (error) => {
 				console.error('请求失败:', error);
-				
+
 				// 网络错误的特殊处理
 				if (error.errMsg.includes('request:fail')) {
 					uni.getNetworkType({
@@ -64,7 +65,7 @@ const request = (url, options = {}) => {
 						}
 					});
 				}
-				
+
 				reject(error);
 			}
 		});
@@ -93,9 +94,9 @@ const httpInterceptor = {
 			'source-client': 'miniapp'
 		};
 		// 4. 添加 token
-		const token = uni.getStorageSync('sa-token');
+		const token = uni.getStorageSync('token');
 		if (token) {
-			options.header['sa-token'] = `${token}`;
+			options.header['token'] = `${token}`;
 		}
 	}
 };

@@ -1,5 +1,5 @@
 <template>
-  <view class="user-list-container">
+  <view class="user-list-container" :class="themeClass">
     <!-- 顶部标题栏 -->
     <view class="header-section">
       <view class="header-left">
@@ -23,13 +23,20 @@
       </view>
     </view>
     
-    <!-- 用户列表 -->
+    <!-- 用户列表 - 无限滚动 -->
     <scroll-view 
       scroll-y 
-      class="user-scroll-view" 
+      class="user-scroll-view"
+      :style="{ height: scrollViewHeight + 'px' }"
       refresher-enabled
       :refresher-triggered="isRefreshing"
       @refresherrefresh="refreshUserList"
+      @scrolltolower="loadMore"
+      :lower-threshold="150"
+      :scroll-with-animation="true"
+      :enhanced="true"
+      :show-scrollbar="false"
+      :bounces="true"
     >
       <!-- 用户列表项 -->
       <view v-if="userList.length > 0">
@@ -40,22 +47,23 @@
           @click="showUserDetail(user)"
         >
           <view class="user-avatar-section">
-            <image :src="user.avatar || '/static/avatar/default.png'" mode="aspectFill" class="user-avatar"></image>
+            <image :src="user.avatar || '/static/avatar/default.png'" mode="aspectFill" class="user-avatar" lazy-load></image>
             <!-- 头像框 -->
             <image 
               v-if="user.avatarFrame" 
               :src="user.avatarFrame" 
               class="avatar-frame" 
               mode="aspectFit"
+              lazy-load
             ></image>
             <view v-if="user.isVip" class="vip-badge">VIP</view>
           </view>
           
           <view class="user-info-section">
             <view class="user-name-row">
-              <text class="user-name">{{ user.username }}</text>
-              <text v-if="user.role === 'admin'" class="admin-tag">管理员</text>
-              <text v-if="user.role === 'user'" class="user-tag">普通用户</text>
+              <text class="user-name">{{ user.userName }}</text>
+              <text v-if="user.type === 'ADMIN'" class="admin-tag">管理员</text>
+              <text v-if="user.type === 'USER'" class="user-tag">普通用户</text>
               <!-- 用户等级 -->
               <view v-if="user.level" :class="['user-level', `level-${user.level}`]">
                 <text class="level-text">Lv.{{ user.level }}</text>
@@ -75,9 +83,7 @@
           
           <!-- 添加操作按钮 -->
           <view class="user-action-section">
-           
             <image src="/static/icon/frame.png" class="action-btn frame-btn" @click.stop="unlockFrame(user)"></image>
-            
           </view>
         </view>
       </view>
@@ -89,50 +95,25 @@
       </view>
       
       <!-- 底部加载状态 -->
-      <view class="loading-more" v-if="isLoading">
-        <text class="loading-text">加载中...</text>
+      <view class="load-status" v-if="userList.length > 0">
+        <view v-if="isLoadingMore" class="loading-more">
+          <view class="loading-spinner"></view>
+          <text class="loading-text">加载中...</text>
+        </view>
+        <view v-else-if="!hasMore" class="all-loaded">
+          <text class="all-loaded-text">— 已加载全部 {{ totalUsers }} 条数据 —</text>
+        </view>
       </view>
       
-      <!-- 分页控件 -->
-      <view class="pagination-container" v-if="userList.length > 0">
-        <view class="pagination">
-          <view 
-            class="page-btn prev-btn" 
-            :class="{'disabled': currentPage <= 1}"
-            @click="prevPage"
-          >
-            上一页
-          </view>
-          
-          <view class="page-numbers">
-            <view 
-              v-for="page in displayedPages" 
-              :key="page"
-              class="page-number"
-              :class="{'active': currentPage === page}"
-              @click="goToPage(page)"
-            >
-              {{ page }}
-            </view>
-          </view>
-          
-          <view 
-            class="page-btn next-btn" 
-            :class="{'disabled': currentPage >= totalPages}"
-            @click="nextPage"
-          >
-            下一页
-          </view>
-        </view>
-        
-        <view class="page-info">
-          {{ currentPage }} / {{ totalPages }} 页，共 {{ totalUsers }} 条
-        </view>
+      <!-- 首次加载状态 -->
+      <view class="loading-more" v-if="isLoading && userList.length === 0">
+        <view class="loading-spinner"></view>
+        <text class="loading-text">加载中...</text>
       </view>
     </scroll-view>
     
     <!-- 筛选弹窗 -->
-    <view class="filter-popup" v-if="showFilterOptions">
+    <view class="filter-popup" v-if="showFilterOptions" @click.self="showFilterOptions = false">
       <view class="filter-content">
         <view class="filter-header">
           <text class="filter-title">筛选条件</text>
@@ -171,13 +152,13 @@
               >全部</view>
               <view 
                 class="option-value" 
-                :class="{'selected': filterRole === 'admin'}"
-                @click="filterRole = 'admin'"
+                :class="{'selected': filterRole === 'ADMIN'}"
+                @click="filterRole = 'ADMIN'"
               >管理员</view>
               <view 
                 class="option-value" 
-                :class="{'selected': filterRole === 'user'}"
-                @click="filterRole = 'user'"
+                :class="{'selected': filterRole === 'USER'}"
+                @click="filterRole = 'USER'"
               >普通用户</view>
             </view>
           </view>
@@ -201,61 +182,41 @@ const userList = ref([])
 const totalUsers = ref(0)
 const currentPage = ref(1)
 const pageSize = ref(10)
-const isLoading = ref(false)
+const isLoading = ref(false)       // 首次加载
+const isLoadingMore = ref(false)   // 加载更多
 const isRefreshing = ref(false)
+const hasMore = ref(true)          // 是否还有更多数据
 
-// 计算总页数
-const totalPages = computed(() => {
-  return Math.ceil(totalUsers.value / pageSize.value) || 1
-})
-
-// 计算显示哪些页码
-const displayedPages = computed(() => {
-  const pages = []
-  const maxDisplayed = 5 // 最多显示5个页码
-  
-  if (totalPages.value <= maxDisplayed) {
-    // 如果总页数小于等于最大显示数，则全部显示
-    for (let i = 1; i <= totalPages.value; i++) {
-      pages.push(i)
-    }
-  } else {
-    // 否则显示当前页附近的页码
-    let start = Math.max(currentPage.value - 2, 1)
-    let end = Math.min(start + maxDisplayed - 1, totalPages.value)
-    
-    // 如果end到达了最大值，重新计算start
-    if (end === totalPages.value) {
-      start = Math.max(end - maxDisplayed + 1, 1)
-    }
-    
-    for (let i = start; i <= end; i++) {
-      pages.push(i)
-    }
-  }
-  
-  return pages
-})
+// scroll-view 高度（动态计算）
+const scrollViewHeight = ref(0)
 
 // 搜索和筛选
 const searchKeyword = ref('')
 const showFilterOptions = ref(false)
 const filterStatus = ref('')
 const filterRole = ref('')
-const tempFilters = ref({
-  status: '',
-  role: ''
-})
 
-// 获取用户总数
+// 构建查询参数（复用）
+const buildParams = (page) => {
+  const params = { pageNum: page, pageSize: pageSize.value, keyword: searchKeyword.value || '' }
+  if (filterStatus.value) params.status = filterStatus.value
+  if (filterRole.value) params.type = filterRole.value
+  return params
+}
+
+// 计算 scroll-view 高度（header 高度约 120rpx ≈ 根据屏幕动态算）
+const calcScrollViewHeight = () => {
+  const systemInfo = uni.getSystemInfoSync()
+  // header 实际占用大约 90px，留出顶部安全区
+  const headerHeight = 90 + (systemInfo.statusBarHeight || 0)
+  scrollViewHeight.value = systemInfo.windowHeight - headerHeight
+}
+
+// 获取用户总数（独立调用，不阻塞列表请求）
 const getUserCount = async () => {
   try {
-    const params = {}
-    
-    // 添加筛选条件到查询参数
-    if (searchKeyword.value) params.keyword = searchKeyword.value
-    if (filterStatus.value) params.status = filterStatus.value
-    if (filterRole.value) params.role = filterRole.value
+    const params = buildParams(1)
+    delete params.pageNum
     
     const res = await request('/admin/user/count', {
       method: 'GET',
@@ -264,37 +225,16 @@ const getUserCount = async () => {
     
     if (res.code === 200) {
       totalUsers.value = res.data || 0
-    } else {
-      console.error('获取用户总数失败:', res.msg)
     }
   } catch (error) {
     console.error('获取用户总数失败:', error)
   }
 }
 
-// 获取用户列表
-const getUserList = async (isRefresh = false) => {
-  if (isLoading.value) return
-  isLoading.value = true
-  
+// 获取用户列表（核心加载函数）
+const fetchUserList = async (page, append = false) => {
   try {
-    // 如果是刷新，重置页码
-    if (isRefresh) {
-      currentPage.value = 1
-    }
-    
-    // 先获取总用户数
-    await getUserCount()
-    
-    const params = {
-      pageNum: currentPage.value,
-      keyword: searchKeyword.value
-    }
-    
-    // 添加筛选条件到查询参数
-    if (searchKeyword.value) params.keyword = searchKeyword.value
-    if (filterStatus.value) params.status = filterStatus.value
-    if (filterRole.value) params.role = filterRole.value
+    const params = buildParams(page)
     
     const res = await request('/admin/user/page', {
       method: 'GET',
@@ -302,34 +242,35 @@ const getUserList = async (isRefresh = false) => {
     })
     
     if (res.code === 200) {
-      // 处理直接返回List<User>的情况
-      let records = [];
+      let records = []
       
       if (Array.isArray(res.data)) {
-        // 如果直接返回了数组
-        records = res.data;
+        records = res.data
       } else if (res.data && res.data.records) {
-        // 如果返回了标准分页对象
-        records = res.data.records;
+        records = res.data.records
       } else {
-        // 其他情况，可能直接就是数据
-        records = res.data ? [res.data] : [];
+        records = res.data ? [res.data] : []
       }
       
-      console.log('获取到的用户数据:', records);
-      
-      userList.value = records;
-      
-      // 如果当前页大于总页数，跳转到最后一页
-      if (currentPage.value > totalPages.value && totalPages.value > 0) {
-        currentPage.value = totalPages.value;
-        getUserList();
+      if (append) {
+        // 追加模式：将新数据追加到已有列表
+        userList.value = [...userList.value, ...records]
+      } else {
+        // 替换模式：替换整个列表
+        userList.value = records
       }
+      
+      // 判断是否还有更多数据
+      hasMore.value = records.length >= pageSize.value
+      currentPage.value = page
+      
+      return records
     } else {
       uni.showToast({
         title: res.msg || '获取用户列表失败',
         icon: 'none'
       })
+      return []
     }
   } catch (error) {
     console.error('获取用户列表失败:', error)
@@ -337,6 +278,22 @@ const getUserList = async (isRefresh = false) => {
       title: '网络异常，请稍后重试',
       icon: 'none'
     })
+    return []
+  }
+}
+
+// 初始加载 / 刷新（重置列表，并行请求 count 和 list）
+const loadInitial = async () => {
+  if (isLoading.value) return
+  isLoading.value = true
+  hasMore.value = true
+  
+  try {
+    // 并行请求 count 和第一页数据
+    await Promise.all([
+      getUserCount(),
+      fetchUserList(1, false)
+    ])
   } finally {
     isLoading.value = false
     if (isRefreshing.value) {
@@ -345,39 +302,28 @@ const getUserList = async (isRefresh = false) => {
   }
 }
 
+// 滚动到底部加载更多
+const loadMore = async () => {
+  if (isLoadingMore.value || isLoading.value || !hasMore.value) return
+  isLoadingMore.value = true
+  
+  try {
+    const nextPage = currentPage.value + 1
+    await fetchUserList(nextPage, true)
+  } finally {
+    isLoadingMore.value = false
+  }
+}
+
 // 下拉刷新
 const refreshUserList = () => {
   isRefreshing.value = true
-  getUserList(true)
-}
-
-// 前往上一页
-const prevPage = () => {
-  if (currentPage.value > 1) {
-    currentPage.value--
-    getUserList()
-  }
-}
-
-// 前往下一页
-const nextPage = () => {
-  if (currentPage.value < totalPages.value) {
-    currentPage.value++
-    getUserList()
-  }
-}
-
-// 跳转到指定页
-const goToPage = (page) => {
-  if (page !== currentPage.value) {
-    currentPage.value = page
-    getUserList()
-  }
+  loadInitial()
 }
 
 // 搜索用户
 const handleSearch = () => {
-  getUserList(true)
+  loadInitial()
 }
 
 // 重置筛选条件
@@ -389,7 +335,7 @@ const resetFilters = () => {
 // 应用筛选条件
 const applyFilters = () => {
   showFilterOptions.value = false
-  getUserList(true)
+  loadInitial()
 }
 
 // 编辑用户
@@ -404,8 +350,8 @@ const toggleUserStatus = (user) => {
   uni.showModal({
     title: user.status === 1 ? '禁用用户' : '启用用户',
     content: user.status === 1 
-      ? `确定要禁用用户"${user.username}"吗？` 
-      : `确定要启用用户"${user.username}"吗？`,
+      ? `确定要禁用用户"${user.userName}"吗？` 
+      : `确定要启用用户"${user.userName}"吗？`,
     success: async (res) => {
       if (res.confirm) {
         try {
@@ -469,8 +415,8 @@ const unlockFrame = (user) => {
 }
 
 onMounted(() => {
-  getUserCount()
-  getUserList(true)
+  calcScrollViewHeight()
+  loadInitial()
 })
 </script>
 
@@ -479,17 +425,18 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background-color: #f5f7fa;
+  background-color: var(--bgColor1);
+  color: var(--textColor1);
 }
 
 /* 顶部标题栏 */
 .header-section {
   padding: 30rpx;
-  background-color: #ffffff;
+  background-color: var(--bgColor2);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2rpx 10rpx var(--bgboxShadowColor1);
 }
 
 .header-left {
@@ -500,13 +447,13 @@ onMounted(() => {
 .header-title {
   font-size: 34rpx;
   font-weight: bold;
-  color: #333;
+  color: var(--textColor1);
   margin-bottom: 8rpx;
 }
 
 .user-count {
   font-size: 24rpx;
-  color: #999;
+  color: var(--textColor3);
 }
 
 .header-right {
@@ -517,7 +464,7 @@ onMounted(() => {
 .search-box {
   display: flex;
   align-items: center;
-  background-color: #f0f2f5;
+  background-color: var(--bgColor1);
   border-radius: 30rpx;
   padding: 10rpx 20rpx;
   margin-right: 20rpx;
@@ -532,6 +479,7 @@ onMounted(() => {
 .search-input {
   width: 240rpx;
   font-size: 26rpx;
+  color: var(--textColor1);
 }
 
 .filter-btn {
@@ -540,7 +488,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f0f2f5;
+  background-color: var(--bgColor1);
   border-radius: 50%;
 }
 
@@ -557,11 +505,11 @@ onMounted(() => {
 
 .user-item {
   display: flex;
-  background-color: #ffffff;
+  background-color: var(--bgColor2);
   border-radius: 16rpx;
   padding: 30rpx;
   margin-bottom: 20rpx;
-  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2rpx 10rpx var(--bgboxShadowColor1);
 }
 
 .user-avatar-section {
@@ -575,7 +523,7 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background-color: #f0f2f5;
+  background-color: var(--bgColor1);
   z-index: 1;
 }
 
@@ -593,8 +541,8 @@ onMounted(() => {
   position: absolute;
   bottom: -5rpx;
   right: -5rpx;
-  background-color: #ff9800;
-  color: white;
+  background-color: var(--vipColor);
+  color: var(--tagTextColor);
   font-size: 20rpx;
   padding: 4rpx 10rpx;
   border-radius: 20rpx;
@@ -616,7 +564,7 @@ onMounted(() => {
 .user-name {
   font-size: 32rpx;
   font-weight: bold;
-  color: #333;
+  color: var(--textColor1);
   margin-right: 10rpx;
 }
 
@@ -628,13 +576,13 @@ onMounted(() => {
 }
 
 .admin-tag {
-  background-color: #ff4d4f;
-  color: white;
+  background-color: var(--adminColor);
+  color: var(--tagTextColor);
 }
 
 .user-tag {
-  background-color: #52c41a;
-  color: white;
+  background-color: var(--userColor);
+  color: var(--tagTextColor);
 }
 
 /* 用户等级样式，使用全局样式 */
@@ -645,7 +593,7 @@ onMounted(() => {
 .user-details {
   display: flex;
   font-size: 24rpx;
-  color: #666;
+  color: var(--textColor3);
   margin-bottom: 10rpx;
 }
 
@@ -655,8 +603,9 @@ onMounted(() => {
 
 .user-stats {
   display: flex;
+  flex-direction: column; /* Added from instruction */
   font-size: 22rpx;
-  color: #999;
+  color: var(--textColor3); /* Replaced #999 */
 }
 
 .reg-time {
@@ -741,18 +690,50 @@ onMounted(() => {
 
 .empty-text {
   font-size: 28rpx;
-  color: #999;
+  color: var(--textColor3);
 }
 
 /* 加载状态 */
-.loading-more, .all-loaded {
-  text-align: center;
-  padding: 20rpx 0;
+.load-status {
+  padding: 20rpx 0 40rpx;
 }
 
-.loading-text, .all-loaded-text {
+.loading-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30rpx 0;
+}
+
+.loading-spinner {
+  width: 36rpx;
+  height: 36rpx;
+  border: 3rpx solid #e0e0e0;
+  border-top-color: #1890ff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-right: 16rpx;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-text {
   font-size: 24rpx;
-  color: #999;
+  color: var(--textColor3);
+}
+
+.all-loaded {
+  text-align: center;
+  padding: 30rpx 0 40rpx;
+}
+
+.all-loaded-text {
+  font-size: 24rpx;
+  color: var(--textColor3);
 }
 
 /* 筛选弹窗 */
@@ -771,7 +752,7 @@ onMounted(() => {
 
 .filter-content {
   width: 600rpx;
-  background-color: #fff;
+  background-color: var(--bgColor2);
   border-radius: 20rpx;
   overflow: hidden;
 }
@@ -781,18 +762,18 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 30rpx;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--borderColor);
 }
 
 .filter-title {
   font-size: 32rpx;
   font-weight: bold;
-  color: #333;
+  color: var(--textColor1);
 }
 
 .close-icon {
   font-size: 40rpx;
-  color: #999;
+  color: var(--textColor3);
 }
 
 .filter-options {
@@ -805,7 +786,7 @@ onMounted(() => {
 
 .option-label {
   font-size: 28rpx;
-  color: #333;
+  color: var(--textColor1);
   margin-bottom: 20rpx;
   display: block;
 }
@@ -819,22 +800,22 @@ onMounted(() => {
   padding: 12rpx 30rpx;
   border-radius: 30rpx;
   font-size: 26rpx;
-  color: #666;
-  background-color: #f5f5f5;
+  color: var(--textColor3);
+  background-color: var(--bgColor1);
   margin-right: 20rpx;
   margin-bottom: 20rpx;
 }
 
 .option-value.selected {
-  background-color: #e6f7ff;
-  color: #1890ff;
-  border: 1px solid #1890ff;
+  background-color: var(--dColor2);
+  color: var(--themeColor1);
+  border: 1px solid var(--themeColor1);
 }
 
 .filter-buttons {
   display: flex;
   padding: 20rpx 30rpx;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--borderColor);
 }
 
 .reset-btn, .apply-btn {
@@ -847,72 +828,13 @@ onMounted(() => {
 }
 
 .reset-btn {
-  background-color: #f5f5f5;
-  color: #666;
+  background-color: var(--bgColor1);
+  color: var(--textColor3);
   margin-right: 20rpx;
 }
 
 .apply-btn {
-  background-color: #1890ff;
-  color: #fff;
-}
-
-/* 分页控件 */
-.pagination-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20rpx;
-  margin-top: 20rpx;
-}
-
-.pagination {
-  display: flex;
-  align-items: center;
-  margin-bottom: 10rpx;
-}
-
-.page-btn {
-  padding: 10rpx 20rpx;
-  border: 1px solid #1890ff;
-  border-radius: 8rpx;
-  color: #1890ff;
-  font-size: 24rpx;
-  margin: 0 10rpx;
-}
-
-.page-btn.disabled {
-  border-color: #d9d9d9;
-  color: #d9d9d9;
-  cursor: not-allowed;
-}
-
-.page-numbers {
-  display: flex;
-  align-items: center;
-}
-
-.page-number {
-  min-width: 60rpx;
-  height: 60rpx;
-  line-height: 60rpx;
-  text-align: center;
-  border: 1px solid #d9d9d9;
-  border-radius: 8rpx;
-  margin: 0 10rpx;
-  font-size: 24rpx;
-  color: #666;
-}
-
-.page-number.active {
-  background-color: #1890ff;
-  color: #fff;
-  border-color: #1890ff;
-}
-
-.page-info {
-  font-size: 24rpx;
-  color: #999;
-  margin-top: 10rpx;
+  background-color: var(--themeColor1);
+  color: var(--themeTextColor);
 }
 </style>

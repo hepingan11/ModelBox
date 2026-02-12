@@ -1,5 +1,5 @@
 <template>
-	<view class="publish-container">
+	<view class="publish-container" :class="themeClass">
 		<!-- 顶部导航栏 -->
 		<view class="nav-bar">
 			<text class="cancel-btn" @click="goBack">取消</text>
@@ -68,6 +68,9 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import request from '@/utils/request.js'
+import { useTheme } from '@/hooks/useTheme'
+
+const { themeClass } = useTheme()
 
 // 帖子标题
 const postTitle = ref('')
@@ -124,7 +127,7 @@ const uploadFile = (filePath) => {
 			name: 'file',
 			header: {
 				'Content-Type': 'multipart/form-data',
-				"sa-token": uni.getStorageSync('sa-token')
+				"token": uni.getStorageSync('token')
 			},
 			success: (res) => {
 				try {
@@ -259,7 +262,7 @@ onMounted(() => {
 
 <style>
 .publish-container {
-	background-color: #fff;
+	background-color: var(--bgColor1);
 	min-height: 100vh;
 }
 
@@ -269,18 +272,18 @@ onMounted(() => {
 	justify-content: space-between;
 	align-items: center;
 	padding: 20rpx 30rpx;
-	border-bottom: 1rpx solid #f0f0f0;
+	border-bottom: 1rpx solid var(--borderColor);
 }
 
 .cancel-btn {
 	font-size: 30rpx;
-	color: #666;
+	color: var(--textColor3);
 }
 
 .nav-title {
 	font-size: 34rpx;
 	font-weight: bold;
-	color: #333;
+	color: var(--textColor1);
 }
 
 .publish-submit {
@@ -290,7 +293,7 @@ onMounted(() => {
 }
 
 .publish-active {
-	color: #1890ff;
+	color: var(--themeColor1);
 }
 
 /* 表单容器 */
@@ -302,9 +305,9 @@ onMounted(() => {
 .title-input {
 	font-size: 34rpx;
 	font-weight: bold;
-	color: #333;
+	color: var(--textColor1);
 	padding: 20rpx 0;
-	border-bottom: 1rpx solid #f0f0f0;
+	border-bottom: 1rpx solid var(--borderColor);
 	margin-bottom: 30rpx;
 }
 
@@ -313,7 +316,7 @@ onMounted(() => {
 	width: 100%;
 	height: 300rpx;
 	font-size: 30rpx;
-	color: #333;
+	color: var(--textColor1);
 	line-height: 1.5;
 	padding: 0;
 	margin-bottom: 30rpx;
@@ -364,7 +367,7 @@ onMounted(() => {
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
-	background-color: #f5f7fa;
+	background-color: var(--bgColor2);
 	border-radius: 8rpx;
 	margin-bottom: 20rpx;
 }
@@ -377,7 +380,7 @@ onMounted(() => {
 
 .upload-text {
 	font-size: 24rpx;
-	color: #999;
+	color: var(--textColor3);
 }
 
 /* 上传进度弹窗 */
@@ -396,7 +399,7 @@ onMounted(() => {
 
 .progress-container {
 	width: 500rpx;
-	background-color: #fff;
+	background-color: var(--bgColor1);
 	border-radius: 12rpx;
 	padding: 40rpx;
 	display: flex;
@@ -406,14 +409,14 @@ onMounted(() => {
 
 .progress-title {
 	font-size: 32rpx;
-	color: #333;
+	color: var(--textColor1);
 	margin-bottom: 30rpx;
 }
 
 .progress-bar-wrapper {
 	width: 100%;
 	height: 20rpx;
-	background-color: #f0f0f0;
+	background-color: var(--bgColor2);
 	border-radius: 10rpx;
 	overflow: hidden;
 	margin-bottom: 20rpx;
@@ -421,12 +424,12 @@ onMounted(() => {
 
 .progress-bar {
 	height: 100%;
-	background-color: #1890ff;
+	background-color: var(--themeColor1);
 	transition: width 0.3s;
 }
 
 .progress-text {
 	font-size: 28rpx;
-	color: #666;
+	color: var(--textColor2);
 }
 </style>

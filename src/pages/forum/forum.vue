@@ -1,5 +1,5 @@
 <template>
-	<view class="forum-container">
+	<view class="forum-container" :class="themeClass">
 		<!-- 顶部搜索栏 -->
 		<view class="search-bar">
 			<view class="search-box">
@@ -112,7 +112,7 @@
 									<!-- 作者头像和名称 -->
 									<view class="card-author">
 										<image :src="item.avatar || defaultAvatar" class="author-mini-avatar"></image>
-										<text class="author-mini-name">{{ item.username || '用户' + item.userId }}</text>
+										<text class="author-mini-name">{{ item.userName || '用户' + item.userId }}</text>
 									</view>
 									
 									<!-- 统计信息 -->
@@ -182,7 +182,7 @@
 									<!-- 作者头像和名称 -->
 									<view class="card-author">
 										<image :src="item.avatar || defaultAvatar" class="author-mini-avatar"></image>
-										<text class="author-mini-name">{{ item.username || '用户' + item.userId }}</text>
+										<text class="author-mini-name">{{ item.userName || '用户' + item.userId }}</text>
 									</view>
 									
 									<!-- 统计信息 -->
@@ -243,7 +243,7 @@
 									<!-- 作者头像和名称 -->
 									<view class="card-author">
 										<image :src="item.avatar || defaultAvatar" class="author-mini-avatar"></image>
-										<text class="author-mini-name">{{ item.username || '用户' + item.userId }}</text>
+										<text class="author-mini-name">{{ item.userName || '用户' + item.userId }}</text>
 									</view>
 									
 									<!-- 统计信息 -->
@@ -315,6 +315,9 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import request from '@/utils/request.js'
+import { useTheme } from '@/hooks/useTheme'
+
+const { themeClass } = useTheme()
 
 // 选项卡定义
 const tabs = [
@@ -768,7 +771,7 @@ const onRefresh = async () => {
 
 <style>
 .forum-container {
-	background-color: #f5f7fa;
+	background-color: var(--bgColor1);
 	min-height: 100vh;
 	position: relative;
 	padding-bottom: 30rpx;
@@ -781,7 +784,11 @@ const onRefresh = async () => {
 	background-color: #fff;
 	padding: 12rpx 0;
 	margin-bottom: 15rpx;
-	border-bottom: 1rpx solid #f0f0f0;
+	border-bottom: 1rpx solid var(--borderColor);
+}
+
+.darkMode .content-tabs {
+	background-color: var(--bgColor2);
 }
 
 .tab-item {
@@ -791,12 +798,12 @@ const onRefresh = async () => {
 
 .tab-text {
 	font-size: 28rpx;
-	color: #666;
+	color: var(--textColor3);
 	transition: all 0.3s;
 }
 
 .tab-item.active .tab-text {
-	color: #1abc9c;
+	color: var(--themeColor1);
 	font-weight: bold;
 }
 
@@ -822,12 +829,21 @@ const onRefresh = async () => {
 	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
 }
 
+.darkMode .search-bar {
+	background-color: var(--bgColor2);
+	box-shadow: none;
+}
+
 .search-box {
 	display: flex;
 	align-items: center;
-	background-color: #f5f7fa;
+	background-color: var(--bgColor1);
 	border-radius: 50rpx;
 	padding: 12rpx 24rpx;
+}
+
+.darkMode .search-box {
+	background-color: var(--bgColor3);
 }
 
 .search-icon-image {
@@ -839,7 +855,7 @@ const onRefresh = async () => {
 .search-input {
 	flex: 1;
 	font-size: 28rpx;
-	color: #333;
+	color: var(--textColor1);
 }
 
 .clear-icon {
@@ -858,6 +874,11 @@ const onRefresh = async () => {
 	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
 }
 
+.darkMode .module-tabs {
+	background-color: var(--bgColor2);
+	box-shadow: none;
+}
+
 .module-item {
 	display: flex;
 	flex-direction: column;
@@ -873,7 +894,7 @@ const onRefresh = async () => {
 
 .module-text {
 	font-size: 24rpx;
-	color: #333;
+	color: var(--textColor1);
 }
 
 /* 论坛列表样式 - 新的网格布局 */
@@ -955,6 +976,11 @@ const onRefresh = async () => {
 	transition: all 0.3s ease;
 }
 
+.darkMode .forum-card {
+	background-color: var(--bgColor2);
+	box-shadow: none;
+}
+
 .forum-card:active {
 	transform: scale(0.98);
 	opacity: 0.9;
@@ -1020,7 +1046,7 @@ const onRefresh = async () => {
 .card-title {
 	font-size: 28rpx;
 	font-weight: bold;
-	color: #333;
+	color: var(--textColor1);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	display: -webkit-box;
@@ -1036,7 +1062,7 @@ const onRefresh = async () => {
 
 .card-summary {
 	font-size: 24rpx;
-	color: #666;
+	color: var(--textColor3);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	display: -webkit-box;
@@ -1080,7 +1106,7 @@ const onRefresh = async () => {
 
 .author-mini-name {
 	font-size: 22rpx;
-	color: #666;
+	color: var(--textColor3);
 	max-width: 120rpx;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -1094,7 +1120,7 @@ const onRefresh = async () => {
 
 .stat-mini-item {
 	font-size: 22rpx;
-	color: #999;
+	color: var(--textColor3);
 	margin-left: 12rpx;
 	display: flex;
 	align-items: center;
@@ -1134,7 +1160,7 @@ const onRefresh = async () => {
 
 .loading-text, .more-text, .no-more-text {
 	font-size: 24rpx;
-	color: #999;
+	color: var(--textColor3);
 	text-align: center;
 	padding: 20rpx 0;
 }
@@ -1156,13 +1182,13 @@ const onRefresh = async () => {
 
 .empty-text {
 	font-size: 30rpx;
-	color: #333;
+	color: var(--textColor2);
 	margin-bottom: 10rpx;
 }
 
 .empty-tip {
 	font-size: 26rpx;
-	color: #999;
+	color: var(--textColor3);
 }
 
 /* 发布按钮样式 */
@@ -1196,8 +1222,14 @@ const onRefresh = async () => {
 	background: linear-gradient(135deg, #ffffff, #e8f8f5, #d4f1ed);
 	border-radius: 16rpx;
 	box-shadow: 0 4rpx 12rpx rgba(26, 188, 156, 0.15);
-	border-left: 6rpx solid #1abc9c;
+	border-left: 6rpx solid var(--themeColor1);
 	transition: all 0.3s ease;
+}
+
+.darkMode .card-activity {
+	background: var(--bgColor2);
+	border-left: 6rpx solid var(--themeColor1);
+	box-shadow: none;
 }
 
 .card-activity:active {
@@ -1226,7 +1258,8 @@ const onRefresh = async () => {
 	position: absolute;
 	top: 10rpx;
 	right: 10rpx;
-	background: linear-gradient(90deg, #1abc9c, #16a085);
+	background: linear-gradient(90deg, var(--themeColor1), var(--themeColor2));
+	color: white;
 	color: white;
 	font-size: 20rpx;
 	padding: 4rpx 16rpx;
@@ -1250,7 +1283,7 @@ const onRefresh = async () => {
 
 .activity-desc {
 	font-size: 24rpx;
-	color: #666;
+	color: var(--textColor3);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	display: -webkit-box;
@@ -1290,6 +1323,11 @@ const onRefresh = async () => {
 	overflow: hidden;
 }
 
+.darkMode .activity-full-list .activity-item {
+	background-color: var(--bgColor2);
+	box-shadow: none;
+}
+
 .activity-full-list .activity-image {
 	width: 100%;
 	height: 320rpx;
@@ -1319,13 +1357,13 @@ const onRefresh = async () => {
 	justify-content: space-between;
 	align-items: center;
 	padding-top: 15rpx;
-	border-top: 1rpx solid #f0f0f0;
+	border-top: 1rpx solid var(--borderColor);
 	margin-top: 15rpx;
 }
 
 .activity-full-list .activity-time {
 	font-size: 24rpx;
-	color: #999;
+	color: var(--textColor3);
 }
 
 /* 多图片容器样式 */
@@ -1345,6 +1383,10 @@ const onRefresh = async () => {
 
 .multi-image-container .second-image {
 	border-left: 2rpx solid #fff;
+}
+
+.darkMode .multi-image-container .second-image {
+	border-left: 2rpx solid var(--bgColor2);
 }
 
 /* 为小卡片和中卡片特别优化底部信息 */
@@ -1395,7 +1437,7 @@ const onRefresh = async () => {
 
 .time-text {
 	font-size: 20rpx;
-	color: #999;
+	color: var(--textColor3);
 	white-space: nowrap;
 }
 

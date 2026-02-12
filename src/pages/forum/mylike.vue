@@ -1,5 +1,5 @@
 <template>
-	<view class="mylike-container">
+	<view class="mylike-container" :class="themeClass">
 		
 		
 		<!-- 帖子列表内容 -->
@@ -35,7 +35,7 @@
 								</view>
 								<view class="author-detail">
 									<view class="author-name-wrapper">
-										<text class="author-name">{{ item.username || '用户' + item.userId }}</text>
+										<text class="author-name">{{ item.userName || '用户' + item.userId }}</text>
 										<view class="user-level" :class="'level-' + (item.level || 1)">
 											<text class="level-text">Lv.{{ item.level || 1 }}</text>
 										</view>
@@ -128,6 +128,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import request from '@/utils/request'
+import { useTheme } from '@/hooks/useTheme'
+
+const { themeClass } = useTheme()
 
 // 喜欢的帖子列表数据
 const likedPosts = ref([])
@@ -312,7 +315,7 @@ onMounted(() => {
 
 <style>
 .mylike-container {
-	background-color: #f5f7fa;
+	background-color: var(--bgColor1);
 	min-height: 100vh;
 	display: flex;
 	flex-direction: column;
@@ -374,6 +377,11 @@ onMounted(() => {
 	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
 }
 
+.darkMode .post-item {
+	background-color: var(--bgColor2);
+	box-shadow: none;
+}
+
 /* 帖子头部 */
 .post-header {
 	margin-bottom: 16rpx;
@@ -418,7 +426,7 @@ onMounted(() => {
 .author-name {
 	font-size: 28rpx;
 	font-weight: bold;
-	color: #333;
+	color: var(--textColor1);
 	margin-right: 10rpx;
 }
 
@@ -439,7 +447,7 @@ onMounted(() => {
 
 .publish-time {
 	font-size: 24rpx;
-	color: #999;
+	color: var(--textColor3);
 	margin-top: 4rpx;
 }
 
@@ -451,20 +459,21 @@ onMounted(() => {
 .post-title {
 	font-size: 32rpx;
 	font-weight: bold;
-	color: #333;
+	color: var(--textColor1);
 	margin-bottom: 10rpx;
 	display: block;
 }
 
 .post-text {
 	font-size: 28rpx;
-	color: #666;
+	color: var(--textColor2);
 	line-height: 1.5;
 	margin-bottom: 16rpx;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	display: -webkit-box;
 	-webkit-line-clamp: 2;
+	line-clamp: 2;
 	-webkit-box-orient: vertical;
 }
 
@@ -531,7 +540,7 @@ onMounted(() => {
 	justify-content: space-between;
 	align-items: center;
 	padding-top: 16rpx;
-	border-top: 1rpx solid #f0f0f0;
+	border-top: 1rpx solid var(--borderColor);
 }
 
 .post-stats {
@@ -543,7 +552,7 @@ onMounted(() => {
 	align-items: center;
 	margin-right: 20rpx;
 	font-size: 24rpx;
-	color: #999;
+	color: var(--textColor3);
 }
 
 .stat-icon {
@@ -568,6 +577,11 @@ onMounted(() => {
 	border: 1rpx solid #ffccc7;
 }
 
+.darkMode .unlike-btn {
+	background-color: rgba(255, 77, 79, 0.1);
+	border: 1rpx solid rgba(255, 77, 79, 0.3);
+}
+
 /* 加载中状态 */
 .loading-wrapper {
 	display: flex;
@@ -580,8 +594,8 @@ onMounted(() => {
 .loading-animation {
 	width: 40rpx;
 	height: 40rpx;
-	border: 4rpx solid #f3f3f3;
-	border-top: 4rpx solid #1abc9c;
+	border: 4rpx solid var(--borderColor);
+	border-top: 4rpx solid var(--themeColor1);
 	border-radius: 50%;
 	animation: spin 1s linear infinite;
 	margin-bottom: 20rpx;
@@ -594,7 +608,7 @@ onMounted(() => {
 
 .loading-text, .more-text, .no-more-text {
 	font-size: 24rpx;
-	color: #999;
+	color: var(--textColor3);
 	text-align: center;
 	padding: 20rpx 0;
 }
@@ -616,12 +630,12 @@ onMounted(() => {
 
 .empty-text {
 	font-size: 30rpx;
-	color: #999;
+	color: var(--textColor3);
 	margin-bottom: 30rpx;
 }
 
 .browse-btn {
-	background-color: #1abc9c;
+	background-color: var(--themeColor1);
 	color: #fff;
 	font-size: 28rpx;
 	padding: 15rpx 40rpx;

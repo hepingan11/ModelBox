@@ -33,7 +33,7 @@
                 <image class="avatar" :src="item.targetUserAvatar || '/static/default-avatar.png'" mode="aspectFill"></image>
                 <view class="conversation-content">
                     <view class="conversation-header">
-                        <text class="username">{{ item.targetUserName || '用户' + item.targetUserId }}</text>
+                        <text class="userName">{{ item.targetUserName || '用户' + item.targetUserId }}</text>
                         <text class="time">{{ formatTime(item.lastTime) }}</text>
                     </view>
                     <view class="conversation-footer">
@@ -262,7 +262,7 @@ const getUnreadCount = (conversation) => {
     margin-bottom: 10rpx;
 }
 
-.username {
+.userName {
     font-size: 30rpx;
     color: #333;
     font-weight: 500;

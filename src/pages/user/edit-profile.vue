@@ -1,5 +1,5 @@
 <template>
-	<view class="edit-profile">
+	<view class="edit-profile" :class="themeClass">
 		<!-- 顶部导航栏 -->
 		<view class="nav-bar">
 			<text class="nav-title">修改个人信息</text>
@@ -46,7 +46,7 @@
 				<view class="form-item">
 					<text class="label">用户名</text>
 					<input type="text" 
-						v-model="userInfo.username" 
+						v-model="userInfo.userName" 
 						placeholder="请输入用户名"
 						class="input"
 					/>
@@ -108,6 +108,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import request from '@/utils/request.js'
+import { useTheme } from '@/hooks/useTheme'
+
+const { themeClass } = useTheme()
 
 // 判断是否在微信小程序环境
 const isWechatMp = ref(false)
@@ -115,8 +118,8 @@ const isWechatMp = ref(false)
 // 用户信息
 const userInfo = ref({
 	id: '',
-	username: '',
-	role: '',
+	userName: '',
+	type: '',
 	avatar: '',
 	phone: '',
 	backgroundImage: '', // 添加背景图字段
@@ -258,7 +261,7 @@ const uploadAvatarFile = (filePath) => {
 		filePath: filePath,
 		name: 'file',
 		header: {
-			'sa-token': uni.getStorageSync('sa-token')
+			'token': uni.getStorageSync('token')
 		},
 		success: (uploadRes) => {
 			try {
@@ -345,7 +348,7 @@ const uploadBackgroundImage = (filePath) => {
 		filePath: filePath,
 		name: 'file',
 		header: {
-			'sa-token': uni.getStorageSync('sa-token')
+			'token': uni.getStorageSync('token')
 		},
 		success: (uploadRes) => {
 			try {
@@ -391,7 +394,7 @@ const uploadBackgroundImage = (filePath) => {
 // 保存修改
 const saveChanges = async () => {
 	// 表单验证
-	if (!userInfo.value.username.trim()) {
+	if (!userInfo.value.userName.trim()) {
 		uni.showToast({
 			title: '请输入用户名',
 			icon: 'none'
@@ -482,29 +485,30 @@ onMounted(() => {
 <style>
 .edit-profile {
 	min-height: 100vh;
-	background-color: #f5f7fa;
+	background-color: var(--bgColor1);
 	padding-bottom: 40rpx;
 }
 
 /* 导航栏样式 */
 .nav-bar {
-	background-color: #fff;
+	background-color: var(--bgColor2);
 	padding: 20rpx 30rpx;
-	border-bottom: 1rpx solid rgba(0, 0, 0, 0.05);
+	border-bottom: 1rpx solid var(--borderColor);
 }
 
 .nav-title {
 	font-size: 36rpx;
 	font-weight: bold;
-	color: #333;
+	color: var(--textColor1);
 }
 
 /* 表单容器 */
 .form-container {
-	background-color: #fff;
+	background-color: var(--bgColor2);
 	margin-top: 20rpx;
 	padding: 30rpx;
 }
+
 
 /* 头像部分 */
 .avatar-section {
@@ -557,7 +561,7 @@ onMounted(() => {
 	font-size: inherit;
 	line-height: normal;
 	background-color: rgba(7, 193, 96, 0.1);
-	color: #016fff;
+	color: var(--themeColor1);
 }
 
 .wx-avatar-button::after {
@@ -565,12 +569,12 @@ onMounted(() => {
 }
 
 .edit-text {
-	color: #1890ff;
+	color: var(--themeColor1);
 	font-size: 28rpx;
 }
 
 .wx-avatar-button .edit-text {
-	color: #07C160;
+	color: var(--themeColor1);
 }
 
 .get-phone-btn {
@@ -579,7 +583,7 @@ onMounted(() => {
 	height: 60rpx;
 	line-height: 60rpx;
 	background-color: rgba(7, 193, 96, 0.1);
-	color: #07C160;
+	color: var(--themeColor1);
 	font-size: 24rpx;
 	border-radius: 30rpx;
 	flex-shrink: 0;
@@ -598,7 +602,7 @@ onMounted(() => {
 	display: flex;
 	align-items: center;
 	padding: 30rpx 0;
-	border-bottom: 1rpx solid rgba(0, 0, 0, 0.05);
+	border-bottom: 1rpx solid var(--borderColor);
 }
 
 .form-item:last-child {
@@ -608,13 +612,13 @@ onMounted(() => {
 .label {
 	width: 160rpx;
 	font-size: 30rpx;
-	color: #666;
+	color: var(--textColor3);
 }
 
 .input {
 	flex: 1;
 	font-size: 30rpx;
-	color: #333;
+	color: var(--textColor1);
 }
 
 .role-tag {
@@ -635,7 +639,7 @@ onMounted(() => {
 	display: flex;
 	align-items: center;
 	padding: 20rpx;
-	background-color: #f6f6f6;
+	background-color: var(--bgColor1);
 	border-radius: 8rpx;
 	margin-top: 30rpx;
 }
@@ -647,7 +651,7 @@ onMounted(() => {
 
 .tips-text {
 	font-size: 26rpx;
-	color: #999;
+	color: var(--textColor3);
 }
 
 /* 按钮样式 */
@@ -656,8 +660,8 @@ onMounted(() => {
 }
 
 .save-btn {
-	background-color: #00A872;
-	color: #fff;
+	background-color: var(--themeColor1);
+	color: var(--themeTextColor);
 	font-size: 32rpx;
 	padding: 10rpx 0;
 	border-radius: 12rpx;
@@ -671,12 +675,12 @@ onMounted(() => {
 /* 背景图部分 */
 .bg-image-section {
 	padding: 30rpx 0;
-	border-bottom: 1rpx solid rgba(0, 0, 0, 0.05);
+	border-bottom: 1rpx solid var(--borderColor);
 }
 
 .section-title {
 	font-size: 30rpx;
-	color: #666;
+	color: var(--textColor3);
 	margin-bottom: 20rpx;
 }
 

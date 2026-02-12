@@ -1,5 +1,5 @@
 <template> 
-	<view class="message-page">
+	<view class="message-page" :class="themeClass">
 		<!-- 顶部标签切换 -->
 		<view class="tabs">
 			<view 
@@ -53,7 +53,7 @@
 					<view class="message-content">
 						<!-- 用户名和时间 -->
 						<view class="message-header">
-							<text class="username">{{ message.username }}</text>
+							<text class="userName">{{ message.userName }}</text>
 							<text class="time">{{ formatTime(message.createdTime) }}</text>
 						</view>
 
@@ -104,6 +104,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import request from '@/utils/request'
+import { useTheme } from '@/hooks/useTheme'
+
+const { themeClass } = useTheme()
 
 // 当前激活的标签
 const activeTab = ref('likes')
@@ -247,7 +250,7 @@ onMounted(() => {
 <style lang="scss" scoped>
 .message-page {
 	min-height: 100vh;
-	background-color: #f5f5f5;
+	background-color: var(--bgColor1);
 	display: flex;
 	flex-direction: column;
 }
@@ -256,10 +259,14 @@ onMounted(() => {
 .tabs {
 	display: flex;
 	background-color: #fff;
-	border-bottom: 1rpx solid #eee;
+	border-bottom: 1rpx solid var(--borderColor);
 	position: sticky;
 	top: 0;
 	z-index: 10;
+}
+
+.darkMode .tabs {
+	background-color: var(--bgColor2);
 }
 
 .tab-item {
@@ -273,12 +280,12 @@ onMounted(() => {
 
 .tab-text {
 	font-size: 30rpx;
-	color: #666;
+	color: var(--textColor3);
 	transition: all 0.3s;
 }
 
 .tab-item.active .tab-text {
-	color: #00A872;
+	color: var(--themeColor1);
 	font-weight: bold;
 	font-size: 32rpx;
 }
@@ -288,7 +295,7 @@ onMounted(() => {
 	bottom: 0;
 	width: 60rpx;
 	height: 4rpx;
-	background-color: #00A872;
+	background-color: var(--themeColor1);
 	border-radius: 2rpx;
 }
 
@@ -324,7 +331,7 @@ onMounted(() => {
 .loading-text {
 	margin-top: 20rpx;
 	font-size: 28rpx;
-	color: #999;
+	color: var(--textColor3);
 }
 
 /* 消息列表 */
@@ -340,8 +347,12 @@ onMounted(() => {
 	transition: background-color 0.3s;
 }
 
+.darkMode .message-item {
+	background-color: var(--bgColor2);
+}
+
 .message-item:active {
-	background-color: #f8f8f8;
+	background-color: var(--bgColor1);
 }
 
 .user-avatar {
@@ -365,15 +376,15 @@ onMounted(() => {
 	align-items: center;
 }
 
-.username {
+.userName {
 	font-size: 28rpx;
-	color: #333;
+	color: var(--textColor1);
 	font-weight: bold;
 }
 
 .time {
 	font-size: 24rpx;
-	color: #999;
+	color: var(--textColor3);
 }
 
 .message-text {
@@ -382,11 +393,11 @@ onMounted(() => {
 }
 
 .action-text {
-	color: #666;
+	color: var(--textColor3);
 }
 
 .comment-content {
-	color: #333;
+	color: var(--textColor1);
 }
 
 /* 帖子预览 */
@@ -395,8 +406,12 @@ onMounted(() => {
 	align-items: center;
 	gap: 20rpx;
 	padding: 20rpx;
-	background-color: #f8f8f8;
+	background-color: var(--bgColor1);
 	border-radius: 12rpx;
+}
+
+.darkMode .forum-preview {
+	background-color: var(--bgColor3);
 }
 
 .forum-img {
@@ -409,7 +424,7 @@ onMounted(() => {
 .forum-title {
 	flex: 1;
 	font-size: 26rpx;
-	color: #666;
+	color: var(--textColor3);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	display: -webkit-box;
@@ -438,7 +453,7 @@ onMounted(() => {
 
 .load-more-text {
 	font-size: 26rpx;
-	color: #999;
+	color: var(--textColor3);
 }
 
 /* 没有更多 */
@@ -451,7 +466,7 @@ onMounted(() => {
 
 .no-more-text {
 	font-size: 26rpx;
-	color: #999;
+	color: var(--textColor3);
 }
 
 /* 空状态 */
@@ -471,6 +486,6 @@ onMounted(() => {
 
 .empty-text {
 	font-size: 28rpx;
-	color: #999;
+	color: var(--textColor3);
 }
 </style>

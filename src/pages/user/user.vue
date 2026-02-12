@@ -1,5 +1,11 @@
 <template>
-	<view class="user-container">
+	<view v-if="!isLoggedIn">
+		<LoginComponent @loginSuccess="handleLoginSuccess" />
+		<!-- 底部占位确保 TabBar 不遮挡内容 -->
+		<view style="height: 180rpx;"></view>
+		<CustomTabBar />
+	</view>
+	<view v-else class="user-container" :class="themeClass">
 		<!-- 背景装饰元素 -->
 		<view class="bg-decoration">
 			<view class="floating-circle circle-1"></view>
@@ -24,7 +30,7 @@
 					<image v-if="userInfo.avatarFrameUrl" :src="userInfo.avatarFrameUrl" class="avatar-frame" mode="aspectFit"></image>
 				</view>
 				<view class="user-details">
-					<text class="user-name">{{ userInfo.username || '未设置昵称' }}</text>
+					<text class="user-name">{{ userInfo.userName || '未设置昵称' }}</text>
 					<view class="user-level-row">
 						<!-- 每日签到按钮 -->
 						<view 
@@ -99,7 +105,7 @@
 			
 				<view class="grid-item" @click="aboutApp">
 					<view class="grid-icon-wrapper">
-						<image src="/static/logo.jpg" class="grid-icon"></image>
+						<image src="/static/logo.png" class="grid-icon"></image>
 					</view>
 					<text class="grid-text">关于应用</text>
 				</view>
@@ -110,6 +116,14 @@
 						<text class="grid-icon-emoji">🔐</text>
 					</view>
 					<text class="grid-text">管理员界面</text>
+				</view>
+
+				<!-- 主题切换 -->
+				<view class="grid-item" @click="toggleTheme">
+					<view class="grid-icon-wrapper">
+						<text class="grid-icon-emoji" style="font-size: 40rpx;">{{ themeClass === 'lightMode' ? '🌙' : '☀️' }}</text>
+					</view>
+					<text class="grid-text">{{ themeClass === 'lightMode' ? '深色模式' : '浅色模式' }}</text>
 				</view>
 			</view>
 		</view>
@@ -145,12 +159,47 @@
 			</view>
 		</view>
 		
+		<!-- 底部占位 -->
+		<view style="height: 180rpx;"></view>
+		
+		<CustomTabBar />
 	</view>
 </template>
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import request from '@/utils/request.js'
+import { useTheme } from '@/hooks/useTheme'
+import CustomTabBar from '@/components/CustomTabBar.vue'
+import LoginComponent from './components/LoginComponent.vue'
+
+const { themeClass, toggleTheme } = useTheme()
+
+const isLoggedIn = ref(false)
+
+// 获取用户信息方法
+const getUserInfo = () => {
+	request('/user/getUserInfo',{
+		method:'GET'
+	}).then(res=>{
+		if(res.code === 200){
+			userInfo.value = res.data
+			console.log('获取到用户信息:', userInfo.value)
+		}else{
+			// 如果获取失败（如token失效），可能需要重新登录
+			// 但为了避免死循环，这里只提示
+			// uni.showToast({
+			// 	title: res.msg || '获取用户信息失败',
+			// 	icon: 'none'
+			// })
+		}
+	})
+}
+
+const handleLoginSuccess = () => {
+	isLoggedIn.value = true
+	getUserInfo()
+}
 
 // 默认背景图
 const defaultBackgroundImage = ''
@@ -158,8 +207,8 @@ const defaultBackgroundImage = ''
 // 用户信息
 const userInfo = ref({
 	id: '',
-	username: '',
-	role: '',
+	userName: '',
+	type: '',
 	avatar: '',
 	phone: '',
 	backgroundImage: '', // 背景图字段
@@ -173,7 +222,7 @@ const signDisabled = ref(false)
 
 // 判断是否为管理员
 const isAdmin = computed(() => {
-	return userInfo.value.role === 'admin'
+	return userInfo.value.type === 'ADMIN'
 	
 })
 
@@ -318,17 +367,19 @@ const confirmLogout = () => {
 
 // 退出登录
 const loginout = () => {
-	uni.removeStorageSync("sa-token")
+	uni.removeStorageSync("token")
 	uni.removeStorageSync("is-admin") // 清除管理员状态
 	uni.removeStorageSync("userId")
 	uni.showToast({
 		title: '退出登录',
 		icon: 'success'
 	})
+	
+	// 重置状态，显示登录页
 	setTimeout(() => {
-		uni.reLaunch({
-			url: "/pages/login/login"
-		})
+		isLoggedIn.value = false
+		userInfo.value = {} // 清空用户信息
+		isSigned.value = false // 重置签到
 	}, 1500)
 }
 
@@ -354,20 +405,15 @@ const goActivity = (type) => {
 }
 
 onMounted(() => {
-	// 页面加载时获取用户信息
-	request('/user/getUserInfo',{
-		method:'GET'
-	}).then(res=>{
-		if(res.code === 200){
-			userInfo.value = res.data
-			console.log('获取到用户信息:', userInfo.value)
-		}else{
-			uni.showToast({
-				title: res.msg || '获取用户信息失败',
-				icon: 'none'
-			})
-		}
-	})
+	// 检查登录状态
+	const token = uni.getStorageSync('token')
+	if (token) {
+		isLoggedIn.value = true
+		// 页面加载时获取用户信息
+		getUserInfo()
+	} else {
+		isLoggedIn.value = false
+	}
 	
 	// 检查签到状态
 	checkSignStatus()
@@ -377,7 +423,7 @@ onMounted(() => {
 <style>
 .user-container {
 	min-height: 100vh;
-	background: linear-gradient(135deg, #f5f7fa 0%, #e4f2fb 50%, #f5f7fa 100%);
+	background: linear-gradient(135deg, var(--bgColor1) 0%, var(--bgColor2) 50%, var(--bgColor1) 100%);
 	padding-bottom: 30rpx;
 	position: relative;
 	overflow: hidden;
@@ -471,7 +517,7 @@ onMounted(() => {
 /* 用户信息卡片 */
 .user-card {
 	position: relative;
-	background-color: rgba(255, 255, 255, 0.9);
+	background-color: var(--bgColor2);
 	backdrop-filter: blur(10px);
 	border-radius: 0 0 12rpx 12rpx;
 	padding: 140rpx 30rpx 40rpx;
@@ -589,7 +635,7 @@ onMounted(() => {
 
 /* 通用卡片样式 */
 .section-card {
-	background-color: rgba(255, 255, 255, 0.9);
+	background-color: var(--bgColor2);
 	backdrop-filter: blur(10px);
 	border-radius: 12rpx;
 	margin: 0 30rpx 30rpx;
@@ -604,24 +650,24 @@ onMounted(() => {
 	justify-content: space-between;
 	align-items: center;
 	padding-bottom: 24rpx;
-	border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+	border-bottom: 1px solid var(--borderColor);
 	margin-bottom: 24rpx;
 }
 
 .section-title {
 	font-size: 32rpx;
 	font-weight: bold;
-	color: #333;
+	color: var(--textColor1);
 }
 
 .add-btn {
 	font-size: 28rpx;
-	color: #1890ff;
+	color: var(--themeColor1);
 }
 
 /* 患者卡片样式 */
 .patient-card {
-	background-color: #f9f9f9;
+	background-color: var(--bgColor1);
 	border-radius: 8rpx;
 	padding: 24rpx;
 }
@@ -645,7 +691,7 @@ onMounted(() => {
 .patient-name {
 	font-size: 32rpx;
 	font-weight: bold;
-	color: #333;
+	color: var(--textColor1);
 	margin-bottom: 6rpx;
 	display: block;
 }
@@ -682,13 +728,13 @@ onMounted(() => {
 }
 
 .monitor-btn {
-	background-color: #1890ff;
-	color: #fff;
+	background-color: var(--themeColor1);
+	color: var(--themeTextColor);
 }
 
 .unbind-btn {
-	background-color: #f5f5f5;
-	color: #999;
+	background-color: var(--bgColor1);
+	color: var(--textColor3);
 }
 
 /* 设备列表样式 */
@@ -736,14 +782,14 @@ onMounted(() => {
 
 .device-name {
 	font-size: 30rpx;
-	color: #333;
+	color: var(--textColor1);
 	margin-bottom: 6rpx;
 	display: block;
 }
 
 .device-status {
 	font-size: 24rpx;
-	color: #999;
+	color: var(--textColor3);
 }
 
 .device-actions {
@@ -768,14 +814,14 @@ onMounted(() => {
 
 .empty-text {
 	font-size: 30rpx;
-	color: #333;
+	color: var(--textColor1);
 	margin-bottom: 10rpx;
 	display: block;
 }
 
 .empty-desc {
 	font-size: 26rpx;
-	color: #999;
+	color: var(--textColor3);
 }
 
 /* 菜单网格样式 */
@@ -826,8 +872,8 @@ onMounted(() => {
 
 .grid-text {
 	font-size: 24rpx;
-	color: #333;
-	text-align: center;
+	color: var(--textColor3);
+	margin-top: 16rpx;
 	font-weight: 500;
 	line-height: 1.4;
 }
@@ -845,13 +891,13 @@ onMounted(() => {
 /* 退出登录按钮 */
 .logout-btn {
 	margin: 0 30rpx 40rpx;
-	background-color: #fff;
-	color: #ff4d4f;
+	background-color: var(--bgColor1);
+	color: var(--errorColor);
 	text-align: center;
 	padding: 30rpx 0;
 	border-radius: 12rpx;
 	font-size: 32rpx;
-	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+	box-shadow: 0 2rpx 10rpx var(--bgboxShadowColor1);
 }
 
 /* 添加图标样式 */
@@ -863,20 +909,22 @@ onMounted(() => {
 
 /* 活动通知区域 */
 .activity-section {
-	margin: 30rpx 24rpx;
+	margin: 0 30rpx 30rpx;
 	position: relative;
 	z-index: 1;
+	background-color: transparent;
 }
 
 .activity-card {
-	background: linear-gradient(135deg, #baeb34, #1abc9c);
-	border-radius: 20rpx;
+	background-color: var(--bgColor2);
+	backdrop-filter: blur(10px);
+	border-radius: 12rpx;
 	padding: 24rpx;
-	color: #fff;
+	box-shadow: 0 4rpx 16rpx var(--bgboxShadowColor1);
+	border: 1px solid var(--borderColor);
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	box-shadow: 0 8rpx 16rpx rgba(186, 235, 52, 0.2);
 	position: relative;
 	overflow: hidden;
 }
@@ -888,7 +936,7 @@ onMounted(() => {
 	right: -100rpx;
 	width: 200rpx;
 	height: 200rpx;
-	background: rgba(255, 255, 255, 0.1);
+	background: var(--activityCardBeforeBg);
 	border-radius: 50%;
 }
 
@@ -926,8 +974,8 @@ onMounted(() => {
 
 .activity-tag {
 	display: inline-block;
-	background: rgba(255, 255, 255, 0.3);
-	color: #fff;
+	background: var(--activityTagBg);
+	color: var(--activityTagColor);
 	font-size: 22rpx;
 	padding: 4rpx 12rpx;
 	border-radius: 10rpx;
@@ -937,13 +985,15 @@ onMounted(() => {
 .activity-title {
 	font-size: 30rpx;
 	font-weight: bold;
-	margin-bottom: 6rpx;
+	color: var(--textColor1);
+	margin-bottom: 8rpx;
 	display: block;
 }
 
 .activity-desc {
 	font-size: 24rpx;
-	opacity: 0.9;
+	color: var(--textColor3);
+	line-height: 1.4;
 }
 
 

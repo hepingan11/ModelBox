@@ -1,5 +1,5 @@
 <template>
-	<view class="detail-container">
+	<view class="detail-container" :class="themeClass">
 		<!-- 添加装饰性背景元素 -->
 		<view class="decorative-background">
 			<view class="floating-circle" v-for="i in 5" :key="'circle-'+i"></view>
@@ -27,7 +27,7 @@
 							</view>
 							<view class="author-detail">
 								<view class="author-name-wrapper">
-									<text class="author-name">{{ forumDetail.username || '用户' + forumDetail.userId }}</text>
+									<text class="author-name">{{ forumDetail.userName || '用户' + forumDetail.userId }}</text>
 									<view class="user-level" :class="'level-' + (forumDetail.level || 1)">
 										<text class="level-text">Lv.{{ forumDetail.level || 1 }}</text>
 									</view>
@@ -173,7 +173,7 @@
 									</view>
 									<view class="comment-info">
 										<view class="commenter-name-wrapper">
-											<text class="commenter-name">{{ comment.username || '用户' + comment.userId }}</text>
+											<text class="commenter-name">{{ comment.userName || '用户' + comment.userId }}</text>
 											<view class="user-level" :class="'level-' + (comment.level || 1)">
 												<text class="level-text">Lv.{{ comment.level || 1 }}</text>
 											</view>
@@ -228,7 +228,7 @@
 											</view>
 											<view class="comment-info">
 												<view class="commenter-name-wrapper">
-													<text class="commenter-name">{{ childComment.username || '用户' + childComment.userId }}</text>
+													<text class="commenter-name">{{ childComment.userName || '用户' + childComment.userId }}</text>
 													<view class="user-level" :class="'level-' + (childComment.level || 1)">
 														<text class="level-text">Lv.{{ childComment.level || 1 }}</text>
 													</view>
@@ -313,7 +313,7 @@
 							type="text"
 							v-model="commentText"
 							class="comment-input"
-							:placeholder="replyTo ? `回复 ${replyTo.username || '用户' + replyTo.userId}...` : '写下你的评论...'"
+							:placeholder="replyTo ? `回复 ${replyTo.userName || '用户' + replyTo.userId}...` : '写下你的评论...'"
 							confirm-type="send"
 							:focus="inputFocus"
 							@blur="inputFocus = false"
@@ -345,6 +345,9 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed, reactive } from 'vue'
 import request from '@/utils/request.js'
+import { useTheme } from '@/hooks/useTheme'
+
+const { themeClass } = useTheme()
 
 // 获取路由参数
 const forumId = ref('')
@@ -549,7 +552,7 @@ const uploadCommentImage = (filePath) => {
 		name: 'file',
 		header: {
 			"Content-Type": "multipart/form-data",
-			"sa-token": uni.getStorageSync('sa-token')
+			"token": uni.getStorageSync('token')
 		},
 		success: (uploadRes) => {
 			try {
@@ -663,8 +666,8 @@ const replyComment = (comment) => {
 	console.log(comment)
 	// 如果是子评论，自动添加@用户名
 	if (comment.isParent === 0) {
-		const username = comment.username || '用户' + comment.userId
-		commentText.value = `@${username} `
+		const userName = comment.userName || '用户' + comment.userId
+		commentText.value = `@${userName} `
 	} else {
 		commentText.value = ''
 	}
@@ -922,7 +925,7 @@ const reportComment = (comment) => {
 
 <style>
 .detail-container {
-	background-color: #f5f7fa;
+	background-color: var(--bgColor1);
 	min-height: 100vh;
 	display: flex;
 	flex-direction: column;
@@ -941,6 +944,11 @@ const reportComment = (comment) => {
 	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
 }
 
+.darkMode .nav-bar {
+	background-color: var(--bgColor2);
+	box-shadow: none;
+}
+
 .back-btn {
 	width: 60rpx;
 	height: 60rpx;
@@ -951,13 +959,13 @@ const reportComment = (comment) => {
 
 .back-icon {
 	font-size: 40rpx;
-	color: #333;
+	color: var(--textColor1);
 }
 
 .nav-title {
 	font-size: 34rpx;
 	font-weight: bold;
-	color: #333;
+	color: var(--textColor1);
 }
 
 .placeholder {
@@ -998,7 +1006,7 @@ const reportComment = (comment) => {
 
 .loading-text {
 	font-size: 24rpx;
-	color: #999;
+	color: var(--textColor3);
 }
 
 /* 帖子卡片样式 */
@@ -1011,6 +1019,12 @@ const reportComment = (comment) => {
 	border-radius: 12rpx;
 	padding: 30rpx;
 	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+}
+
+.darkMode .forum-card {
+	background-color: var(--bgboxShadowColor2); /* 使用带透明度的背景变量或直接指定 */
+	background-color: rgba(30, 30, 30, 0.9);
+	box-shadow: none;
 }
 
 /* 帖子头部 */
@@ -1058,13 +1072,13 @@ const reportComment = (comment) => {
 .author-name {
 	font-size: 30rpx;
 	font-weight: bold;
-	color: #333;
+	color: var(--textColor1);
 	margin-right: 10rpx;
 }
 
 .publish-time {
 	font-size: 24rpx;
-	color: #999;
+	color: var(--textColor3);
 	margin-top: 4rpx;
 }
 
@@ -1076,14 +1090,14 @@ const reportComment = (comment) => {
 .forum-title {
 	font-size: 34rpx;
 	font-weight: bold;
-	color: #333;
+	color: var(--textColor1);
 	margin-bottom: 20rpx;
 	display: block;
 }
 
 .forum-content {
 	font-size: 30rpx;
-	color: #333;
+	color: var(--textColor2);
 	line-height: 1.5;
 	margin-bottom: 20rpx;
 	display: block;
@@ -1149,7 +1163,7 @@ const reportComment = (comment) => {
 
 /* 帖子底部 */
 .forum-footer {
-	border-top: 1rpx solid #f0f0f0;
+	border-top: 1rpx solid var(--borderColor);
 	padding-top: 20rpx;
 }
 
@@ -1173,7 +1187,7 @@ const reportComment = (comment) => {
 
 .action-text {
 	font-size: 26rpx;
-	color: #666;
+	color: var(--textColor3);
 }
 
 /* 评论区样式 */
@@ -1188,16 +1202,21 @@ const reportComment = (comment) => {
 	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
 }
 
+.darkMode .comment-section {
+	background-color: rgba(30, 30, 30, 0.9);
+	box-shadow: none;
+}
+
 .section-title {
 	margin-bottom: 20rpx;
 	padding-bottom: 20rpx;
-	border-bottom: 1rpx solid #f0f0f0;
+	border-bottom: 1rpx solid var(--borderColor);
 }
 
 .title-text {
 	font-size: 30rpx;
 	font-weight: bold;
-	color: #333;
+	color: var(--textColor1);
 }
 
 /* 空评论 */
@@ -1209,13 +1228,13 @@ const reportComment = (comment) => {
 
 .empty-text {
 	font-size: 28rpx;
-	color: #999;
+	color: var(--textColor3);
 }
 
 /* 评论列表 */
 .comment-item {
 	padding: 20rpx 0;
-	border-bottom: 1rpx solid #f0f0f0;
+	border-bottom: 1rpx solid var(--borderColor);
 }
 
 .comment-item:last-child {
@@ -1280,13 +1299,13 @@ const reportComment = (comment) => {
 .commenter-name {
 	font-size: 28rpx;
 	font-weight: bold;
-	color: #333;
+	color: var(--textColor1);
 	margin-right: 10rpx;
 }
 
 .comment-time {
 	font-size: 22rpx;
-	color: #999;
+	color: var(--textColor3);
 	margin-top: 2rpx;
 }
 
@@ -1296,7 +1315,7 @@ const reportComment = (comment) => {
 
 .comment-text {
 	font-size: 28rpx;
-	color: #333;
+	color: var(--textColor2);
 	line-height: 1.5;
 }
 
@@ -1321,7 +1340,7 @@ const reportComment = (comment) => {
 	align-items: center;
 	margin-right: 30rpx;
 	font-size: 24rpx;
-	color: #999;
+	color: var(--textColor3);
 }
 
 .comment-icon-img {
@@ -1339,14 +1358,18 @@ const reportComment = (comment) => {
 .child-comments {
 	margin-left: 86rpx;
 	margin-top: 10rpx;
-	background-color: #f8f8f8;
+	background-color: var(--bgColor1);
 	border-radius: 8rpx;
 	padding: 10rpx;
 }
 
+.darkMode .child-comments {
+	background-color: var(--bgColor3);
+}
+
 .child-comment-item {
 	padding: 10rpx 0;
-	border-bottom: 1rpx solid #f0f0f0;
+	border-bottom: 1rpx solid var(--borderColor);
 }
 
 .child-comment-item:last-child {
@@ -1374,6 +1397,11 @@ const reportComment = (comment) => {
 	box-sizing: border-box;
 }
 
+.darkMode .comment-input-wrapper {
+	background-color: var(--bgColor2);
+	box-shadow: none;
+}
+
 .comment-input-container {
 	display: flex;
 	flex-direction: column;
@@ -1393,13 +1421,17 @@ const reportComment = (comment) => {
 .comment-input {
 	flex: 1;
 	height: 70rpx;
-	background-color: #f5f7fa;
+	background-color: var(--bgColor1);
 	border-radius: 35rpx;
 	padding: 0 30rpx;
 	font-size: 28rpx;
-	color: #333;
+	color: var(--textColor1);
 	margin-right: 10rpx;
 	min-width: 0; /* 确保输入框可以缩小 */
+}
+
+.darkMode .comment-input {
+	background-color: var(--bgColor3);
 }
 
 .upload-button {
@@ -1408,9 +1440,13 @@ const reportComment = (comment) => {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background-color: #f5f7fa;
+	background-color: var(--bgColor1);
 	border-radius: 35rpx;
 	flex-shrink: 0; /* 防止按钮被压缩 */
+}
+
+.darkMode .upload-button {
+	background-color: var(--bgColor3);
 }
 
 .upload-icon {
@@ -1478,7 +1514,7 @@ const reportComment = (comment) => {
 
 .cancel-reply {
 	font-size: 28rpx;
-	color: #999;
+	color: var(--textColor3);
 	padding: 0 20rpx;
 	margin-right: 10rpx;
 	height: 70rpx;
@@ -1503,7 +1539,7 @@ const reportComment = (comment) => {
 
 .error-text {
 	font-size: 28rpx;
-	color: #999;
+	color: var(--textColor3);
 	margin-bottom: 30rpx;
 }
 
@@ -1532,12 +1568,12 @@ const reportComment = (comment) => {
 	align-items: center;
 	padding: 15rpx 10rpx;
 	margin-top: 10rpx;
-	border-top: 1rpx dashed #eee;
+	border-top: 1rpx dashed var(--borderColor);
 }
 
 .page-info {
 	font-size: 24rpx;
-	color: #999;
+	color: var(--textColor3);
 }
 
 .page-buttons {
@@ -1549,13 +1585,13 @@ const reportComment = (comment) => {
 	padding: 6rpx 20rpx;
 	margin: 0 8rpx;
 	font-size: 24rpx;
-	background-color: #f0f7ff;
+	background-color: rgba(24, 144, 255, 0.1);
 	color: #1890ff;
 	border-radius: 30rpx;
 }
 
 .page-button.disabled {
-	background-color: #f5f5f5;
+	background-color: var(--bgColor1);
 	color: #ccc;
 	pointer-events: none;
 }

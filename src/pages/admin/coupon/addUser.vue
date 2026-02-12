@@ -62,7 +62,7 @@
             
             <view class="user-info">
               <view class="user-header">
-                <text class="user-name">{{ item.username }}</text>
+                <text class="user-name">{{ item.userName }}</text>
                 <text class="user-level" v-if="item.level">Lv.{{ item.level }}</text>
               </view>
               <view class="user-meta">

@@ -1,5 +1,5 @@
 <template>
-	<view class="project-list-page">
+	<view class="project-list-page" :class="themeClass">
 		<!-- 搜索栏 -->
 		<view class="search-bar">
 			<view class="search-input-wrapper">
@@ -162,6 +162,7 @@
 				<image src="/static/empty.png" class="empty-icon"></image>
 				<text class="empty-text">暂无项目</text>
 			</view>
+			
 		</scroll-view>
 		
 		<!-- 城市多选弹窗 -->
@@ -340,6 +341,9 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import request from '@/utils/request'
+import { useTheme } from '@/hooks/useTheme'
+
+const { themeClass } = useTheme()
 
 // 搜索表单
 const searchForm = ref({
@@ -728,7 +732,7 @@ onMounted(() => {
 <style scoped>
 .project-list-page {
 	min-height: 100vh;
-	background-color: #f5f5f5;
+	background-color: var(--bgColor1);
 	display: flex;
 	flex-direction: column;
 }
@@ -740,19 +744,28 @@ onMounted(() => {
 	box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
 }
 
+.darkMode .search-bar {
+	background-color: var(--bgColor2);
+	box-shadow: none;
+}
+
 .search-input-wrapper {
 	display: flex;
 	align-items: center;
-	background-color: #f5f5f5;
+	background-color: var(--bgColor1);
 	border-radius: 36rpx;
 	padding: 0 24rpx;
 	height: 72rpx;
 }
 
+.darkMode .search-input-wrapper {
+	background-color: var(--bgColor3);
+}
+
 .search-input {
 	flex: 1;
 	font-size: 28rpx;
-	color: #333;
+	color: var(--textColor1);
 }
 
 .search-icon {
@@ -765,7 +778,11 @@ onMounted(() => {
 .filter-bar {
 	background-color: #fff;
 	padding: 16rpx 0;
-	border-bottom: 1rpx solid #f0f0f0;
+	border-bottom: 1rpx solid var(--borderColor);
+}
+
+.darkMode .filter-bar {
+	background-color: var(--bgColor2);
 }
 
 .filter-scroll {
@@ -785,15 +802,19 @@ onMounted(() => {
 	flex-shrink: 0;
 	align-items: center;
 	padding: 12rpx 24rpx;
-	background-color: #f5f5f5;
+	background-color: var(--bgColor1);
 	border-radius: 36rpx;
 	margin-right: 16rpx;
 	white-space: nowrap;
 }
 
+.darkMode .filter-item {
+	background-color: var(--bgColor3);
+}
+
 .filter-text {
 	font-size: 26rpx;
-	color: #666;
+	color: var(--textColor3);
 }
 
 .filter-text-active {
@@ -836,6 +857,11 @@ onMounted(() => {
 	overflow: hidden;
 	box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.06);
 	transition: transform 0.2s;
+}
+
+.darkMode .project-card {
+	background-color: var(--bgColor2);
+	box-shadow: none;
 }
 
 .project-card:active {
@@ -983,7 +1009,7 @@ onMounted(() => {
 .project-name {
 	font-size: 32rpx;
 	font-weight: bold;
-	color: #333;
+	color: var(--textColor1);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -991,7 +1017,7 @@ onMounted(() => {
 
 .project-intro {
 	font-size: 26rpx;
-	color: #666;
+	color: var(--textColor3);
 	line-height: 1.6;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -1012,8 +1038,12 @@ onMounted(() => {
 	display: flex;
 	align-items: center;
 	padding: 8rpx 16rpx;
-	background-color: #f5f5f5;
+	background-color: var(--bgColor1);
 	border-radius: 20rpx;
+}
+
+.darkMode .tag {
+	background-color: var(--bgColor3);
 }
 
 .tag-icon {
@@ -1025,7 +1055,7 @@ onMounted(() => {
 
 .tag-text {
 	font-size: 22rpx;
-	color: #666;
+	color: var(--textColor3);
 }
 
 .member-list {
@@ -1156,6 +1186,10 @@ onMounted(() => {
 	box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.15);
 }
 
+.darkMode .city-popup-content {
+	background-color: var(--bgColor2);
+}
+
 .popup-content {
 	width: 600rpx;
 	background-color: #fff;
@@ -1207,7 +1241,11 @@ onMounted(() => {
 	background-color: #fff;
 	display: flex;
 	align-items: center;
-	border-bottom: 1rpx solid #f0f0f0;
+	border-bottom: 1rpx solid var(--borderColor);
+}
+
+.darkMode .city-search-wrapper {
+	background-color: var(--bgColor2);
 }
 
 .search-icon-wrapper {
@@ -1225,10 +1263,14 @@ onMounted(() => {
 	flex: 1;
 	height: 72rpx;
 	padding: 0 48rpx 0 64rpx;
-	background-color: #f8f8f8;
+	background-color: var(--bgColor1);
 	border-radius: 36rpx;
 	font-size: 28rpx;
-	color: #333;
+	color: var(--textColor1);
+}
+
+.darkMode .city-search-input {
+	background-color: var(--bgColor3);
 }
 
 .clear-icon {
@@ -1253,8 +1295,12 @@ onMounted(() => {
 /* 已选城市 */
 .selected-cities {
 	padding: 24rpx 32rpx;
-	border-bottom: 1rpx solid #f0f0f0;
-	background: linear-gradient(to bottom, #f8fff8 0%, #fff 100%);
+	border-bottom: 1rpx solid var(--borderColor);
+	background: linear-gradient(to bottom, var(--bgColor1) 0%, #fff 100%);
+}
+
+.darkMode .selected-cities {
+	background: linear-gradient(to bottom, var(--bgColor2) 0%, var(--bgColor3) 100%);
 }
 
 .selected-header {
@@ -1325,7 +1371,11 @@ onMounted(() => {
 	flex: 1;
 	height: 0;
 	padding: 16rpx 0;
-	background-color: #fafafa;
+	background-color: var(--bgColor1);
+}
+
+.darkMode .city-list-scroll {
+	background-color: var(--bgColor1);
 }
 
 .province-group {
@@ -1341,6 +1391,10 @@ onMounted(() => {
 	margin-bottom: 2rpx;
 }
 
+.darkMode .province-header {
+	background-color: var(--bgColor2);
+}
+
 .province-info {
 	display: flex;
 	align-items: center;
@@ -1351,7 +1405,7 @@ onMounted(() => {
 .province-name {
 	font-size: 30rpx;
 	font-weight: 600;
-	color: #333;
+	color: var(--textColor1);
 }
 
 .province-arrow {
@@ -1415,6 +1469,10 @@ onMounted(() => {
 	border: 2rpx solid transparent;
 }
 
+.darkMode .city-item {
+	background-color: var(--bgColor2);
+}
+
 .city-item:active {
 	transform: scale(0.95);
 }
@@ -1427,7 +1485,7 @@ onMounted(() => {
 
 .city-name {
 	font-size: 26rpx;
-	color: #333;
+	color: var(--textColor1);
 	font-weight: 500;
 }
 
@@ -1455,7 +1513,11 @@ onMounted(() => {
 	gap: 24rpx;
 	padding: 24rpx 32rpx;
 	background-color: #fff;
-	border-top: 1rpx solid #f0f0f0;
+	border-top: 1rpx solid var(--borderColor);
+}
+
+.darkMode .popup-footer {
+	background-color: var(--bgColor2);
 }
 
 .footer-btn {
@@ -1473,11 +1535,15 @@ onMounted(() => {
 }
 
 .cancel-btn {
-	background-color: #f5f5f5;
+	background-color: var(--bgColor1);
+}
+
+.darkMode .cancel-btn {
+	background-color: var(--bgColor3);
 }
 
 .cancel-btn .btn-text {
-	color: #666;
+	color: var(--textColor3);
 	font-size: 30rpx;
 	font-weight: 500;
 }

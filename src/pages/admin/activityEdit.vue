@@ -190,7 +190,7 @@ const chooseImage = () => {
 				url: '/system/uploadImg',
 				filePath: tempFilePath,
 				header: {
-					'sa-token': uni.getStorageSync('sa-token')
+					'token': uni.getStorageSync('token')
 				},
 				name: 'file',
 				success: (uploadRes) => {

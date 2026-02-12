@@ -65,7 +65,7 @@
 					<!-- 作者信息 -->
 					<view class="author-info">
 						<image :src="item.avatar || defaultAvatar" class="author-avatar" mode="aspectFill"></image>
-						<text class="author-name">{{ item.username || '用户' + item.userId }}</text>
+						<text class="author-name">{{ item.userName || '用户' + item.userId }}</text>
 						<text class="forum-status" :class="getStatusClass(item.status)">
 							{{ getStatusText(item.status) }}
 						</text>

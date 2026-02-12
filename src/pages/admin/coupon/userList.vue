@@ -180,7 +180,7 @@ const fetchUserList = async (isLoadMore = false) => {
       method: 'GET',
       data: {
         pageNum: pageNum.value,
-        username: searchUsername.value || '',
+        userName: searchUsername.value || '',
         couponId: couponId.value
       }
     })

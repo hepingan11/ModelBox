@@ -2,7 +2,8 @@
 	export default {
 		onLaunch: function() {
 			console.log('App Launch')
-		},
+			console.log('App Launch')
+	},
 		onShow: function() {
 			console.log('App Show')
 		},
@@ -12,11 +13,21 @@
 	}
 </script>
 
-<style>
+<style lang="scss">
+	/* 引入主题样式 */
+	@import './static/css/theme.css';
+	
+	/* 全局样式设置 */
+	page {
+		background-color: var(--bgColor1);
+		color: var(--textColor1);
+		transition: background-color 0.3s, color 0.3s;
+	}
+	
 	.root {
-	--theme-color: #7bed71;
-	--theme-color-light: #00A872;
-	--theme-color-shadow: rgba(94, 169, 87, 0.4);
+	--theme-color: #8166e7;
+	--theme-color-light: #977cfc;
+	--theme-color-shadow: rgba(129, 102, 231, 0.4);
 	}
 	/*每个页面公共css */
 	

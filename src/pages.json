@@ -1,5 +1,5 @@
 {
-	"pages": [ 
+	"pages": [
 		{
 			"path": "pages/index/index",
 			"style": {
@@ -19,60 +19,51 @@
 			}
 		},
 		{
-			"path" : "pages/user/edit-profile",
-			"style" : 
-			{
-				"navigationBarTitleText" : "编辑资料"
+			"path": "pages/user/edit-profile",
+			"style": {
+				"navigationBarTitleText": "编辑资料"
 			}
 		},
 		{
-			"path" : "pages/user/frame",
-			"style" : 
-			{
-				"navigationBarTitleText" : "头像框"
+			"path": "pages/user/frame",
+			"style": {
+				"navigationBarTitleText": "头像框"
 			}
 		},
 		{
-			"path" : "pages/user/personal-center",
-			"style" : 
-			{
-				"navigationBarTitleText" : "个人中心"
+			"path": "pages/user/personal-center",
+			"style": {
+				"navigationBarTitleText": "个人中心"
 			}
 		},
 		{
-			"path" : "pages/forum/forum",
-			"style" : 
-			{
-				"navigationBarTitleText" : "论坛"
+			"path": "pages/forum/forum",
+			"style": {
+				"navigationBarTitleText": "论坛"
 			}
 		},
 		{
-			"path" : "pages/forum/publish",
-			"style" : 
-			{
-				"navigationBarTitleText" : "发布"
+			"path": "pages/forum/publish",
+			"style": {
+				"navigationBarTitleText": "发布"
 			}
 		},
 		{
-			"path" : "pages/forum/detail",
-			"style" : 
-			{
-				"navigationBarTitleText" : "详情"
+			"path": "pages/forum/detail",
+			"style": {
+				"navigationBarTitleText": "详情"
 			}
 		},
-		
 		{
 			"path": "pages/user/about",
-			"style" : 
-			{
-				"navigationBarTitleText" : "关于我们"
+			"style": {
+				"navigationBarTitleText": "关于我们"
 			}
 		},
 		{
 			"path": "pages/admin/index",
-			"style" : 
-			{
-				"navigationBarTitleText" : "管理员界面"
+			"style": {
+				"navigationBarTitleText": "管理员界面"
 			}
 		},
 		{
@@ -112,10 +103,9 @@
 			}
 		},
 		{
-			"path" : "pages/admin/activityEdit",
-			"style" : 
-			{
-				"navigationBarTitleText" : ""
+			"path": "pages/admin/activityEdit",
+			"style": {
+				"navigationBarTitleText": ""
 			}
 		},
 		{
@@ -243,45 +233,62 @@
 			"style": {
 				"navigationBarTitleText": "聊天"
 			}
+		},
+		{
+			"path": "pages/ai/chat",
+			"style": {
+				"navigationBarTitleText": "AI助手",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/ai/drawing",
+			"style": {
+				"navigationBarTitleText": "AI绘画",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/ai/video",
+			"style": {
+				"navigationBarTitleText": "AI视频",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/code/index",
+			"style": {
+				"navigationBarTitleText": "源码市场",
+				"enablePullDownRefresh": true
+			}
+		},
+		{
+			"path": "pages/code/my",
+			"style": {
+				"navigationBarTitleText": "我的源码",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/code/publish",
+			"style": {
+				"navigationBarTitleText": "发布源码",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/code/detail",
+			"style": {
+				"navigationBarTitleText": "源码详情",
+				"enablePullDownRefresh": false
+			}
 		}
 	],
-	"tabBar": {
-		"color": "#111111",
-		"selectedColor": "#1abc9c",
-		"backgroundColor": "#FFFFFF",
-		"borderStyle": "black",
-		"list": [
-			{
-				"pagePath": "pages/index/index",
-				"text": "首页",
-				"iconPath": "static/home.png",
-				"selectedIconPath": "static/home-selected.png"
-			},
-			{
-				"pagePath": "pages/project/projectList",
-				"text": "项目列表",
-				"iconPath": "static/project-selected.png",
-				"selectedIconPath": "static/icon/project.png"
-			},
-			{
-				"pagePath": "pages/forum/forum",
-				"text": "论坛",
-				"iconPath": "static/discussion.png",
-				"selectedIconPath": "static/discussion-selected.png"
-			},
-			{
-				"pagePath": "pages/user/user",
-				"text": "我的",
-				"iconPath": "static/user.png",
-				"selectedIconPath": "static/user-selected.png"
-			}
-		]
-	},
 	"globalStyle": {
-		"navigationBarTextStyle": "black",
-		"navigationBarTitleText": "uni-app",
-		"navigationBarBackgroundColor": "#FFFFFF",
-		"backgroundColor": "#F8F8F8"
+		"navigationBarTextStyle": "white",
+		"navigationBarTitleText": "CreativePartner",
+		"navigationBarBackgroundColor": "#111111",
+		"backgroundColor": "#111111"
 	},
 	"uniIdRouter": {}
 }

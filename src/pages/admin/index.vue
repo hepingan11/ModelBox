@@ -4,7 +4,7 @@
     <view class="welcome-section">
       <view class="welcome-header">
         <text class="welcome-title">管理员控制台</text>
-        <text class="welcome-subtitle">欢迎回来，{{ adminInfo.username }}</text>
+        <text class="welcome-subtitle">欢迎回来，{{ adminInfo.userName }}</text>
       </view>
       <view class="stats-row">
         <view class="stat-card" v-for="(stat, index) in statistics" :key="index">
@@ -106,8 +106,8 @@ import request from '@/utils/request.js'
 
 // 管理员信息
 const adminInfo = ref({
-  username: '管理员',
-  role: 'admin'
+  userName: '管理员',
+  type: 'ADMIN'
 })
 
 // 统计数据

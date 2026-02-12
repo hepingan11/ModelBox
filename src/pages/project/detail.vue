@@ -1,5 +1,5 @@
 <template>
-	<view class="project-detail-page">
+	<view class="project-detail-page" :class="themeClass">
 		<!-- 加载状态 -->
 		<view v-if="loading" class="loading-container">
 			<view class="loading-spinner"></view>
@@ -89,7 +89,7 @@
 					</view>
 					<view class="creator-info">
 						<view class="creator-name-row">
-							<text class="creator-name">{{ creatorInfo.username || creatorInfo.nickname || '用户' }}</text>
+							<text class="creator-name">{{ creatorInfo.userName || creatorInfo.nickname || '用户' }}</text>
 							<view v-if="creatorInfo.level" class="creator-level" :class="'level-' + creatorInfo.level">
 								<text class="level-text">Lv.{{ creatorInfo.level }}</text>
 							</view>
@@ -124,7 +124,7 @@
 						</view>
 						<view class="member-info">
 							<view class="member-name-row">
-								<text class="member-name">{{ member.username || member.nickname || '用户' }}</text>
+								<text class="member-name">{{ member.userName || member.nickname || '用户' }}</text>
 								<view v-if="member.level" class="member-level" :class="'level-' + member.level">
 									<text class="level-text">Lv.{{ member.level }}</text>
 								</view>
@@ -180,7 +180,11 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
+
 import request from '@/utils/request'
+import { useTheme } from '@/hooks/useTheme'
+
+const { themeClass } = useTheme()
 
 // 页面参数
 const projectId = ref(null)
@@ -521,7 +525,7 @@ onLoad((options) => {
 <style scoped>
 .project-detail-page {
 	min-height: 100vh;
-	background-color: #f5f5f5;
+	background-color: var(--bgColor1);
 	padding-bottom: 120rpx;
 }
 
@@ -537,8 +541,8 @@ onLoad((options) => {
 .loading-spinner {
 	width: 60rpx;
 	height: 60rpx;
-	border: 4rpx solid #f0f0f0;
-	border-top-color: #00A872;
+	border: 4rpx solid var(--borderColor);
+	border-top-color: var(--themeColor1);
 	border-radius: 50%;
 	animation: spin 1s linear infinite;
 }
@@ -550,7 +554,7 @@ onLoad((options) => {
 .loading-text {
 	margin-top: 20rpx;
 	font-size: 28rpx;
-	color: #999;
+	color: var(--textColor3);
 }
 
 /* 详情内容 */
@@ -564,7 +568,7 @@ onLoad((options) => {
 .image-section {
 	width: 100%;
 	height: 500rpx;
-	background-color: #fff;
+	background-color: var(--bgColor1);
 }
 
 .image-swiper {
@@ -591,6 +595,11 @@ onLoad((options) => {
 	box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
 }
 
+.darkMode .info-card {
+	background-color: var(--bgColor2);
+	box-shadow: none;
+}
+
 .info-card:first-of-type {
 	margin-top: 20rpx;
 }
@@ -607,7 +616,7 @@ onLoad((options) => {
 	flex: 1;
 	font-size: 36rpx;
 	font-weight: bold;
-	color: #333;
+	color: var(--textColor1);
 	line-height: 1.4;
 }
 
@@ -636,7 +645,7 @@ onLoad((options) => {
 
 .status-text {
 	font-size: 24rpx;
-	color: #666;
+	color: var(--textColor3);
 }
 
 .status-PENDING .status-text {
@@ -668,8 +677,12 @@ onLoad((options) => {
 	display: flex;
 	align-items: center;
 	padding: 8rpx 16rpx;
-	background-color: #f5f5f5;
+	background-color: var(--bgColor1);
 	border-radius: 20rpx;
+}
+
+.darkMode .tag {
+	background-color: var(--bgColor3);
 }
 
 .tag-icon {
@@ -681,7 +694,7 @@ onLoad((options) => {
 
 .tag-text {
 	font-size: 24rpx;
-	color: #666;
+	color: var(--textColor3);
 }
 
 /* 创建时间 */
@@ -689,7 +702,7 @@ onLoad((options) => {
 	display: flex;
 	align-items: center;
 	padding-top: 16rpx;
-	border-top: 1rpx solid #f0f0f0;
+	border-top: 1rpx solid var(--borderColor);
 }
 
 .time-icon {
@@ -699,7 +712,7 @@ onLoad((options) => {
 
 .time-text {
 	font-size: 24rpx;
-	color: #999;
+	color: var(--textColor3);
 }
 
 /* 卡片标题 */
@@ -713,12 +726,12 @@ onLoad((options) => {
 .title-text {
 	font-size: 32rpx;
 	font-weight: bold;
-	color: #333;
+	color: var(--textColor1);
 }
 
 .member-count {
 	font-size: 28rpx;
-	color: #00A872;
+	color: var(--themeColor1);
 	font-weight: 600;
 }
 
@@ -729,7 +742,7 @@ onLoad((options) => {
 
 .introduce-text {
 	font-size: 28rpx;
-	color: #666;
+	color: var(--textColor2);
 	white-space: pre-wrap;
 }
 
@@ -743,6 +756,11 @@ onLoad((options) => {
 	border: 2rpx solid #e8f5e9;
 	cursor: pointer;
 	transition: all 0.3s ease;
+}
+
+.darkMode .creator-card {
+	background: linear-gradient(135deg, var(--bgColor3) 0%, var(--bgColor2) 100%);
+	border: 2rpx solid var(--borderColor);
 }
 
 .creator-card:hover {
@@ -787,7 +805,7 @@ onLoad((options) => {
 .creator-name {
 	font-size: 32rpx;
 	font-weight: bold;
-	color: #333;
+	color: var(--textColor1);
 }
 
 .creator-level {
@@ -798,7 +816,7 @@ onLoad((options) => {
 
 .creator-signature {
 	font-size: 24rpx;
-	color: #999;
+	color: var(--textColor3);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -806,7 +824,7 @@ onLoad((options) => {
 
 .view-arrow {
 	font-size: 36rpx;
-	color: #00A872;
+	color: var(--themeColor1);
 	margin-left: 16rpx;
 }
 
@@ -821,9 +839,13 @@ onLoad((options) => {
 	display: flex;
 	align-items: center;
 	padding: 16rpx;
-	background-color: #f9f9f9;
+	background-color: var(--bgColor1);
 	border-radius: 12rpx;
 	transition: all 0.3s ease;
+}
+
+.darkMode .member-item {
+	background-color: var(--bgColor3);
 }
 
 .member-item.clickable {
@@ -875,7 +897,7 @@ onLoad((options) => {
 
 .member-name {
 	font-size: 28rpx;
-	color: #333;
+	color: var(--textColor1);
 	font-weight: 600;
 }
 
@@ -891,7 +913,7 @@ onLoad((options) => {
 
 .member-time {
 	font-size: 22rpx;
-	color: #999;
+	color: var(--textColor3);
 }
 
 .member-status {
@@ -966,6 +988,11 @@ onLoad((options) => {
 	background-color: #fff;
 	box-shadow: 0 -2rpx 8rpx rgba(0, 0, 0, 0.06);
 	z-index: 100;
+}
+
+.darkMode .bottom-bar {
+	background-color: var(--bgColor2);
+	box-shadow: none;
 }
 
 .action-btn {

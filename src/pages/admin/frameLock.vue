@@ -12,7 +12,7 @@
 				<image v-if="userInfo.avatarFrameUrl" :src="userInfo.avatarFrameUrl" class="avatar-frame" mode="aspectFit"></image>
 			</view>
 			<view class="user-details">
-				<text class="user-name">{{ userInfo.username }}</text>
+				<text class="user-name">{{ userInfo.userName }}</text>
 				<text class="user-id">ID: {{ userInfo.id }}</text>
 			</view>
 		</view>
@@ -204,7 +204,7 @@ const toggleFrameLock = async (frame) => {
 	
 	uni.showModal({
 		title: `确认${action}头像框`,
-		content: `确定要${action}用户 "${userInfo.value.username}" 的 "${frame.name}" 头像框吗？`,
+		content: `确定要${action}用户 "${userInfo.value.userName}" 的 "${frame.name}" 头像框吗？`,
 		success: async (res) => {
 			if (res.confirm) {
 				try {

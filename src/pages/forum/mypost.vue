@@ -1,5 +1,5 @@
 <template>
-	<view class="mypost-container">
+	<view class="mypost-container" :class="themeClass">
 		
 		<!-- 选项卡 -->
 		<view class="tab-bar">
@@ -152,6 +152,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import request from '@/utils/request'
+import { useTheme } from '@/hooks/useTheme'
+
+const { themeClass } = useTheme()
 
 // 选项卡定义
 const tabs = [
@@ -554,7 +557,7 @@ onMounted(() => {
 
 <style>
 .mypost-container {
-	background-color: #f5f7fa;
+	background-color: var(--bgColor1);
 	min-height: 100vh;
 	display: flex;
 	flex-direction: column;
@@ -602,10 +605,14 @@ onMounted(() => {
 	justify-content: space-around;
 	background-color: #fff;
 	padding: 15rpx 0;
-	border-bottom: 1rpx solid #f0f0f0;
+	border-bottom: 1rpx solid var(--borderColor);
 	position: sticky;
 	top: 100rpx;
 	z-index: 99;
+}
+
+.darkMode .tab-bar {
+	background-color: var(--bgColor2);
 }
 
 .tab-item {
@@ -615,12 +622,12 @@ onMounted(() => {
 
 .tab-text {
 	font-size: 28rpx;
-	color: #666;
+	color: var(--textColor3);
 	transition: all 0.3s;
 }
 
 .tab-item.active .tab-text {
-	color: #1abc9c;
+	color: var(--themeColor1);
 	font-weight: bold;
 }
 
@@ -632,7 +639,7 @@ onMounted(() => {
 	transform: translateX(-50%);
 	width: 40rpx;
 	height: 4rpx;
-	background-color: #1abc9c;
+	background-color: var(--themeColor1);
 	border-radius: 2rpx;
 }
 
@@ -657,6 +664,11 @@ onMounted(() => {
 	position: relative;
 }
 
+.darkMode .post-item {
+	background-color: var(--bgColor2);
+	box-shadow: none;
+}
+
 .post-header {
 	margin-bottom: 16rpx;
 }
@@ -671,7 +683,7 @@ onMounted(() => {
 .post-title {
 	font-size: 32rpx;
 	font-weight: bold;
-	color: #333;
+	color: var(--textColor1);
 	flex: 1;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -694,7 +706,7 @@ onMounted(() => {
 
 .post-time {
 	font-size: 24rpx;
-	color: #999;
+	color: var(--textColor3);
 }
 
 .post-content {
@@ -703,13 +715,14 @@ onMounted(() => {
 
 .post-text {
 	font-size: 28rpx;
-	color: #666;
+	color: var(--textColor2);
 	line-height: 1.5;
 	margin-bottom: 16rpx;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	display: -webkit-box;
 	-webkit-line-clamp: 2;
+	line-clamp: 2;
 	-webkit-box-orient: vertical;
 }
 
@@ -743,7 +756,7 @@ onMounted(() => {
 	justify-content: space-between;
 	align-items: center;
 	padding-top: 16rpx;
-	border-top: 1rpx solid #f0f0f0;
+	border-top: 1rpx solid var(--borderColor);
 }
 
 .post-stats {
@@ -755,7 +768,7 @@ onMounted(() => {
 	align-items: center;
 	margin-right: 20rpx;
 	font-size: 24rpx;
-	color: #999;
+	color: var(--textColor3);
 }
 
 .stat-icon {
@@ -787,6 +800,11 @@ onMounted(() => {
 	border: 1rpx solid #ffccc7;
 }
 
+.darkMode .delete-btn {
+	background-color: rgba(255, 77, 79, 0.1);
+	border: 1rpx solid rgba(255, 77, 79, 0.3);
+}
+
 /* 加载中状态 */
 .loading-wrapper {
 	display: flex;
@@ -799,8 +817,8 @@ onMounted(() => {
 .loading-animation {
 	width: 40rpx;
 	height: 40rpx;
-	border: 4rpx solid #f3f3f3;
-	border-top: 4rpx solid #1abc9c;
+	border: 4rpx solid var(--borderColor);
+	border-top: 4rpx solid var(--themeColor1);
 	border-radius: 50%;
 	animation: spin 1s linear infinite;
 	margin-bottom: 20rpx;
@@ -813,7 +831,7 @@ onMounted(() => {
 
 .loading-text, .more-text, .no-more-text {
 	font-size: 24rpx;
-	color: #999;
+	color: var(--textColor3);
 	text-align: center;
 	padding: 20rpx 0;
 }
@@ -835,12 +853,12 @@ onMounted(() => {
 
 .empty-text {
 	font-size: 30rpx;
-	color: #999;
+	color: var(--textColor3);
 	margin-bottom: 30rpx;
 }
 
 .create-post-btn {
-	background-color: #1abc9c;
+	background-color: var(--themeColor1);
 	color: #fff;
 	font-size: 28rpx;
 	padding: 15rpx 40rpx;
@@ -900,7 +918,7 @@ onMounted(() => {
 
 .author-name {
 	font-size: 26rpx;
-	color: #666;
+	color: var(--textColor3);
 }
 
 /* 活动广告样式 */
@@ -914,6 +932,11 @@ onMounted(() => {
 	margin-bottom: 20rpx;
 	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
 	overflow: hidden;
+}
+
+.darkMode .activity-item {
+	background-color: var(--bgColor2);
+	box-shadow: none;
 }
 
 .activity-image {
@@ -936,7 +959,7 @@ onMounted(() => {
 .activity-title {
 	font-size: 32rpx;
 	font-weight: bold;
-	color: #333;
+	color: var(--textColor1);
 	flex: 1;
 }
 
@@ -950,11 +973,12 @@ onMounted(() => {
 
 .activity-text {
 	font-size: 28rpx;
-	color: #666;
+	color: var(--textColor2);
 	line-height: 1.5;
 	margin-bottom: 20rpx;
 	display: -webkit-box;
 	-webkit-line-clamp: 2;
+	line-clamp: 2;
 	-webkit-box-orient: vertical;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -965,18 +989,18 @@ onMounted(() => {
 	justify-content: space-between;
 	align-items: center;
 	padding-top: 15rpx;
-	border-top: 1rpx solid #f0f0f0;
+	border-top: 1rpx solid var(--borderColor);
 }
 
 .activity-time {
 	font-size: 24rpx;
-	color: #999;
+	color: var(--textColor3);
 }
 
 .activity-btn {
 	display: flex;
 	align-items: center;
-	color: #1abc9c;
+	color: var(--themeColor1);
 	font-size: 26rpx;
 }
 

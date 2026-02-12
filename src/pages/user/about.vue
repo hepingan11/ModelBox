@@ -3,7 +3,7 @@
         
         <!-- 应用信息 -->
         <view class="about-header">
-            <image src="/static/logo.jpg" class="logo" mode="aspectFit"></image>
+            <image src="/static/logo.png" class="logo" mode="aspectFit"></image>
             <text class="app-name">众创搭</text>
             <text class="app-version">版本 1.0.0</text>
         </view>
