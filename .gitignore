@@ -47,3 +47,6 @@ nbdist/
 
 # VS Code
 .vscode/
+
+# Ignore local config
+src/main/resources/application-local.yml
