@@ -1,12 +1,12 @@
-欢迎使用Pass Assistant
+欢迎使用模智盒ModelBox---基于SpringAi搭建的AIGC全能工具网站
 
 **本代码为Java后端代码**
 
- **微服务版见cloud分支,目前推荐使用该单体架构模式** 
+ **微服务版见[Pass-Assistant老版本](https://github.com/hepingan11/Pass-Assistant/tree/cloud),已不再维护,目前推荐使用该单体架构模式** ModelBox就是由Pass-Assistant升级而来的,目前主推ModelBox
 
 演示地址：https://hepingan.top
 
-前端地址：https://gitee.com/hepingan11/gptweb
+前端地址：https://github.com/hepingan11/ModelBox/tree/app
 注意：
 
 - 最新版为4.1.0,如需获取最新版本请联系我(可前往演示网站的顶部的"关于"页面联系)
