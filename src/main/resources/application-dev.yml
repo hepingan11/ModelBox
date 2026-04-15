@@ -1,0 +1,156 @@
+spring:
+  ai:
+    #mcp配置
+    mcp:
+      client:
+        request-timeout: 20000
+    #        mcp服务
+    #        stdio:
+    #          servers-configuration: classpath:templates/mcp-servers-config.json
+    openai:
+      base-url: 待填
+      api-key: 待填
+      chat:
+        options:
+          model: deepseek-chat
+    zhipuai:
+      api-key: 待填
+    chat:
+      memory:
+        repository:
+          jdbc:
+            platform: mysql
+            initialize-schema: never
+  data:
+    # redis配置
+    redis:
+      database: 1
+      host: 待填
+      port: 6379
+      password: 待填
+  # mysql配置
+  datasource:
+    url: 待填
+    username: 待填
+    password: 待填
+  # 邮箱
+  mail:
+    host: 待填
+    username: 待填
+    password: 待填
+    default-encoding: UTF-8
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          socketFactory:
+            class: javax.net.ssl.SSLSocketFactory
+    port: 587
+
+service:
+  url: https://java.hepingan.cn
+
+# 超级管理员账号密码
+root:
+  # 邮箱
+  email: 待填
+  # 密码
+  password: 待填
+
+wx:
+  #商户号
+  mchId: 待填
+  #apiV3密钥
+  apiKey: 待填
+  #商户证书序列号
+  wechatPayPublicKeyId: 待填
+  #微信appid
+  appid: 待填
+  #app-secret
+  appSecret: 待填
+
+# 阿里OSS
+ali-oss:
+  endpoint: 待填
+  accessKey: 待填
+  secretKey: 待填
+  bucketName: 待填
+  domain: 待填
+
+# GPT 对话助手配置
+gpt:
+  # 开发者名称
+  author: '何平安'
+  # BOT 中文名
+  botNameChinese: '何平安'
+  # BOT 英文名
+  botNameEnglish: 'HEPINGAN'
+
+bilibili:
+  uid: 待填
+
+
+hupijiao:
+  appid: 待填
+  appsecret: 待填
+  webUrl: 待填
+
+
+# 支付宝配置
+ali-pay:
+  # 支付宝应用ID
+  appId: 待填
+  # 支付宝公钥
+  alipayPublicKey: 待填
+  # 私钥
+  privateKey: 待填
+  # 域名
+  domain: 待填
+
+#以下配置的东西 不是不填 这里只是默认配置 也可以部署完毕后自行去后台中配置
+#server默认配置，会被redis覆盖
+config:
+  # 配置
+  openKey: 'sk-'
+  #deepseek的key
+  deepseekKey: "sk-"
+  #tongyikey
+  tongyiKey: ""
+  #claude key
+  claudeKey: 'sk-'
+  #智谱清言key
+  glmKey: 待填
+  #豆包key
+  doubaokey: 待填
+  # 用户第一次登录奖励次数
+  incentiveFrequency: 10
+  # 观看视频奖励次数
+  videoFrequency: 1
+  # GPT文生图消耗次数
+  gptTextImageFrequency: 5
+  #GPT消耗次数
+  gptFrequency: 1
+  # 观看视频奖励次数
+  signInFrequency: 1
+  #  链接顶图
+  linkTopImg: ""
+  # 豆包视频回调地址
+  doubaoCallbackUrl: 待填
+
+# 默认终端配置
+control:
+  # 代理ip 只支持 clash
+  proxyIp: 127.0.0.1
+  # 代理端口
+  proxyPort: 7890
+  # 敏感词
+  sensitiveWords: "(CHAT|GPT|OPEN|OPENAI)"
+  # 是否开启敏感词过滤
+  enableSensitive: true
+  # 是否开启GPT-4 不开启则 所有流量指向GPT-3模型
+  enableGptPlus: true
+  # 是否开启代理了
+  enableProxy: false
+
